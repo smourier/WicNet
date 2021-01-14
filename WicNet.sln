@@ -1,0 +1,31 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30907.101
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WicNet", "WicNet\WicNet.csproj", "{741BC93E-1510-48A9-895C-0CD9C2D21C0D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WicNet.Tests", "WicNet.Tests\WicNet.Tests.csproj", "{15339295-2E3A-4E0D-91FC-576CCE55B056}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{741BC93E-1510-48A9-895C-0CD9C2D21C0D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{741BC93E-1510-48A9-895C-0CD9C2D21C0D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{741BC93E-1510-48A9-895C-0CD9C2D21C0D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{741BC93E-1510-48A9-895C-0CD9C2D21C0D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {AD4020D4-8ED6-470B-A87E-C6ABA40E5FFC}
+	EndGlobalSection
+EndGlobal
