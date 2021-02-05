@@ -16,10 +16,10 @@ namespace WicNet
         private WicPalette _palette;
         internal Dictionary<WicMetadataKey, object> _medatata = new Dictionary<WicMetadataKey, object>();
 
-        public WicBitmapSource(object comObject, Guid encoderFormat)
+        public WicBitmapSource(object comObject)
         {
-            _comObject = new ComObjectWrapper<IWICBitmap>(comObject).ComObject;
-            Decoder = WicDecoder.FromContainerFormatGuid(encoderFormat);
+            _comObject = new ComObjectWrapper<IWICBitmapSource>(comObject).ComObject;
+            //Decoder = WicDecoder.FromContainerFormatGuid(encoderFormat);
         }
 
         public WicBitmapSource(int width, int height, WicPixelFormat pixelFormat)
@@ -31,7 +31,7 @@ namespace WicNet
         }
 
         public IComObject<IWICBitmapSource> ComObject => _comObject;
-        public WicDecoder Decoder { get; }
+        //public WicDecoder Decoder { get; }
         public WicIntSize Size => new WicIntSize(Width, Height);
         public WICRect Bounds => new WICRect(0, 0, Width, Height);
         public IDictionary<WicMetadataKey, object> Metadata => _medatata;
@@ -118,6 +118,18 @@ namespace WicNet
                 _comObject.Object.GetResolution(out _, out var dpiy);
                 return dpiy;
             }
+        }
+
+        public WicBitmapSource GetThumbnail()
+        {
+            var bmp = _comObject.As<IWICBitmapFrameDecode>(false)?.GetThumbnail();
+            return bmp != null ? new WicBitmapSource(bmp) : null;
+        }
+
+        public WicMetadataQueryReader GetMetadataReader()
+        {
+            var reader = _comObject.As<IWICBitmapFrameDecode>(false)?.GetMetadataQueryReader();
+            return reader != null ? new WicMetadataQueryReader(reader) : null;
         }
 
         public void CenterClip(int? width, int? height)
@@ -322,33 +334,9 @@ namespace WicNet
             _comObject = clip;
         }
 
-        //public static int GetFrameCount(Stream stream, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => Wic.CountFrames(stream, options);
-        //public static int GetFrameCount(string filePath, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => Wic.CountFrames(filePath, options);
-
-        //public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
-        //{
-        //    if (filePath == null)
-        //        throw new ArgumentNullException(nameof(filePath));
-
-        //    if (frameIndex < 0)
-        //    {
-        //        frameIndex = 0;
-        //    }
-
-        //    return Wic.LoadWicBitmap(filePath, frameIndex, (WICDecodeOptions)options);
-        //}
-
-        //public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
-        //{
-        //    if (stream == null)
-        //        throw new ArgumentNullException(nameof(stream));
-
-        //    if (frameIndex < 0)
-        //    {
-        //        frameIndex = 0;
-        //    }
-        //    return Wic.LoadWicBitmap(stream, frameIndex, options);
-        //}
+        public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(filePath, options: options).GetFrame(frameIndex);
+        public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(fileHandle, options: options).GetFrame(frameIndex);
+        public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(stream, options: options).GetFrame(frameIndex);
 
         public void WithLock(WICBitmapLockFlags flags, Action<WicBitmapLock> action, WICRect? rect = null)
         {
@@ -432,12 +420,12 @@ namespace WicNet
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            if (encoder == null)
-            {
-                encoder = WicEncoder.FromDecoder(Decoder);
-                if (encoder == null)
-                    throw new ArgumentNullException(nameof(encoder));
-            }
+            //if (encoder == null)
+            //{
+            //    encoder = WicEncoder.FromDecoder(Decoder);
+            //    if (encoder == null)
+            //        throw new ArgumentNullException(nameof(encoder));
+            //}
 
             //metadata = metadata ?? Metadata;
 

@@ -6,7 +6,21 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            Console.WriteLine("Hello World!");
+            using (var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg"))
+            {
+                var reader = bmp.GetMetadataReader();
+                //var th = bmp.GetThumbnail();
+
+                foreach (var kv in reader.Enumerate(true))
+                {
+                    Console.WriteLine(kv.Key + "=" + kv.Value);
+                }
+            }
+
+            using (var decoder = WicBitmapDecoder.Load(@"SamsungSGH-I777.jpg"))
+            {
+                //Console.WriteLine(decoder.GetMetadataQueryReader());
+            }
         }
     }
 }

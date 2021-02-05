@@ -16,18 +16,18 @@ namespace WicNet
         public static WicDecoder Dds { get; private set; }
         public static WicDecoder Raw { get; private set; }
 
-        internal static void CreateBuiltIn()
-        {
-            Png = FromContainerFormatGuid(ContainerFormatPng);
-            Jpeg = FromContainerFormatGuid(ContainerFormatJpeg);
-            Bmp = FromContainerFormatGuid(ContainerFormatBmp);
-            Ico = FromContainerFormatGuid(ContainerFormatIco);
-            Tiff = FromContainerFormatGuid(ContainerFormatTiff);
-            Gif = FromContainerFormatGuid(ContainerFormatGif);
-            WMPhoto = FromContainerFormatGuid(ContainerFormatWMPhoto);
-            Dds = FromContainerFormatGuid(ContainerFormatDds);
-            Raw = FromContainerFormatGuid(ContainerFormatRaw);
-        }
+        //internal static void CreateBuiltIn()
+        //{
+        //    Png = FromContainerFormatGuid(ContainerFormatPng);
+        //    Jpeg = FromContainerFormatGuid(ContainerFormatJpeg);
+        //    Bmp = FromContainerFormatGuid(ContainerFormatBmp);
+        //    Ico = FromContainerFormatGuid(ContainerFormatIco);
+        //    Tiff = FromContainerFormatGuid(ContainerFormatTiff);
+        //    Gif = FromContainerFormatGuid(ContainerFormatGif);
+        //    WMPhoto = FromContainerFormatGuid(ContainerFormatWMPhoto);
+        //    Dds = FromContainerFormatGuid(ContainerFormatDds);
+        //    Raw = FromContainerFormatGuid(ContainerFormatRaw);
+        //}
 
         public WicDecoder(object comObject)
             : base(comObject)

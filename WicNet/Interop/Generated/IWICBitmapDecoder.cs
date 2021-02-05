@@ -36,9 +36,9 @@ namespace WicNet.Interop
         HRESULT GetThumbnail(/* [out] __RPC__deref_out_opt */ out IWICBitmapSource ppIThumbnail);
         
         [PreserveSig]
-        HRESULT GetFrameCount(/* [out] __RPC__out */ out uint pCount);
+        HRESULT GetFrameCount(/* [out] __RPC__out */ out int pCount);
         
         [PreserveSig]
-        HRESULT GetFrame(/* [in] */ uint index, /* [out] __RPC__deref_out_opt */ out IWICBitmapFrameDecode ppIBitmapFrame);
+        HRESULT GetFrame(/* [in] */ int index, /* [out] __RPC__deref_out_opt */ out IWICBitmapFrameDecode ppIBitmapFrame);
     }
 }

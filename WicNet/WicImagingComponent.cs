@@ -25,19 +25,19 @@ namespace WicNet
                     switch (type)
                     {
                         case WICComponentType.WICPixelFormat:
-                            ic = new WicPixelFormat((IWICPixelFormatInfo2)component);
+                            ic = new WicPixelFormat(component);
                             break;
 
                         case WICComponentType.WICEncoder:
-                            ic = new WicEncoder((IWICBitmapCodecInfo)component);
+                            ic = new WicEncoder(component);
                             break;
 
                         case WICComponentType.WICDecoder:
-                            ic = new WicDecoder((IWICBitmapCodecInfo)component);
+                            ic = new WicDecoder(component);
                             break;
 
                         case WICComponentType.WICPixelFormatConverter:
-                            var converter = new WicPixelFormatConverter((IWICFormatConverterInfo)component);
+                            var converter = new WicPixelFormatConverter(component);
                             ic = converter;
                             break;
 
@@ -58,8 +58,8 @@ namespace WicNet
 
                     dic.Add(ic.Clsid, ic);
 
-                    WicEncoder.CreateBuiltIn();
-                    WicDecoder.CreateBuiltIn();
+                    //WicEncoder.CreateBuiltIn();
+                    //WicDecoder.CreateBuiltIn();
                 }
             });
             return dic;
@@ -97,48 +97,46 @@ namespace WicNet
 
         protected WicImagingComponent(object comObject)
         {
-            using (var wrapper = new ComObjectWrapper<IWICComponentInfo>(comObject))
+            var wrapper = new ComObjectWrapper<IWICComponentInfo>(comObject);
+            wrapper.Object.GetCLSID(out Guid guid);
+            Clsid = guid;
+
+            wrapper.Object.GetSigningStatus(out var status);
+            SigningStatus = status;
+
+            wrapper.Object.GetComponentType(out var type);
+            Type = type;
+
+            wrapper.Object.GetFriendlyName(0, null, out var len);
+            if (len >= 0)
             {
-                wrapper.Object.GetCLSID(out Guid guid);
-                Clsid = guid;
+                var sb = new StringBuilder(len);
+                wrapper.Object.GetFriendlyName(len + 1, sb, out _);
+                FriendlyName = sb.ToString();
+            }
 
-                wrapper.Object.GetSigningStatus(out var status);
-                SigningStatus = status;
+            wrapper.Object.GetAuthor(0, null, out len);
+            if (len >= 0)
+            {
+                var sb = new StringBuilder(len);
+                wrapper.Object.GetAuthor(len + 1, sb, out _);
+                Author = sb.ToString();
+            }
 
-                wrapper.Object.GetComponentType(out var type);
-                Type = type;
+            wrapper.Object.GetVersion(0, null, out len);
+            if (len >= 0)
+            {
+                var sb = new StringBuilder(len);
+                wrapper.Object.GetVersion(len + 1, sb, out _);
+                Version = sb.ToString();
+            }
 
-                wrapper.Object.GetFriendlyName(0, null, out var len);
-                if (len >= 0)
-                {
-                    var sb = new StringBuilder(len);
-                    wrapper.Object.GetFriendlyName(len + 1, sb, out _);
-                    FriendlyName = sb.ToString();
-                }
-
-                wrapper.Object.GetAuthor(0, null, out len);
-                if (len >= 0)
-                {
-                    var sb = new StringBuilder(len);
-                    wrapper.Object.GetAuthor(len + 1, sb, out _);
-                    Author = sb.ToString();
-                }
-
-                wrapper.Object.GetVersion(0, null, out len);
-                if (len >= 0)
-                {
-                    var sb = new StringBuilder(len);
-                    wrapper.Object.GetVersion(len + 1, sb, out _);
-                    Version = sb.ToString();
-                }
-
-                wrapper.Object.GetSpecVersion(0, null, out len);
-                if (len >= 0)
-                {
-                    var sb = new StringBuilder(len);
-                    wrapper.Object.GetSpecVersion(len + 1, sb, out _);
-                    SpecVersion = sb.ToString();
-                }
+            wrapper.Object.GetSpecVersion(0, null, out len);
+            if (len >= 0)
+            {
+                var sb = new StringBuilder(len);
+                wrapper.Object.GetSpecVersion(len + 1, sb, out _);
+                SpecVersion = sb.ToString();
             }
         }
 

@@ -5,7 +5,7 @@ using System.Threading;
 
 namespace WicNet.Interop
 {
-    public class ComObject : IDisposable
+    public class ComObject : IComObject
     {
         private object _object;
 
@@ -241,11 +241,16 @@ namespace WicNet.Interop
         //public static implicit operator T(ComObject<T> value) => value.Object;
     }
 
-    public interface IComObject<out T> : IDisposable
+    public interface IComObject : IDisposable
     {
-        T Object { get; }
         bool IsDisposed { get; }
+        object Object { get; }
         I As<I>(bool throwOnError = false) where I : class;
+    }
+
+    public interface IComObject<out T> : IComObject
+    {
+        new T Object { get; }
     }
 
     public sealed class ComObjectWrapper<T> : IDisposable
@@ -265,8 +270,25 @@ namespace WicNet.Interop
                     _cot = new ComObject<T>(t);
                 }
                 else
-                    throw new ArgumentException("Input must be if '" + typeof(T) + "' type.", nameof(obj));
+                {
+                    if (obj is IComObject co)
+                    {
+                        if (co.IsDisposed)
+                            throw new ArgumentException("Input of type '" + obj.GetType() + "' is disposed.", nameof(obj));
+
+                        if (co.Object is T t2)
+                        {
+                            _cot = new ComObject<T>(t2);
+                        }
+                    }
+
+                    if (_cot == null)
+                        throw new ArgumentException("Input of type '" + obj.GetType() + "' must be assignable to type '" + typeof(T) + "'.", nameof(obj));
+                }
             }
+
+            if (_cot.IsDisposed)
+                throw new ArgumentException("Input of type '" + obj.GetType() + "' is disposed.", nameof(obj));
         }
 
         public T Object => _cot.Object;

@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Concurrent;
+using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace WicNet.Interop
 {
@@ -89,6 +91,49 @@ namespace WicNet.Interop
                 return null;
 
             return Marshal.PtrToStringUni(ptr, len);
+        }
+
+        public static DateTimeOffset ToDateTimeOffset(this FILETIME fileTime)
+        {
+            var ft = (((long)fileTime.dwHighDateTime) << 32) + fileTime.dwLowDateTime;
+            return DateTimeOffset.FromFileTime(ft);
+        }
+
+        public static long CopyTo(this Stream input, Stream output, long count = long.MaxValue, int bufferSize = 0x14000)
+        {
+            if (input == null)
+                throw new ArgumentNullException(nameof(input));
+
+            if (output == null)
+                throw new ArgumentNullException(nameof(output));
+
+            if (count <= 0)
+                throw new ArgumentException(null, nameof(count));
+
+            if (bufferSize <= 0)
+                throw new ArgumentException(null, nameof(bufferSize));
+
+            if (count < bufferSize)
+            {
+                bufferSize = (int)count;
+            }
+
+            var bytes = new byte[bufferSize];
+            var total = 0;
+            do
+            {
+                var max = (int)Math.Min(count - total, bytes.Length);
+                var read = input.Read(bytes, 0, max);
+                if (read == 0)
+                    break;
+
+                output.Write(bytes, 0, read);
+                total += read;
+                if (total == count)
+                    break;
+            }
+            while (true);
+            return total;
         }
     }
 }

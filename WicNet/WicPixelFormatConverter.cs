@@ -68,7 +68,8 @@ namespace WicNet
             using (var cvt = _comObject.CreateInstance())
             {
                 cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
-                return new WicBitmapSource(cvt, targetFormat);
+                // TODO
+                return new WicBitmapSource(cvt);//, targetFormat);
             }
         }
 

@@ -2,7 +2,7 @@
 
 namespace WicNet
 {
-    public class WicMetadataReader : WicMetadataHandler
+    public sealed class WicMetadataReader : WicMetadataHandler
     {
         public WicMetadataReader(object comObject)
             : base(comObject)

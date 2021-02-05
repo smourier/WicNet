@@ -16,84 +16,80 @@ namespace WicNet
         internal static readonly Guid ContainerFormatTiff = new Guid(0x163bcc30, 0xe2e9, 0x4f0b, 0x96, 0x1d, 0xa3, 0xe9, 0xfd, 0xb7, 0x88, 0xa3);
         internal static readonly Guid ContainerFormatGif = new Guid(0x1f8a5601, 0x7d4d, 0x4cbd, 0x9c, 0x82, 0x1b, 0xc8, 0xd4, 0xee, 0xb9, 0xa5);
         internal static readonly Guid ContainerFormatWMPhoto = new Guid(0x57a37caa, 0x367a, 0x4540, 0x91, 0x6b, 0xf1, 0x83, 0xc5, 0x09, 0x3a, 0x4b);
-        internal static readonly Guid ContainerFormatDds = new Guid("9967cb95-2e85-4ac8-8ca2-83d7ccd425c9");
-        internal static readonly Guid ContainerFormatRaw = new Guid("c1fc85cb-d64f-478b-a4ec-69adc9ee1392");
+        internal static readonly Guid ContainerFormatDds = new Guid(0x9967cb95, 0x2e85, 0x4ac8, 0x8c, 0xa2, 0x83, 0xd7, 0xcc, 0xd4, 0x25, 0xc9);
+        internal static readonly Guid ContainerFormatRaw = new Guid(0xc1fc85cb, 0xd64f, 0x478b, 0xa4, 0xec, 0x69, 0xad, 0xc9, 0xee, 0x13, 0x92);
 
         private readonly Lazy<IReadOnlyList<WicPixelFormat>> _pixelFormatsList;
 
         protected WicCodec(object comObject)
             : base(comObject)
         {
-            if (comObject == null)
-                throw new ArgumentNullException(nameof(comObject));
-
-            if (!(comObject is IWICBitmapCodecInfo info))
-                throw new ArgumentException("Component must be of '" + nameof(IWICBitmapCodecInfo) + "' type.", nameof(comObject));
+            var info = new ComObjectWrapper<IWICBitmapCodecInfo>(comObject).ComObject;
 
             _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
-            info.GetContainerFormat(out Guid guid);
+            info.Object.GetContainerFormat(out Guid guid);
             ContainerFormat = guid;
 
-            info.GetFileExtensions(0, null, out var len);
+            info.Object.GetFileExtensions(0, null, out var len);
             if (len >= 0)
             {
                 var sb = new StringBuilder(len);
-                info.GetFileExtensions(len + 1, sb, out _);
+                info.Object.GetFileExtensions(len + 1, sb, out _);
                 FileExtensions = sb.ToString();
             }
 
-            info.GetColorManagementVersion(0, null, out len);
+            info.Object.GetColorManagementVersion(0, null, out len);
             if (len >= 0)
             {
                 var sb = new StringBuilder(len);
-                info.GetColorManagementVersion(len + 1, sb, out _);
+                info.Object.GetColorManagementVersion(len + 1, sb, out _);
                 ColorManagementVersion = sb.ToString();
             }
 
-            info.GetDeviceManufacturer(0, null, out len);
+            info.Object.GetDeviceManufacturer(0, null, out len);
             if (len >= 0)
             {
                 var sb = new StringBuilder(len);
-                info.GetDeviceManufacturer(len + 1, sb, out _);
+                info.Object.GetDeviceManufacturer(len + 1, sb, out _);
                 DeviceManufacturer = sb.ToString();
             }
 
-            info.GetDeviceModels(0, null, out len);
+            info.Object.GetDeviceModels(0, null, out len);
             if (len >= 0)
             {
                 var sb = new StringBuilder(len);
-                info.GetDeviceModels(len + 1, sb, out _);
+                info.Object.GetDeviceModels(len + 1, sb, out _);
                 DeviceModels = sb.ToString();
             }
 
-            info.GetMimeTypes(0, null, out len);
+            info.Object.GetMimeTypes(0, null, out len);
             if (len >= 0)
             {
                 var sb = new StringBuilder(len);
-                info.GetMimeTypes(len + 1, sb, out _);
+                info.Object.GetMimeTypes(len + 1, sb, out _);
                 MimeTypes = sb.ToString();
             }
 
-            info.DoesSupportAnimation(out bool b);
+            info.Object.DoesSupportAnimation(out bool b);
             SupportsAnimation = b;
 
-            info.DoesSupportChromakey(out b);
+            info.Object.DoesSupportChromakey(out b);
             SupportsChromakey = b;
 
-            info.DoesSupportLossless(out b);
+            info.Object.DoesSupportLossless(out b);
             SupportsLossless = b;
 
-            info.DoesSupportMultiframe(out b);
+            info.Object.DoesSupportMultiframe(out b);
             SupportsMultiframe = b;
 
             FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
             MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
 
-            info.GetPixelFormats(0, null, out len);
+            info.Object.GetPixelFormats(0, null, out len);
             if (len > 0)
             {
                 var pf = new Guid[len];
-                info.GetPixelFormats(len, pf, out _).ThrowOnError();
+                info.Object.GetPixelFormats(len, pf, out _).ThrowOnError();
                 PixelFormats = pf;
             }
             else

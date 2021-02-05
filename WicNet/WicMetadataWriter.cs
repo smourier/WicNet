@@ -2,7 +2,7 @@
 
 namespace WicNet
 {
-    public class WicMetadataWriter : WicMetadataHandler
+    public sealed class WicMetadataWriter : WicMetadataHandler
     {
         public WicMetadataWriter(object comObject)
             : base(comObject)
