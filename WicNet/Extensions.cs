@@ -1,10 +1,35 @@
 ﻿using System;
+using System.Collections.Concurrent;
 using System.Collections.Generic;
+using System.Reflection;
 
 namespace WicNet
 {
     public static class Extensions
     {
+        private static ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>> _guidsNames = new ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>>();
+
+        public static string GetGuidName(this Type type, Guid guid)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
+            if (!_guidsNames.TryGetValue(type, out var dic))
+            {
+                dic = new ConcurrentDictionary<Guid, string>();
+                foreach (var field in type.GetFields(BindingFlags.Public | BindingFlags.Static | BindingFlags.DeclaredOnly))
+                {
+                    dic[(Guid)field.GetValue(null)] = field.Name;
+                }
+                _guidsNames[type] = dic;
+            }
+
+            if (dic.TryGetValue(guid, out var name))
+                return name;
+
+            return guid.ToString();
+        }
+
         public static bool EqualsIgnoreCase(this string str, string text, bool trim = false)
         {
             if (trim)

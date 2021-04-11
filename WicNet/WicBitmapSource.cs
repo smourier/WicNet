@@ -22,12 +22,12 @@ namespace WicNet
             //Decoder = WicDecoder.FromContainerFormatGuid(encoderFormat);
         }
 
-        public WicBitmapSource(int width, int height, WicPixelFormat pixelFormat)
+        public WicBitmapSource(int width, int height, WicPixelFormat pixelFormat, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapCacheOnDemand)
         {
             if (pixelFormat == null)
                 throw new ArgumentNullException(nameof(pixelFormat));
 
-            _comObject = WICImagingFactory.CreateBitmap(width, height, pixelFormat.Guid);
+            _comObject = WICImagingFactory.CreateBitmap(width, height, pixelFormat.Guid, option);
         }
 
         public IComObject<IWICBitmapSource> ComObject => _comObject;

@@ -9,16 +9,6 @@ namespace WicNet
 {
     public abstract class WicCodec : WicImagingComponent
     {
-        internal static readonly Guid ContainerFormatPng = new Guid(0x1b7cfaf4, 0x713f, 0x473c, 0xbb, 0xcd, 0x61, 0x37, 0x42, 0x5f, 0xae, 0xaf);
-        internal static readonly Guid ContainerFormatJpeg = new Guid(0x19e4a5aa, 0x5662, 0x4fc5, 0xa0, 0xc0, 0x17, 0x58, 0x02, 0x8e, 0x10, 0x57);
-        internal static readonly Guid ContainerFormatBmp = new Guid(0x0af1d87e, 0xfcfe, 0x4188, 0xbd, 0xeb, 0xa7, 0x90, 0x64, 0x71, 0xcb, 0xe3);
-        internal static readonly Guid ContainerFormatIco = new Guid(0xa3a860c4, 0x338f, 0x4c17, 0x91, 0x9a, 0xfb, 0xa4, 0xb5, 0x62, 0x8f, 0x21);
-        internal static readonly Guid ContainerFormatTiff = new Guid(0x163bcc30, 0xe2e9, 0x4f0b, 0x96, 0x1d, 0xa3, 0xe9, 0xfd, 0xb7, 0x88, 0xa3);
-        internal static readonly Guid ContainerFormatGif = new Guid(0x1f8a5601, 0x7d4d, 0x4cbd, 0x9c, 0x82, 0x1b, 0xc8, 0xd4, 0xee, 0xb9, 0xa5);
-        internal static readonly Guid ContainerFormatWMPhoto = new Guid(0x57a37caa, 0x367a, 0x4540, 0x91, 0x6b, 0xf1, 0x83, 0xc5, 0x09, 0x3a, 0x4b);
-        internal static readonly Guid ContainerFormatDds = new Guid(0x9967cb95, 0x2e85, 0x4ac8, 0x8c, 0xa2, 0x83, 0xd7, 0xcc, 0xd4, 0x25, 0xc9);
-        internal static readonly Guid ContainerFormatRaw = new Guid(0xc1fc85cb, 0xd64f, 0x478b, 0xa4, 0xec, 0x69, 0xad, 0xc9, 0xee, 0x13, 0x92);
-
         private readonly Lazy<IReadOnlyList<WicPixelFormat>> _pixelFormatsList;
 
         protected WicCodec(object comObject)
@@ -111,6 +101,7 @@ namespace WicNet
         public bool SupportsMultiframe { get; }
         public IReadOnlyList<string> FileExtensionsList { get; }
         public IReadOnlyList<string> MimeTypesList { get; }
+        public string ContainerFormatName => GetFormatName(ContainerFormat);
 
         public IReadOnlyList<WicPixelFormat> PixelFormatsList => _pixelFormatsList.Value;
 
@@ -129,6 +120,8 @@ namespace WicNet
             list.Sort();
             return list;
         }
+
+        public override string ToString() => base.ToString() + " " + ContainerFormatName;
 
         public bool SupportsFileExtension(string ext)
         {
@@ -152,5 +145,20 @@ namespace WicNet
         }
 
         public static T FromContainerFormatGuid<T>(Guid guid) where T : WicCodec => AllComponents.OfType<T>().FirstOrDefault(c => c.ContainerFormat == guid);
+
+        public static string GetFormatName(Guid guid) => Extensions.GetGuidName(typeof(WicCodec), guid);
+
+        public static readonly Guid GUID_ContainerFormatAdng = new Guid("f3ff6d0d-38c0-41c4-b1fe-1f3824f17b84");
+        public static readonly Guid GUID_ContainerFormatBmp = new Guid("0af1d87e-fcfe-4188-bdeb-a7906471cbe3");
+        public static readonly Guid GUID_ContainerFormatDds = new Guid("9967cb95-2e85-4ac8-8ca2-83d7ccd425c9");
+        public static readonly Guid GUID_ContainerFormatGif = new Guid("1f8a5601-7d4d-4cbd-9c82-1bc8d4eeb9a5");
+        public static readonly Guid GUID_ContainerFormatHeif = new Guid("e1e62521-6787-405b-a339-500715b5763f");
+        public static readonly Guid GUID_ContainerFormatIco = new Guid("a3a860c4-338f-4c17-919a-fba4b5628f21");
+        public static readonly Guid GUID_ContainerFormatJpeg = new Guid("19e4a5aa-5662-4fc5-a0c0-1758028e1057");
+        public static readonly Guid GUID_ContainerFormatPng = new Guid("1b7cfaf4-713f-473c-bbcd-6137425faeaf");
+        public static readonly Guid GUID_ContainerFormatRaw = new Guid("fe99ce60-f19c-433c-a3ae-00acefa9ca21");
+        public static readonly Guid GUID_ContainerFormatTiff = new Guid("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3");
+        public static readonly Guid GUID_ContainerFormatWebp = new Guid("e094b0e2-67f2-45b3-b0ea-115337ca7cf3");
+        public static readonly Guid GUID_ContainerFormatWmp = new Guid("57a37caa-367a-4540-916b-f183c5093a4b");
     }
 }

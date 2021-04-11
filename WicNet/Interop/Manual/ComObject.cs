@@ -191,7 +191,7 @@ namespace WicNet.Interop
             {
                 s += " " + message;
             }
-            System.Diagnostics.Trace.WriteLine(s, methodName);
+            //System.Diagnostics.Trace.WriteLine(s, methodName);
         }
 
         public long Id { get; }
