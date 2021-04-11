@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using WicNet.Interop;
 using WicNet.Interop.Manual;
 
@@ -264,6 +265,15 @@ namespace WicNet
         public void CopyPixels(int stride, int bufferSize, IntPtr buffer) => _comObject.Object.CopyPixels(IntPtr.Zero, stride, bufferSize, buffer).ThrowOnError();
         public void CopyPixels(int left, int top, int width, int height, int stride, int bufferSize, IntPtr buffer)
         {
+            if (width < 0)
+                throw new ArgumentOutOfRangeException(nameof(width));
+
+            if (height < 0)
+                throw new ArgumentOutOfRangeException(nameof(height));
+
+            if (stride <= 0)
+                throw new ArgumentOutOfRangeException(nameof(stride));
+
             var rect = new WICRect();
             rect.X = left;
             rect.Y = top;
@@ -273,6 +283,27 @@ namespace WicNet
             {
                 _comObject.Object.CopyPixels(mem.Pointer, stride, bufferSize, buffer).ThrowOnError();
             }
+        }
+
+        public byte[] CopyPixels(int left, int top, int width, int height, int stride)
+        {
+            if (width < 0)
+                throw new ArgumentOutOfRangeException(nameof(width));
+
+            if (height < 0)
+                throw new ArgumentOutOfRangeException(nameof(height));
+
+            if (stride <= 0)
+                throw new ArgumentOutOfRangeException(nameof(stride));
+
+            var size = height * stride;
+            var bytes = new byte[size];
+            if (size > 0)
+            {
+                var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0);
+                CopyPixels(left, top, width, height, stride, size, ptr);
+            }
+            return bytes;
         }
 
         public static WicBitmapSource FromHIcon(IntPtr iconHandle) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHICON(iconHandle));
