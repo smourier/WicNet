@@ -129,6 +129,9 @@ namespace WicNet
         {
             foreach (var name in Strings)
             {
+                if (name == null)
+                    continue;
+
                 if (!TryGetMetadataByName(name, out var value))
                     continue;
 

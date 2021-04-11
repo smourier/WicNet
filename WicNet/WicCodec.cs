@@ -160,5 +160,8 @@ namespace WicNet
         public static readonly Guid GUID_ContainerFormatTiff = new Guid("163bcc30-e2e9-4f0b-961d-a3e9fdb788a3");
         public static readonly Guid GUID_ContainerFormatWebp = new Guid("e094b0e2-67f2-45b3-b0ea-115337ca7cf3");
         public static readonly Guid GUID_ContainerFormatWmp = new Guid("57a37caa-367a-4540-916b-f183c5093a4b");
+
+        // manual
+        public static readonly Guid GUID_ContainerFormatCur = new Guid("0444f35f-587c-4570-9646-64dcd8f17573");
     }
 }

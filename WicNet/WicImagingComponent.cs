@@ -328,5 +328,8 @@ namespace WicNet
         public static readonly Guid CLSID_WICXMPSeqMetadataWriter = new Guid("6d68d1de-d432-4b0f-923a-091183a9bda7");
         public static readonly Guid CLSID_WICXMPStructMetadataReader = new Guid("01b90d9a-8209-47f7-9c52-e1244bf50ced");
         public static readonly Guid CLSID_WICXMPStructMetadataWriter = new Guid("22c21f93-7ddb-411c-9b17-c5b7bd064abc");
+
+        // manual
+        public static readonly Guid CLSID_WICCurDecoder = new Guid("22696b76-881b-48d7-88f0-dc6111ff9f0b");
     }
 }
