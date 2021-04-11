@@ -5,17 +5,23 @@ using System.Runtime.InteropServices.ComTypes;
 
 namespace WicNet.Interop.Manual
 {
-    public class ManagedIStream : IStream
+    public sealed class ManagedIStream : IStream
     {
         private readonly Stream _stream;
 
         public ManagedIStream(Stream stream)
         {
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
             _stream = stream;
         }
 
         public void Read(byte[] pv, int cb, IntPtr pcbRead)
         {
+            if (pv == null)
+                throw new ArgumentNullException(nameof(pv));
+
             var read = _stream.Read(pv, 0, cb);
             if (pcbRead != IntPtr.Zero)
             {
@@ -25,6 +31,9 @@ namespace WicNet.Interop.Manual
 
         public void Write(byte[] pv, int cb, IntPtr pcbWritten)
         {
+            if (pv == null)
+                throw new ArgumentNullException(nameof(pv));
+
             _stream.Write(pv, 0, cb);
             if (pcbWritten != IntPtr.Zero)
             {
@@ -44,9 +53,9 @@ namespace WicNet.Interop.Manual
         public void SetSize(long libNewSize) => _stream.SetLength(libNewSize);
         public void Commit(int grfCommitFlags) => _stream.Flush();
 
-        public void Stat(out global::System.Runtime.InteropServices.ComTypes.STATSTG pstatstg, int grfStatFlag)
+        public void Stat(out STATSTG pstatstg, int grfStatFlag)
         {
-            pstatstg = new global::System.Runtime.InteropServices.ComTypes.STATSTG();
+            pstatstg = new STATSTG();
             pstatstg.type = (int)STGTY.STGTY_STREAM;
             pstatstg.cbSize = _stream.Length;
             pstatstg.grfMode = 0;

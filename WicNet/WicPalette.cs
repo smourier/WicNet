@@ -144,6 +144,28 @@ namespace WicNet
 
         public WicPalette CopyColors() => new WicPalette(Colors);
 
+        public override string ToString()
+        {
+            var list = new List<string>();
+            list.Add(Type.ToString());
+            list.Add(ColorCount + " Color(s)");
+            if (HasAlpha)
+            {
+                list.Add(nameof(HasAlpha));
+            }
+
+            if (IsBlackWhite)
+            {
+                list.Add(nameof(IsBlackWhite));
+            }
+
+            if (IsGrayscale)
+            {
+                list.Add(nameof(IsGrayscale));
+            }
+            return string.Join(" ", list);
+        }
+
         public void Dispose()
         {
             if (_comObject == null || _comObject.IsDisposed)

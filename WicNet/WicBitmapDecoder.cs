@@ -43,6 +43,9 @@ namespace WicNet
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
+            if (!File.Exists(filePath))
+                throw new FileNotFoundException(null, filePath);
+
             return new WicBitmapDecoder(WICImagingFactory.CreateDecoderFromFilename(filePath, guidVendor, access, metadataOptions: options));
         }
 

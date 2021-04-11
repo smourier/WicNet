@@ -2,6 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 
 namespace WicNet.Interop
 {
@@ -13,8 +14,8 @@ namespace WicNet.Interop
         new HRESULT GetContainerFormat(/* [out] __RPC__out */ out Guid pguidContainerFormat);
         
         [PreserveSig]
-        new HRESULT GetLocation(/* [in] */ uint cchMaxLength, /* [size_is][unique][out][in] __RPC__inout_ecount_full_opt(cchMaxLength) */ [MarshalAs(UnmanagedType.LPWStr)] string wzNamespace, /* [out] __RPC__out */ out uint pcchActualLength);
-        
+        new HRESULT GetLocation(/* [in] */ int cchMaxLength, /* [size_is][unique][out][in] __RPC__inout_ecount_full_opt(cchMaxLength) */ [MarshalAs(UnmanagedType.LPWStr)] StringBuilder wzNamespace, /* [out] __RPC__out */ out int pcchActualLength);
+
         [PreserveSig]
         new HRESULT GetMetadataByName(/* [in] __RPC__in */ [MarshalAs(UnmanagedType.LPWStr)] string wzName, /* [unique][out][in] __RPC__inout_opt */ [In, Out] PropVariant pvarValue);
         

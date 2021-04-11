@@ -125,6 +125,75 @@ namespace WicNet.Interop
             return new ComObject<IEnumUnknown>(value);
         }
 
+        public static IComObject<IWICBitmapEncoder> CreateEncoder(this IComObject<IWICImagingFactory> factory, Guid containerFormat) => CreateEncoder(factory?.Object, containerFormat);
+        public static IComObject<IWICBitmapEncoder> CreateEncoder(this IWICImagingFactory factory, Guid containerFormat)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            factory.CreateEncoder(containerFormat, IntPtr.Zero, out var value).ThrowOnError();
+            return new ComObject<IWICBitmapEncoder>(value);
+        }
+
+        public static IComObject<IWICBitmap> CreateBitmapFromHBITMAP(this IComObject<IWICImagingFactory> factory, IntPtr bitmapHandle, IntPtr paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => CreateBitmapFromHBITMAP(factory?.Object, bitmapHandle, paletteHandle, options);
+        public static IComObject<IWICBitmap> CreateBitmapFromHBITMAP(this IWICImagingFactory factory, IntPtr bitmapHandle, IntPtr paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            factory.CreateBitmapFromHBITMAP(bitmapHandle, paletteHandle, options, out var value).ThrowOnError();
+            return new ComObject<IWICBitmap>(value);
+        }
+
+        public static IComObject<IWICBitmap> CreateBitmapFromHICON(this IComObject<IWICImagingFactory> factory, IntPtr iconHandle) => CreateBitmapFromHICON(factory?.Object, iconHandle);
+        public static IComObject<IWICBitmap> CreateBitmapFromHICON(this IWICImagingFactory factory, IntPtr iconHandle)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            factory.CreateBitmapFromHICON(iconHandle, out var value).ThrowOnError();
+            return new ComObject<IWICBitmap>(value);
+        }
+
+        public static IComObject<IWICBitmap> CreateBitmapFromMemory(this IComObject<IWICImagingFactory> factory, int width, int height, Guid pixelFormat, int stride, byte[] buffer) => CreateBitmapFromMemory(factory?.Object, width, height, pixelFormat, stride, buffer);
+        public static IComObject<IWICBitmap> CreateBitmapFromMemory(this IWICImagingFactory factory, int width, int height, Guid pixelFormat, int stride, byte[] buffer)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            if (buffer == null)
+                throw new ArgumentNullException(nameof(buffer));
+
+            factory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer.Length, buffer, out var value).ThrowOnError();
+            return new ComObject<IWICBitmap>(value);
+        }
+
+        public static IComObject<IWICBitmap> CreateBitmapFromSource(this IComObject<IWICImagingFactory> factory, IComObject<IWICBitmapSource> source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => CreateBitmapFromSource(factory?.Object, source?.Object, option);
+        public static IComObject<IWICBitmap> CreateBitmapFromSource(this IWICImagingFactory factory, IWICBitmapSource source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            factory.CreateBitmapFromSource(source, option, out var value).ThrowOnError();
+            return new ComObject<IWICBitmap>(value);
+        }
+
+        public static IComObject<IWICBitmap> CreateBitmapFromSourceRect(this IComObject<IWICImagingFactory> factory, IComObject<IWICBitmapSource> source, int x, int y, int width, int height) => CreateBitmapFromSourceRect(factory?.Object, source?.Object, x, y, width, height);
+        public static IComObject<IWICBitmap> CreateBitmapFromSourceRect(this IWICImagingFactory factory, IWICBitmapSource source, int x, int y, int width, int height)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            if (source == null)
+                throw new ArgumentNullException(nameof(source));
+
+            factory.CreateBitmapFromSourceRect(source, x, y, width, height, out var value).ThrowOnError();
+            return new ComObject<IWICBitmap>(value);
+        }
+
         public static IEnumerable<IComObject<IWICComponentInfo>> EnumerateComponents(this IWICImagingFactory factory, WICComponentType type, WICComponentEnumerateOptions options)
         {
             using (var enumerator = factory.CreateComponentEnumerator(type, options))

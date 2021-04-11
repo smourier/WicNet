@@ -6,25 +6,6 @@ namespace WicNet
 {
     public sealed class WicEncoder : WicCodec
     {
-        public static WicEncoder Png { get; private set; }
-        public static WicEncoder Jpeg { get; private set; }
-        public static WicEncoder Bmp { get; private set; }
-        public static WicEncoder Tiff { get; private set; }
-        public static WicEncoder Gif { get; private set; }
-        public static WicEncoder WMPhoto { get; private set; }
-        public static WicEncoder Dds { get; private set; }
-
-        //internal static void CreateBuiltIn()
-        //{
-        //    Png = FromContainerFormatGuid(ContainerFormatPng);
-        //    Jpeg = FromContainerFormatGuid(ContainerFormatJpeg);
-        //    Bmp = FromContainerFormatGuid(ContainerFormatBmp);
-        //    Tiff = FromContainerFormatGuid(ContainerFormatTiff);
-        //    Gif = FromContainerFormatGuid(ContainerFormatGif);
-        //    WMPhoto = FromContainerFormatGuid(ContainerFormatWMPhoto);
-        //    Dds = FromContainerFormatGuid(ContainerFormatDds);
-        //}
-
         public WicEncoder(object comObject)
             : base(comObject)
         {

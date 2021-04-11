@@ -115,7 +115,7 @@ namespace WicNet
             if (collectionType == null)
                 throw new ArgumentNullException(nameof(collectionType));
 
-            foreach (Type type in collectionType.GetInterfaces())
+            foreach (var type in collectionType.GetInterfaces())
             {
                 if (!type.IsGenericType)
                     continue;
@@ -158,7 +158,7 @@ namespace WicNet
             const int daysPer400Years = daysPer100Years * 4 + 1;
             const int daysTo1601 = daysPer400Years * 4;
             const long fileTimeOffset = daysTo1601 * ticksPerDay;
-            long ticks = dt.Kind == DateTimeKind.Local ? dt.ToUniversalTime().Ticks : dt.Ticks;
+            var ticks = dt.Kind == DateTimeKind.Local ? dt.ToUniversalTime().Ticks : dt.Ticks;
             ticks -= fileTimeOffset;
             return ticks;
         }
@@ -345,9 +345,9 @@ namespace WicNet
             if (text == null || separators == null || separators.Length == 0)
                 return al;
 
-            foreach (string s in text.Split(separators))
+            foreach (var s in text.Split(separators))
             {
-                string value = s.Nullify();
+                var value = s.Nullify();
                 if (value == null)
                     continue;
 
@@ -391,6 +391,7 @@ namespace WicNet
         }
 
         public static T ChangeType<T>(object input) => ChangeType(input, default(T));
+        public static T ChangeType<T>(object input, IFormatProvider provider) => ChangeType(input, default(T), provider);
         public static T ChangeType<T>(object input, T defaultValue) => ChangeType(input, defaultValue, null);
         public static T ChangeType<T>(object input, T defaultValue, IFormatProvider provider)
         {
@@ -455,12 +456,12 @@ namespace WicNet
             {
                 if ((text[8] == 'T' || text[8] == 't') && text[11] == ':' && text[14] == ':')
                 {
-                    int.TryParse(text.Substring(0, 4), out int year);
-                    int.TryParse(text.Substring(4, 2), out int month);
-                    int.TryParse(text.Substring(6, 2), out int day);
-                    int.TryParse(text.Substring(9, 2), out int hour);
-                    int.TryParse(text.Substring(12, 2), out int minute);
-                    int.TryParse(text.Substring(15, 2), out int second);
+                    int.TryParse(text.Substring(0, 4), out var year);
+                    int.TryParse(text.Substring(4, 2), out var month);
+                    int.TryParse(text.Substring(6, 2), out var day);
+                    int.TryParse(text.Substring(9, 2), out var hour);
+                    int.TryParse(text.Substring(12, 2), out var minute);
+                    int.TryParse(text.Substring(15, 2), out var second);
                     if (month > 0 && month < 13 &&
                         day > 0 && day < 32 &&
                         year >= 0 &&
@@ -894,7 +895,7 @@ namespace WicNet
 
             if (conversionType == typeof(Guid))
             {
-                string svalue = string.Format(provider, "{0}", input).Nullify();
+                var svalue = string.Format(provider, "{0}", input).Nullify();
                 if (svalue != null && Guid.TryParse(svalue, out Guid guid))
                 {
                     value = guid;
@@ -905,7 +906,7 @@ namespace WicNet
 
             if (conversionType == typeof(Uri))
             {
-                string svalue = string.Format(provider, "{0}", input).Nullify();
+                var svalue = string.Format(provider, "{0}", input).Nullify();
                 if (svalue != null && Uri.TryCreate(svalue, UriKind.RelativeOrAbsolute, out var uri))
                 {
                     value = uri;
@@ -1238,7 +1239,7 @@ namespace WicNet
                     }
 
                     var list = (IList)Activator.CreateInstance(typeof(List<>).MakeGenericType(elementType));
-                    int count = 0;
+                    var count = 0;
                     foreach (var obj in enumerable)
                     {
                         count++;
@@ -1532,11 +1533,11 @@ namespace WicNet
                 return false;
             }
 
-            string s = input as string;
+            var s = input as string;
             if (input == null || s != null)
                 return TryGetNumber(s, conversionType, provider, out value);
 
-            Type type = input.GetType();
+            var type = input.GetType();
             if (conversionType == typeof(object))
             {
                 TypeCode tc = Type.GetTypeCode(type);
@@ -1551,37 +1552,37 @@ namespace WicNet
                         return true;
 
                     case TypeCode.Boolean:
-                        bool b = (bool)input;
+                        var b = (bool)input;
                         value = b ? 1 : 0;
                         return true;
 
                     case TypeCode.Byte:
-                        byte by = (byte)input;
+                        var by = (byte)input;
                         value = (int)by;
                         return true;
 
                     case TypeCode.Int16:
-                        short sh = (short)input;
+                        var sh = (short)input;
                         value = (int)sh;
                         return true;
 
                     case TypeCode.SByte:
-                        sbyte sb = (sbyte)input;
+                        var sb = (sbyte)input;
                         value = (int)sb;
                         return true;
 
                     case TypeCode.UInt16:
-                        ushort us = (ushort)input;
+                        var us = (ushort)input;
                         value = (int)us;
                         return true;
 
                     case TypeCode.UInt32:
-                        uint ui = (uint)input;
+                        var ui = (uint)input;
                         value = (long)ui;
                         return true;
 
                     case TypeCode.UInt64:
-                        ulong ul = (ulong)input;
+                        var ul = (ulong)input;
                         value = (decimal)ul;
                         return true;
                 }
@@ -1669,7 +1670,7 @@ namespace WicNet
 
             if (conversionType == typeof(int))
             {
-                if (!int.TryParse(hexInput, ns, provider, out int n))
+                if (!int.TryParse(hexInput, ns, provider, out var n))
                     return false;
 
                 value = n;
@@ -1678,7 +1679,7 @@ namespace WicNet
 
             if (conversionType == typeof(long))
             {
-                if (!long.TryParse(hexInput, ns, provider, out long n))
+                if (!long.TryParse(hexInput, ns, provider, out var n))
                     return false;
 
                 value = n;
@@ -1687,7 +1688,7 @@ namespace WicNet
 
             if (conversionType == typeof(float))
             {
-                if (!float.TryParse(input, NumberStyles.Any, provider, out float n))
+                if (!float.TryParse(input, NumberStyles.Any, provider, out var n))
                     return false;
 
                 value = n;
@@ -1696,7 +1697,7 @@ namespace WicNet
 
             if (conversionType == typeof(double))
             {
-                if (!double.TryParse(input, NumberStyles.Any, provider, out double n))
+                if (!double.TryParse(input, NumberStyles.Any, provider, out var n))
                     return false;
 
                 value = n;
@@ -1705,7 +1706,7 @@ namespace WicNet
 
             if (conversionType == typeof(decimal))
             {
-                if (!decimal.TryParse(input, NumberStyles.Any, provider, out decimal n))
+                if (!decimal.TryParse(input, NumberStyles.Any, provider, out var n))
                     return false;
 
                 value = n;
@@ -1713,17 +1714,17 @@ namespace WicNet
             }
 
             // asked for the "best number"...
-            string decSep = GetDecimalSeparator(provider);
-            bool hasDecimal = input.IndexOf(decSep) >= 0;
+            var decSep = GetDecimalSeparator(provider);
+            var hasDecimal = input.IndexOf(decSep) >= 0;
             if (!hasDecimal)
             {
-                if (int.TryParse(hexInput, ns, provider, out int i))
+                if (int.TryParse(hexInput, ns, provider, out var i))
                 {
                     value = i;
                     return true;
                 }
 
-                if (long.TryParse(hexInput, ns, provider, out long l))
+                if (long.TryParse(hexInput, ns, provider, out var l))
                 {
                     value = l;
                     return true;
@@ -1731,20 +1732,20 @@ namespace WicNet
             }
             else
             {
-                if (float.TryParse(input, NumberStyles.Any, provider, out float f))
+                if (float.TryParse(input, NumberStyles.Any, provider, out var f))
                 {
                     value = f;
                     return true;
                 }
 
-                if (double.TryParse(input, NumberStyles.Any, provider, out double d))
+                if (double.TryParse(input, NumberStyles.Any, provider, out var d))
                 {
                     value = d;
                     return true;
                 }
             }
 
-            if (decimal.TryParse(input, NumberStyles.Any, provider, out decimal dec))
+            if (decimal.TryParse(input, NumberStyles.Any, provider, out var dec))
             {
                 value = dec;
                 return true;
@@ -1808,22 +1809,22 @@ namespace WicNet
 
             for (var i = 0; i < values.GetLength(0); i++)
             {
-                var valuei = values.GetValue(i);
+                var ivalue = values.GetValue(i);
                 if (input.Length > 0 && input[0] == '-')
                 {
-                    var ul = (long)EnumToUInt64(valuei);
+                    var ul = (long)EnumToUInt64(ivalue);
                     if (ul.ToString().EqualsIgnoreCase(input))
                     {
-                        value = valuei;
+                        value = ivalue;
                         return true;
                     }
                 }
                 else
                 {
-                    var ul = EnumToUInt64(valuei);
+                    var ul = EnumToUInt64(ivalue);
                     if (ul.ToString().EqualsIgnoreCase(input))
                     {
-                        value = valuei;
+                        value = ivalue;
                         return true;
                     }
                 }
@@ -1895,7 +1896,7 @@ namespace WicNet
             if (obj.GetType() == defaultValue.GetType())
                 return obj;
 
-            if (EnumTryParse(defaultValue.GetType(), obj.ToString(), out object value))
+            if (EnumTryParse(defaultValue.GetType(), obj.ToString(), out var value))
                 return value;
 
             return defaultValue;
@@ -1906,7 +1907,7 @@ namespace WicNet
             if (enumType == null)
                 throw new ArgumentNullException(nameof(enumType));
 
-            EnumTryParse(enumType, text, out object value);
+            EnumTryParse(enumType, text, out var value);
             return value;
         }
 
@@ -1915,7 +1916,7 @@ namespace WicNet
             if (defaultValue == null)
                 throw new ArgumentNullException(nameof(defaultValue));
 
-            if (EnumTryParse(defaultValue.GetType(), text, out object value))
+            if (EnumTryParse(defaultValue.GetType(), text, out var value))
                 return (Enum)value;
 
             return defaultValue;
@@ -1945,7 +1946,7 @@ namespace WicNet
 
             if (stringInput.StartsWith("0x", StringComparison.OrdinalIgnoreCase))
             {
-                if (ulong.TryParse(stringInput.Substring(2), NumberStyles.HexNumber, null, out ulong ulx))
+                if (ulong.TryParse(stringInput.Substring(2), NumberStyles.HexNumber, null, out var ulx))
                 {
                     value = ToEnum(ulx.ToString(CultureInfo.InvariantCulture), type);
                     return true;
@@ -1973,9 +1974,9 @@ namespace WicNet
             }
 
             ulong ul = 0;
-            foreach (string tok in tokens)
+            foreach (var tok in tokens)
             {
-                string token = tok.Nullify(); // NOTE: we don't consider empty tokens as errors
+                var token = tok.Nullify(); // NOTE: we don't consider empty tokens as errors
                 if (token == null)
                     continue;
 

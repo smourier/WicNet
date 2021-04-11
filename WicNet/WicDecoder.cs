@@ -6,29 +6,6 @@ namespace WicNet
 {
     public sealed class WicDecoder : WicCodec
     {
-        public static WicDecoder Png { get; private set; }
-        public static WicDecoder Jpeg { get; private set; }
-        public static WicDecoder Bmp { get; private set; }
-        public static WicDecoder Ico { get; private set; }
-        public static WicDecoder Tiff { get; private set; }
-        public static WicDecoder Gif { get; private set; }
-        public static WicDecoder WMPhoto { get; private set; }
-        public static WicDecoder Dds { get; private set; }
-        public static WicDecoder Raw { get; private set; }
-
-        //internal static void CreateBuiltIn()
-        //{
-        //    Png = FromContainerFormatGuid(ContainerFormatPng);
-        //    Jpeg = FromContainerFormatGuid(ContainerFormatJpeg);
-        //    Bmp = FromContainerFormatGuid(ContainerFormatBmp);
-        //    Ico = FromContainerFormatGuid(ContainerFormatIco);
-        //    Tiff = FromContainerFormatGuid(ContainerFormatTiff);
-        //    Gif = FromContainerFormatGuid(ContainerFormatGif);
-        //    WMPhoto = FromContainerFormatGuid(ContainerFormatWMPhoto);
-        //    Dds = FromContainerFormatGuid(ContainerFormatDds);
-        //    Raw = FromContainerFormatGuid(ContainerFormatRaw);
-        //}
-
         public WicDecoder(object comObject)
             : base(comObject)
         {

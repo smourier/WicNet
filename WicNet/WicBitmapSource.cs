@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using WicNet.Interop;
+using WicNet.Interop.Manual;
 
 namespace WicNet
 {
@@ -19,7 +20,6 @@ namespace WicNet
         public WicBitmapSource(object comObject)
         {
             _comObject = new ComObjectWrapper<IWICBitmapSource>(comObject).ComObject;
-            //Decoder = WicDecoder.FromContainerFormatGuid(encoderFormat);
         }
 
         public WicBitmapSource(int width, int height, WicPixelFormat pixelFormat, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapCacheOnDemand)
@@ -31,29 +31,31 @@ namespace WicNet
         }
 
         public IComObject<IWICBitmapSource> ComObject => _comObject;
-        //public WicDecoder Decoder { get; }
         public WicIntSize Size => new WicIntSize(Width, Height);
         public WICRect Bounds => new WICRect(0, 0, Width, Height);
         public IDictionary<WicMetadataKey, object> Metadata => _medatata;
 
-        //public WicPalette Palette
-        //{
-        //    get
-        //    {
-        //        if (_palette == null)
-        //        {
-        //            _palette = new Palette();
-        //            _comObject.Object.CopyPalette(palette.BaseObject as IWICPalette);
-        //            return palette.ColorCount != 0 ? palette : null;
-        //        }
-        //        return _palette;
-        //    }
-        //    set
-        //    {
-        //        _palette?.Dispose();
-        //        _palette = value;
-        //    }
-        //}
+        public WicPalette Palette
+        {
+            get
+            {
+                if (_palette == null)
+                {
+                    var palette = new WicPalette();
+                    _comObject.Object.CopyPalette(palette.ComObject.Object).ThrowOnError(false);
+                    if (palette.ColorCount != 0)
+                    {
+                        _palette = palette;
+                    }
+                }
+                return _palette;
+            }
+            set
+            {
+                _palette?.Dispose();
+                _palette = value;
+            }
+        }
 
         private static IEnumerable<KeyValuePair<WicMetadataKey, object>> EnumerateMetadata(IEnumerable<KeyValuePair<WicMetadataKey, object>> md)
         {
@@ -273,14 +275,12 @@ namespace WicNet
             }
         }
 
-        //public WicBitmapSource Clone(WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache)
-        //{
-        //    // cache on load means we clone the memory (or seek underlying streams)
-        //    var copy = Wic.Copy(CheckDisposed(), option);
-        //    return new WicBitmap(copy, Decoder != null ? Decoder.ContainerFormat : Guid.Empty);
-        //}
-
-        //public static WicBitmapSource FromHBitmap(IntPtr hBitmap) => new WicBitmap(Wic.CreateBitmapFromHBITMAP(hBitmap), Guid.Empty);
+        public static WicBitmapSource FromHIcon(IntPtr iconHandle) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHICON(iconHandle));
+        public static WicBitmapSource FromMemory(int width, int height, Guid pixelFormat, int stride, byte[] buffer) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
+        public static WicBitmapSource FromHBitmap(IntPtr bitmapHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, options));
+        public static WicBitmapSource FromHBitmap(IntPtr bitmapHandle, IntPtr paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, paletteHandle, options));
+        public static WicBitmapSource FromSource(WicBitmapSource source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromSource(source?.ComObject, option));
+        public static WicBitmapSource FromSourceRect(WicBitmapSource source, int x, int y, int width, int height) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromSourceRect(source?.ComObject, x, y, width, height));
 
         public void Scale(int? width, int? height, WICBitmapInterpolationMode mode = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
         {
@@ -369,81 +369,97 @@ namespace WicNet
             return bmp;
         }
 
-        public void Save(
-            string filePath,
-            WicPixelFormat pixelFormat = null,
-            WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderCacheInMemory,
-            IEnumerable<KeyValuePair<string, object>> options = null,
-            IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata = null)
+        public void Save(string filePath,
+            Guid? encoderContainerFormat = null,
+            Guid? pixelFormat = null,
+            WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderNoCache,
+            IEnumerable<KeyValuePair<string, object>> encoderOptions = null,
+            IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata = null,
+            WicPalette encoderPalette = null,
+            WicPalette framePalette = null,
+            WICRect? sourceRectangle = null)
         {
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
 
-            var encoder = WicEncoder.FromFileExtension(filePath);
-            if (encoder == null)
-                throw new WicNetException("WIC0001: Encoder cannot be determined for file name '" + Path.GetFileName(filePath) + "'.");
-
-            using (var stream = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
+            Guid format;
+            if (!encoderContainerFormat.HasValue)
             {
-                Save(stream, encoder, pixelFormat, cacheOptions, options, metadata);
+                var encoder = WicEncoder.FromFileExtension(Path.GetExtension(filePath));
+                if (encoder == null)
+                    throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
+
+                format = encoder.ContainerFormat;
+            }
+            else
+            {
+                format = encoderContainerFormat.Value;
+            }
+
+            using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
+            {
+                Save(file, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle);
             }
         }
 
-        public void Save(
-            string filePath,
-            WicEncoder encoder,
-            WicPixelFormat pixelFormat = null,
-            WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderCacheInMemory,
-            IEnumerable<KeyValuePair<string, object>> options = null,
-            IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata = null)
-        {
-            if (filePath == null)
-                throw new ArgumentNullException(nameof(filePath));
-
-            using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.Read))
-            {
-                Save(file, encoder, pixelFormat, cacheOptions, options, metadata);
-            }
-        }
-
-        public void Save(Stream stream, IEnumerable<KeyValuePair<string, object>> options) => Save(stream, options: options);
-        public void Save(Stream stream, WicPixelFormat pixelFormat) => Save(stream, null, pixelFormat);
         public void Save(
             Stream stream,
-            WicEncoder encoder = null,
-            WicPixelFormat pixelFormat = null,
-            WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderCacheInMemory,
-            IEnumerable<KeyValuePair<string, object>> options = null,
+            Guid encoderContainerFormat,
+            Guid? pixelFormat = null,
+            WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderNoCache,
+            IEnumerable<KeyValuePair<string, object>> encoderOptions = null,
             IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata = null,
-            WicPalette encoderPalette = null)
+            WicPalette encoderPalette = null,
+            WicPalette framePalette = null,
+            WICRect? sourceRectangle = null)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
 
-            //if (encoder == null)
-            //{
-            //    encoder = WicEncoder.FromDecoder(Decoder);
-            //    if (encoder == null)
-            //        throw new ArgumentNullException(nameof(encoder));
-            //}
+            using (var encoder = WICImagingFactory.CreateEncoder(encoderContainerFormat))
+            {
+                var mis = new ManagedIStream(stream);
+                encoder.Object.Initialize(mis, cacheOptions).ThrowOnError();
 
-            //metadata = metadata ?? Metadata;
+                if (encoderPalette != null)
+                {
+                    // gifs...
+                    encoder.Object.SetPalette(encoderPalette.ComObject.Object).ThrowOnError();
+                }
 
-            //var pfg = pixelFormat == null ? Guid.Empty : pixelFormat.Guid;
-            //var ep = encoderPalette?.BaseObject as IWICPalette;
+                var frameBag = encoder.CreateNewFrame();
 
-            //IWICPalette palette = null;
-            //var p = Palette;
-            //if (p != null && p.ColorCount > 0)
-            //{
-            //    // we must clone it
-            //    palette = Wic.CreatePalette();
-            //    var cols = p.Colors.Select(c => c.ToArgb()).ToArray();
-            //    palette.InitializeCustom(cols, cols.Length);
-            //}
-            //Wic.Save(CheckDisposed(), stream, encoder.ContainerFormat, pfg, (WICBitmapEncoderCacheOption)cacheOptions, null, metadata, options,
-            //    ep,
-            //    palette);
+                if (encoderOptions != null)
+                {
+                    frameBag.Item2.Object.Write(encoderOptions);
+                }
+
+                frameBag.Initialize();
+
+                if (metadata?.Any() == true)
+                {
+                    using (var writer = frameBag.GetMetadataQueryWriter())
+                    {
+                        writer.EncodeMetadata(metadata);
+                    }
+                }
+
+                if (pixelFormat.HasValue)
+                {
+                    frameBag.SetPixelFormat(pixelFormat.Value);
+                }
+
+                if (framePalette != null)
+                {
+                    frameBag.Item1.Object.SetPalette(framePalette.ComObject.Object).ThrowOnError();
+                }
+
+                // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
+                // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
+                frameBag.WriteSource(_comObject, sourceRectangle);
+                frameBag.Item1.Object.Commit().ThrowOnError();
+                encoder.Object.Commit().ThrowOnError();
+            }
         }
 
         public void Dispose()

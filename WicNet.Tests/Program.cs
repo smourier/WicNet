@@ -9,6 +9,12 @@ namespace WicNet.Tests
         {
             using (var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg"))
             {
+                bmp.Save("test.gif");
+            }
+
+            return;
+            using (var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg"))
+            {
                 var reader = bmp.GetMetadataReader();
                 //var th = bmp.GetThumbnail();
 
@@ -16,11 +22,6 @@ namespace WicNet.Tests
                 {
                     Console.WriteLine(kv.Key + "=" + kv.Value);
                 }
-            }
-
-            using (var decoder = WicBitmapDecoder.Load(@"SamsungSGH-I777.jpg"))
-            {
-                //Console.WriteLine(decoder.GetMetadataQueryReader());
             }
         }
     }

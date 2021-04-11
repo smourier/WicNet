@@ -18,7 +18,7 @@ namespace WicNet.Interop
         HRESULT SetResolution(/* [in] */ double dpiX, /* [in] */ double dpiY);
         
         [PreserveSig]
-        HRESULT SetPixelFormat(/* [out][in] __RPC__inout */ ref WICPixelFormatGUID pPixelFormat);
+        HRESULT SetPixelFormat([MarshalAs(UnmanagedType.LPStruct)] WICPixelFormatGUID pPixelFormat);
         
         [PreserveSig]
         HRESULT SetColorContexts(/* [in] */ int cCount, /* [size_is][in] __RPC__in_ecount_full(cCount) */ [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] IWICColorContext[] ppIColorContext);
