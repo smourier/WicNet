@@ -16,25 +16,20 @@ namespace WicNet
 
         private IComObject<IWICBitmapSource> _comObject;
         private WicPalette _palette;
-        internal Dictionary<WicMetadataKey, object> _medatata = new Dictionary<WicMetadataKey, object>();
 
         public WicBitmapSource(object comObject)
         {
             _comObject = new ComObjectWrapper<IWICBitmapSource>(comObject).ComObject;
         }
 
-        public WicBitmapSource(int width, int height, WicPixelFormat pixelFormat, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapCacheOnDemand)
+        public WicBitmapSource(int width, int height, Guid pixelFormat, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapCacheOnDemand)
         {
-            if (pixelFormat == null)
-                throw new ArgumentNullException(nameof(pixelFormat));
-
-            _comObject = WICImagingFactory.CreateBitmap(width, height, pixelFormat.Guid, option);
+            _comObject = WICImagingFactory.CreateBitmap(width, height, pixelFormat, option);
         }
 
         public IComObject<IWICBitmapSource> ComObject => _comObject;
         public WicIntSize Size => new WicIntSize(Width, Height);
         public WICRect Bounds => new WICRect(0, 0, Width, Height);
-        public IDictionary<WicMetadataKey, object> Metadata => _medatata;
 
         public WicPalette Palette
         {
@@ -58,32 +53,13 @@ namespace WicNet
             }
         }
 
-        private static IEnumerable<KeyValuePair<WicMetadataKey, object>> EnumerateMetadata(IEnumerable<KeyValuePair<WicMetadataKey, object>> md)
-        {
-            foreach (var kv in md)
-            {
-                if (kv.Value is IEnumerable<KeyValuePair<WicMetadataKey, object>> child)
-                {
-                    foreach (var childKv in EnumerateMetadata(child))
-                    {
-                        yield return childKv;
-                    }
-                }
-                else
-                {
-                    yield return kv;
-                }
-            }
-        }
-
-        public IEnumerable<KeyValuePair<WicMetadataKey, object>> AllMetadata => EnumerateMetadata(Metadata);
-
-        public WicPixelFormat PixelFormat
+        public WicPixelFormat WicPixelFormat => WicImagingComponent.FromClsid<WicPixelFormat>(PixelFormat);
+        public Guid PixelFormat
         {
             get
             {
                 _comObject.Object.GetPixelFormat(out var pixelFormat);
-                return WicImagingComponent.FromClsid<WicPixelFormat>(pixelFormat);
+                return pixelFormat;
             }
         }
 
@@ -169,75 +145,6 @@ namespace WicNet
             clip.Object.Initialize(_comObject.Object, ref rect).ThrowOnError();
             _comObject?.Dispose();
             _comObject = clip;
-        }
-
-        public IEnumerable<Guid> GetMetadataFormats() => AllMetadata.Select(kv => kv.Key.Format).Distinct();
-        public IEnumerable<WicMetadataHandler> GetMetadataHandlers() => GetMetadataFormats().Select(g => WicMetadataHandler.FromFormatGuid<WicMetadataHandler>(g));
-
-        public IEnumerable<KeyValuePair<WicMetadataKey, object>> GetMetadata(string readerFriendlyName)
-        {
-            if (readerFriendlyName == null)
-                throw new ArgumentNullException(nameof(readerFriendlyName));
-
-            var handler = WicMetadataHandler.FromFriendlyName<WicMetadataHandler>(readerFriendlyName);
-            if (handler == null)
-                return Enumerable.Empty<KeyValuePair<WicMetadataKey, object>>();
-
-            return GetMetadata(handler.Guid);
-        }
-
-        public IEnumerable<KeyValuePair<WicMetadataKey, object>> GetMetadata(Guid readerFormat) => AllMetadata.Where(kv => kv.Key.Format == readerFormat);
-        public void CopyMetadata(IDictionary<WicMetadataKey, object> target) => WicMetadataKey.CopyMetadata(Metadata, target);
-        public void VisitMetadata(Action<KeyValuePair<WicMetadataKey, object>> func) => WicMetadataKey.VisitMetadata(Metadata, func);
-
-        private class MdWithParent
-        {
-            public IDictionary<WicMetadataKey, object> dic;
-            public WicMetadataKey key;
-        }
-
-        private static void RemoveMetadata(List<MdWithParent> mds, IEnumerable<KeyValuePair<WicMetadataKey, object>> md, Func<KeyValuePair<WicMetadataKey, object>, bool> func) =>
-            WicMetadataKey.VisitMetadata(md, (kv) =>
-            {
-                if (func(kv))
-                {
-                    var mdw = new MdWithParent();
-                    mdw.dic = (IDictionary<WicMetadataKey, object>)md;
-                    mdw.key = kv.Key;
-                    mds.Add(mdw);
-                }
-            });
-
-        public int RemoveMetadata(params WicMetadataKey[] keys)
-        {
-            if (keys == null || keys.Length == 0)
-                return 0;
-
-            return RemoveMetadata(kv => keys.Contains(kv.Key));
-        }
-
-        public int RemoveMetadata(string readerFriendlyName)
-        {
-            if (readerFriendlyName == null)
-                throw new ArgumentNullException(nameof(readerFriendlyName));
-
-            var handler = WicMetadataHandler.FromFriendlyName<WicMetadataHandler>(readerFriendlyName);
-            if (handler == null)
-                return 0;
-
-            return RemoveMetadata(handler.Guid);
-        }
-
-        public int RemoveMetadata(Guid readerFormat) => RemoveMetadata(kv => kv.Key.Format == readerFormat);
-        public int RemoveMetadata(Func<KeyValuePair<WicMetadataKey, object>, bool> removeFunc)
-        {
-            var mds = new List<MdWithParent>();
-            RemoveMetadata(mds, Metadata, removeFunc);
-            foreach (var md in mds)
-            {
-                md.dic.Remove(md.key);
-            }
-            return mds.Count;
         }
 
         public void Clip(int left, int top, int width, int height)
@@ -501,10 +408,10 @@ namespace WicNet
 
         public WicBitmapSource ConvertTo(Guid pixelFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
         {
-            if (PixelFormat == null)
+            if (WicPixelFormat == null)
                 throw new InvalidOperationException();
 
-            var cvt = PixelFormat.GetPixelFormatConvertersTo(pixelFormat).FirstOrDefault();
+            var cvt = WicPixelFormat.GetPixelFormatConvertersTo(pixelFormat).FirstOrDefault();
             if (cvt == null)
                 throw new InvalidOperationException();
 

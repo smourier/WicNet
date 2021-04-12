@@ -6,7 +6,7 @@ using WicNet.Interop;
 
 namespace WicNet
 {
-    public sealed class WicMetadataQueryReader : IDisposable, IEnumerable<KeyValuePair<string, object>>
+    public sealed class WicMetadataQueryReader : IDisposable, IEnumerable<KeyValuePair<WicMetadataKey, object>>
     {
         private readonly IComObject<IWICMetadataQueryReader> _comObject;
 
@@ -53,7 +53,10 @@ namespace WicNet
                     var strings = new string[1];
                     while (enumString.Next(1, strings, IntPtr.Zero) == 0)
                     {
-                        list.Add(strings[0]);
+                        if (strings[0] != null)
+                        {
+                            list.Add(strings[0]);
+                        }
                     }
                 }
                 return list.AsReadOnly();
@@ -107,7 +110,7 @@ namespace WicNet
             }
         }
 
-        public IEnumerable<KeyValuePair<string, object>> Enumerate(bool recursive = true)
+        public IEnumerable<KeyValuePair<WicMetadataKey, object>> Enumerate(bool recursive = true)
         {
             foreach (var kv in this)
             {
@@ -125,7 +128,7 @@ namespace WicNet
             }
         }
 
-        IEnumerator<KeyValuePair<string, object>> IEnumerable<KeyValuePair<string, object>>.GetEnumerator()
+        IEnumerator<KeyValuePair<WicMetadataKey, object>> IEnumerable<KeyValuePair<WicMetadataKey, object>>.GetEnumerator()
         {
             foreach (var name in Strings)
             {
@@ -136,16 +139,27 @@ namespace WicNet
                     continue;
 
                 if (value is IWICMetadataQueryReader reader)
-                    yield return new KeyValuePair<string, object>(name, new WicMetadataQueryReader(reader));
+                {
+                    var childReader = new WicMetadataQueryReader(reader);
+                    yield return new KeyValuePair<WicMetadataKey, object>(new WicMetadataKey(childReader.ContainerFormat, name), childReader);
+                }
                 else
-                    yield return new KeyValuePair<string, object>(name, value);
+                {
+                    yield return new KeyValuePair<WicMetadataKey, object>(new WicMetadataKey(ContainerFormat, name), value);
+                }
             }
         }
 
         public void Dispose() => _comObject?.Dispose();
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<string, object>>)this).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<WicMetadataKey, object>>)this).GetEnumerator();
 
-        public static string GetFormatName(Guid guid) => Extensions.GetGuidName(typeof(WicMetadataQueryReader), guid);
+        public static string GetFormatName(Guid guid)
+        {
+            if (Extensions.TryGetGuidName(typeof(WicMetadataQueryReader), guid, out var name))
+                return name;
+
+            return Extensions.GetGuidName(typeof(WicCodec), guid);
+        }
 
         public static readonly Guid GUID_MetadataFormat8BIMIPTC = new Guid("0010568c-0852-4e6a-b191-5c33ac5b0430");
         public static readonly Guid GUID_MetadataFormat8BIMIPTCDigest = new Guid("1ca32285-9ccd-4786-8bd8-79539db6a006");

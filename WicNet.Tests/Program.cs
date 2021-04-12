@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace WicNet.Tests
@@ -14,13 +15,10 @@ namespace WicNet.Tests
 
             using (var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg"))
             {
-                bmp.Save("test.gif");
-            }
-
-            using (var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg"))
-            {
                 var reader = bmp.GetMetadataReader();
                 //var th = bmp.GetThumbnail();
+
+                var policies = new WicMetadataPolicies(reader);
 
                 foreach (var kv in reader.Enumerate(true))
                 {

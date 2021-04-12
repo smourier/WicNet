@@ -14,6 +14,17 @@ namespace WicNet
             if (type == null)
                 throw new ArgumentNullException(nameof(type));
 
+            if (TryGetGuidName(type, guid, out var name))
+                return name;
+
+            return guid.ToString();
+        }
+
+        public static bool TryGetGuidName(this Type type, Guid guid, out string name)
+        {
+            if (type == null)
+                throw new ArgumentNullException(nameof(type));
+
             if (!_guidsNames.TryGetValue(type, out var dic))
             {
                 dic = new ConcurrentDictionary<Guid, string>();
@@ -24,10 +35,11 @@ namespace WicNet
                 _guidsNames[type] = dic;
             }
 
-            if (dic.TryGetValue(guid, out var name))
-                return name;
+            if (dic.TryGetValue(guid, out name))
+                return true;
 
-            return guid.ToString();
+            name = null;
+            return false;
         }
 
         public static bool EqualsIgnoreCase(this string str, string text, bool trim = false)
