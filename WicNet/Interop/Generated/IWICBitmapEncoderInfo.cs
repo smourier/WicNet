@@ -5,7 +5,7 @@ using System.Text;
 
 namespace WicNet.Interop
 {
-    [Guid("94c9b4ee-a09f-4f92-8a1e-4a9bce7e76fb"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [ComImport, Guid("94c9b4ee-a09f-4f92-8a1e-4a9bce7e76fb"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICBitmapEncoderInfo : IWICBitmapCodecInfo
     {
         // IWICComponentInfo

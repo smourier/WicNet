@@ -5,7 +5,7 @@ using WICPixelFormatGUID = System.Guid;
 
 namespace WicNet.Interop
 {
-    [Guid("5009834f-2d6a-41ce-9e1b-17c5aff7a782"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [ComImport, Guid("5009834f-2d6a-41ce-9e1b-17c5aff7a782"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICBitmapFlipRotator : IWICBitmapSource
     {
         // IWICBitmapSource

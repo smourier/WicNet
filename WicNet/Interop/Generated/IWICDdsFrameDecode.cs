@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace WicNet.Interop
 {
-    [Guid("3d4c0c61-18a4-41e4-bd80-481a4fc9f464"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [ComImport, Guid("3d4c0c61-18a4-41e4-bd80-481a4fc9f464"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICDdsFrameDecode
     {
         [PreserveSig]

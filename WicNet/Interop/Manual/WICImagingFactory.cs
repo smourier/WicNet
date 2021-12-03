@@ -57,8 +57,7 @@ namespace WicNet.Interop
             }
         }
 
-        [ComImport]
-        [Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")]
+        [ComImport, Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")]
         private class ComFactory
         {
         }

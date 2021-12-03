@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 
 namespace WicNet.Interop
 {
-    [Guid("00000040-a8f2-4877-ba0a-fd2b6645fb94"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
+    [ComImport, Guid("00000040-a8f2-4877-ba0a-fd2b6645fb94"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICPalette
     {
         [PreserveSig]
