@@ -312,7 +312,7 @@ namespace WicNet
             Guid? pixelFormat = null,
             WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderNoCache,
             IEnumerable<KeyValuePair<string, object>> encoderOptions = null,
-            IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata = null,
+            IEnumerable<WicMetadataKeyValue> metadata = null,
             WicPalette encoderPalette = null,
             WicPalette framePalette = null,
             WICRect? sourceRectangle = null)
@@ -346,7 +346,7 @@ namespace WicNet
             Guid? pixelFormat = null,
             WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderNoCache,
             IEnumerable<KeyValuePair<string, object>> encoderOptions = null,
-            IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata = null,
+            IEnumerable<WicMetadataKeyValue> metadata = null,
             WicPalette encoderPalette = null,
             WicPalette framePalette = null,
             WICRect? sourceRectangle = null)

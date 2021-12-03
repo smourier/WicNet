@@ -6,7 +6,7 @@ using WicNet.Interop;
 
 namespace WicNet
 {
-    public sealed class WicMetadataQueryReader : IDisposable, IEnumerable<KeyValuePair<WicMetadataKey, object>>
+    public sealed class WicMetadataQueryReader : IDisposable, IEnumerable<WicMetadataKeyValue>
     {
         private readonly IComObject<IWICMetadataQueryReader> _comObject;
 
@@ -65,25 +65,26 @@ namespace WicNet
 
         public override string ToString() => ContainerFormatName + " " + Location;
 
-        public T GetMetadataByName<T>(string name, T defaultValue = default)
+        public T GetMetadataByName<T>(string name, T defaultValue = default) => GetMetadataByName<T>(name, out _, defaultValue);
+        public T GetMetadataByName<T>(string name, out PropertyType type, T defaultValue = default)
         {
-            if (TryGetMetadataByName<T>(name, out var value))
+            if (TryGetMetadataByName<T>(name, out var value, out type))
                 return value;
 
             return defaultValue;
         }
 
-        public object GetMetadataByName(string name, object defaultValue = null)
+        public object GetMetadataByName(string name, out PropertyType type, object defaultValue = null)
         {
-            if (TryGetMetadataByName(name, out var value))
+            if (TryGetMetadataByName(name, out var value, out type))
                 return value;
 
             return defaultValue;
         }
 
-        public bool TryGetMetadataByName<T>(string name, out T value)
+        public bool TryGetMetadataByName<T>(string name, out T value, out PropertyType type)
         {
-            if (!TryGetMetadataByName(name, out var obj))
+            if (!TryGetMetadataByName(name, out var obj, out type))
             {
                 value = default;
                 return false;
@@ -92,7 +93,7 @@ namespace WicNet
             return Conversions.TryChangeType(obj, out value);
         }
 
-        public bool TryGetMetadataByName(string name, out object value)
+        public bool TryGetMetadataByName(string name, out object value, out PropertyType type)
         {
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
@@ -102,15 +103,17 @@ namespace WicNet
                 if (_comObject.Object.GetMetadataByName(name, pv).IsError)
                 {
                     value = null;
+                    type = PropertyType.VT_EMPTY;
                     return false;
                 }
 
                 value = pv.Value;
+                type = pv.VarType;
                 return true;
             }
         }
 
-        public IEnumerable<KeyValuePair<WicMetadataKey, object>> Enumerate(bool recursive = true)
+        public IEnumerable<WicMetadataKeyValue> Enumerate(bool recursive = true)
         {
             foreach (var kv in this)
             {
@@ -128,30 +131,48 @@ namespace WicNet
             }
         }
 
-        IEnumerator<KeyValuePair<WicMetadataKey, object>> IEnumerable<KeyValuePair<WicMetadataKey, object>>.GetEnumerator()
+        public void Visit(Action<WicMetadataQueryReader, WicMetadataKeyValue> action, bool recursive = true)
+        {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            foreach (var kv in this)
+            {
+                action(this, kv);
+                if (kv.Value is WicMetadataQueryReader reader)
+                {
+                    if (recursive)
+                    {
+                        reader.Visit(action, recursive);
+                    }
+                }
+            }
+        }
+
+        IEnumerator<WicMetadataKeyValue> IEnumerable<WicMetadataKeyValue>.GetEnumerator()
         {
             foreach (var name in Strings)
             {
                 if (name == null)
                     continue;
 
-                if (!TryGetMetadataByName(name, out var value))
+                if (!TryGetMetadataByName(name, out var value, out var type))
                     continue;
 
                 if (value is IWICMetadataQueryReader reader)
                 {
                     var childReader = new WicMetadataQueryReader(reader);
-                    yield return new KeyValuePair<WicMetadataKey, object>(new WicMetadataKey(childReader.ContainerFormat, name), childReader);
+                    yield return new WicMetadataKeyValue(new WicMetadataKey(childReader.ContainerFormat, name), childReader, type);
                 }
                 else
                 {
-                    yield return new KeyValuePair<WicMetadataKey, object>(new WicMetadataKey(ContainerFormat, name), value);
+                    yield return new WicMetadataKeyValue(new WicMetadataKey(ContainerFormat, name), value, type);
                 }
             }
         }
 
         public void Dispose() => _comObject?.Dispose();
-        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<KeyValuePair<WicMetadataKey, object>>)this).GetEnumerator();
+        IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<WicMetadataKeyValue>)this).GetEnumerator();
 
         public static string GetFormatName(Guid guid)
         {

@@ -6,8 +6,8 @@ namespace WicNet.Interop
 {
     public static class IWICMetadataQueryWriterExtensions
     {
-        public static void EncodeMetadata(this IComObject<IWICMetadataQueryWriter> writer, IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata) => EncodeMetadata(writer?.Object, metadata);
-        public static void EncodeMetadata(this IWICMetadataQueryWriter writer, IEnumerable<KeyValuePair<WicMetadataKey, object>> metadata)
+        public static void EncodeMetadata(this IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata) => EncodeMetadata(writer?.Object, metadata);
+        public static void EncodeMetadata(this IWICMetadataQueryWriter writer, IEnumerable<WicMetadataKeyValue> metadata)
         {
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
@@ -19,7 +19,7 @@ namespace WicNet.Interop
             {
                 foreach (var kv in metadata)
                 {
-                    if (kv.Value is IEnumerable<KeyValuePair<WicMetadataKey, object>> childMetadata)
+                    if (kv.Value is IEnumerable<WicMetadataKeyValue> childMetadata)
                     {
                         if (!childMetadata.Any())
                             continue;
@@ -27,15 +27,15 @@ namespace WicNet.Interop
                         factory.CreateQueryWriter(kv.Key.Format, IntPtr.Zero, out var childWriter).ThrowOnError();
                         using (var pv = new PropVariant(childWriter))
                         {
-                            writer.SetMetadataByName(kv.Key.Key, pv).ThrowOnError();
+                            var hr = writer.SetMetadataByName(kv.Key.Key, pv).ThrowOnError();
                         }
                         EncodeMetadata(childWriter, childMetadata);
                     }
                     else
                     {
-                        using (var pv = new PropVariant(kv.Value))
+                        using (var pv = new PropVariant(kv.Value, kv.Type))
                         {
-                            writer.SetMetadataByName(kv.Key.Key, pv).ThrowOnError();
+                            var hr = writer.SetMetadataByName(kv.Key.Key, pv).ThrowOnError();
                         }
                     }
                 }

@@ -10,6 +10,7 @@ namespace WicNet.Interop
     [StructLayout(LayoutKind.Explicit)]
     public sealed class PropVariant : IDisposable
     {
+#pragma warning disable IDE0044 // Add readonly modifier
         [FieldOffset(0)]
         private PropertyType _vt;
 
@@ -57,6 +58,7 @@ namespace WicNet.Interop
 
         [FieldOffset(0)]
         private decimal _decimal;
+#pragma warning restore IDE0044 // Add readonly modifier
 
         [StructLayout(LayoutKind.Sequential)]
         private struct PROPARRAY
@@ -67,15 +69,18 @@ namespace WicNet.Interop
 
         public PropVariant()
         {
+            // it's a VT_EMPTY
         }
 
-        private void ConstructBlob(byte[] blob)
+        private void ConstructBlob(byte[] bytes)
         {
-            ConstructVector(blob, typeof(byte), PropertyType.VT_UI1);
+            _ca.cElems = bytes.Length;
+            _ca.pElems = Marshal.AllocCoTaskMem(bytes.Length);
+            Marshal.Copy(bytes, 0, _ca.pElems, bytes.Length);
             _vt = PropertyType.VT_BLOB;
         }
 
-        private void ConstructVector(Array array)
+        private void ConstructArray(Array array, PropertyType? type = null)
         {
             // special case for bools which are shorts...
             if (array is bool[] bools)
@@ -90,7 +95,16 @@ namespace WicNet.Interop
             }
 
             var et = array.GetType().GetElementType();
-            ConstructVector(array, et, FromType(et));
+            if (type == PropertyType.VT_BLOB)
+            {
+                if (!(array is byte[] bytes))
+                    throw new ArgumentException("Property type " + type + " is only supported for arrays of bytes.", nameof(type));
+
+                ConstructBlob(bytes);
+                return;
+            }
+
+            ConstructVector(array, et, FromType(et, type));
         }
 
         private void ConstructVector(Array array, Type type, PropertyType vt)
@@ -117,7 +131,7 @@ namespace WicNet.Interop
                 {
                     for (var i = 0; i < array.Length; i++)
                     {
-                        var str = Marshal.StringToCoTaskMemUni((string)array.GetValue(i));
+                        var str = MarshalString((string)array.GetValue(i), vt);
                         Marshal.WriteIntPtr(ptr, IntPtr.Size * i, str);
                     }
                 }
@@ -189,7 +203,7 @@ namespace WicNet.Interop
             return null;
         }
 
-        private void ConstructEnumerable(IEnumerable enumerable)
+        private void ConstructEnumerable(IEnumerable enumerable, PropertyType? type = null)
         {
             var et = GetElementType(enumerable);
             if (et == null)
@@ -202,7 +216,7 @@ namespace WicNet.Interop
             {
                 array.SetValue(obj, i++);
             }
-            ConstructVector(array);
+            ConstructArray(array, type);
         }
 
         private static Type FromType(PropertyType type)
@@ -275,7 +289,7 @@ namespace WicNet.Interop
             }
         }
 
-        private static PropertyType FromType(Type type)
+        private static PropertyType FromType(Type type, PropertyType? vt)
         {
             if (type == null)
                 return PropertyType.VT_NULL;
@@ -323,7 +337,13 @@ namespace WicNet.Interop
                     return PropertyType.VT_R4;
 
                 case TypeCode.String:
-                    return PropertyType.VT_LPWSTR;
+                    if (!vt.HasValue)
+                        return PropertyType.VT_LPWSTR;
+
+                    if (vt != PropertyType.VT_LPSTR && vt != PropertyType.VT_BSTR && vt != PropertyType.VT_LPWSTR)
+                        throw new ArgumentException("Property type " + vt + " is not supported for string.", nameof(type));
+
+                    return vt.Value;
 
                 case TypeCode.UInt16:
                     return PropertyType.VT_UI2;
@@ -342,11 +362,22 @@ namespace WicNet.Interop
                     if (type == typeof(System.Runtime.InteropServices.ComTypes.FILETIME))
                         return PropertyType.VT_FILETIME;
 
+                    if (type == typeof(byte))
+                    {
+                        if (!vt.HasValue)
+                            return PropertyType.VT_UI1 | PropertyType.VT_VECTOR;
+
+                        if (vt != PropertyType.VT_BLOB && vt != (PropertyType.VT_UI1 | PropertyType.VT_VECTOR))
+                            throw new ArgumentException("Property type " + vt + " is not supported for array of bytes.", nameof(type));
+
+                        return vt.Value;
+                    }
+
                     throw new ArgumentException("Value of type '" + type.FullName + "' is not supported.", nameof(type));
             }
         }
 
-        public PropVariant(object value)
+        public PropVariant(object value, PropertyType? type = null)
         {
             if (value == null)
             {
@@ -356,8 +387,8 @@ namespace WicNet.Interop
 
             if (Marshal.IsComObject(value))
             {
-                // example System.ParsingBindContext
-                _vt = PropertyType.VT_EMPTY;
+                _ptr = Marshal.GetIUnknownForObject(value);
+                _vt = PropertyType.VT_UNKNOWN;
                 return;
             }
 
@@ -384,13 +415,13 @@ namespace WicNet.Interop
 
             if (value is Array array)
             {
-                ConstructVector(array);
+                ConstructArray(array, type);
                 return;
             }
 
             if (!(value is string) && value is IEnumerable enumerable)
             {
-                ConstructEnumerable(enumerable);
+                ConstructEnumerable(enumerable, type);
                 return;
             }
 
@@ -407,7 +438,7 @@ namespace WicNet.Interop
 
                 case TypeCode.Char:
                     chars = new[] { (char)value };
-                    _ptr = Marshal.StringToCoTaskMemUni(new string(chars));
+                    _ptr = MarshalString(new string(chars), FromType(typeof(string), type));
                     break;
 
                 case TypeCode.DateTime:
@@ -451,7 +482,7 @@ namespace WicNet.Interop
                     break;
 
                 case TypeCode.String:
-                    _ptr = Marshal.StringToCoTaskMemUni((string)value);
+                    _ptr = MarshalString((string)value, FromType(typeof(string), type));
                     break;
 
                 case TypeCode.UInt16:
@@ -468,22 +499,22 @@ namespace WicNet.Interop
 
                 //case TypeCode.Object:
                 default:
-                    if (value is Guid)
+                    if (value is Guid guid)
                     {
                         _ptr = Marshal.AllocCoTaskMem(16);
-                        Marshal.Copy(((Guid)value).ToByteArray(), 0, _ptr, 16);
+                        Marshal.Copy(guid.ToByteArray(), 0, _ptr, 16);
                         break;
                     }
 
-                    if (value is System.Runtime.InteropServices.ComTypes.FILETIME)
+                    if (value is System.Runtime.InteropServices.ComTypes.FILETIME filetime)
                     {
-                        _filetime = (System.Runtime.InteropServices.ComTypes.FILETIME)value;
+                        _filetime = filetime;
                         break;
                     }
                     throw new ArgumentException("Value of type '" + value.GetType().FullName + "' is not supported.", nameof(value));
             }
 
-            _vt = FromType(value.GetType()); // order is important for decimal
+            _vt = FromType(value.GetType(), type);
         }
 
         public PropertyType VarType { get => _vt; set => _vt = value; }
@@ -582,8 +613,30 @@ namespace WicNet.Interop
             }
         }
 
-        public void Dispose() => GC.SuppressFinalize(this);
         ~PropVariant() => Dispose();
+        public void Dispose()
+        {
+            _ = PropVariantClear(this);
+            GC.SuppressFinalize(this);
+        }
+
+        private static IntPtr MarshalString(string str, PropertyType vt)
+        {
+            switch (vt)
+            {
+                case PropertyType.VT_LPWSTR:
+                    return Marshal.StringToCoTaskMemUni(str);
+
+                case PropertyType.VT_BSTR:
+                    return Marshal.StringToBSTR(str);
+
+                case PropertyType.VT_LPSTR:
+                    return Marshal.StringToCoTaskMemAnsi(str);
+
+                default:
+                    throw new NotSupportedException("A string can only be of property type VT_LPWSTR, VT_LPSTR or VT_BSTR.");
+            }
+        }
 
         private static long ToPositiveFileTime(DateTime dt)
         {
@@ -617,7 +670,7 @@ namespace WicNet.Interop
                     var bools = new bool[shorts.Length];
                     for (var i = 0; i < shorts.Length; i++)
                     {
-                        bools[i] = shorts[i] == 0 ? false : true;
+                        bools[i] = shorts[i] != 0;
                     }
                     value = bools;
                     ret = true;
@@ -640,6 +693,8 @@ namespace WicNet.Interop
                 case PropertyType.VT_DATE:
                 case PropertyType.VT_FILETIME:
                 case PropertyType.VT_CLSID:
+                case PropertyType.VT_UNKNOWN:
+                case PropertyType.VT_DISPATCH:
                     var et = FromType(vt);
                     var values = Array.CreateInstance(et, _ca.cElems);
                     size = _ca.cElems * Marshal.SizeOf(et);

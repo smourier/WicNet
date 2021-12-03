@@ -30,7 +30,7 @@ namespace WicNet
         public double? ImageCompressedBitsPerPixel => Reader.GetMetadataByName<double?>("System.Image.CompressedBitsPerPixel");
 
         public string ApplicationName => Reader.GetMetadataByName<string>("System.ApplicationName");
-        public string Author => Reader.GetMetadataByName<string>("System.Author");
+        public IReadOnlyList<string> Author => Reader.GetMetadataByName<IReadOnlyList<string>>("System.Author");
         public string Comment => Reader.GetMetadataByName<string>("System.Comment");
         public string Copyright => Reader.GetMetadataByName<string>("System.Copyright");
         public DateTime? DateAcquired => Reader.GetMetadataByName<DateTime?>("System.DateAcquired");

@@ -7,7 +7,7 @@ namespace WicNet
 {
     public static class Extensions
     {
-        private static ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>> _guidsNames = new ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>>();
+        private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>> _guidsNames = new ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>>();
 
         public static string GetGuidName(this Type type, Guid guid)
         {
