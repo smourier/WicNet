@@ -16,7 +16,6 @@ namespace WicNet.Tests
             //return;
 
             using (var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg"))
-            //using (var bmp = WicBitmapSource.Load(@"d:\downloads\20211113_0060_Flag football-a.jpg"))
             {
                 // get metadata source (reader)
                 var reader = bmp.GetMetadataReader();
