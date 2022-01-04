@@ -357,19 +357,19 @@ namespace WicNet
             using (var encoder = WICImagingFactory.CreateEncoder(encoderContainerFormat))
             {
                 var mis = new ManagedIStream(stream);
-                encoder.Object.Initialize(mis, cacheOptions).ThrowOnError();
+                encoder.Initialize(mis, cacheOptions);
 
                 if (encoderPalette != null)
                 {
                     // gifs...
-                    encoder.Object.SetPalette(encoderPalette.ComObject.Object).ThrowOnError();
+                    encoder.SetPalette(encoderPalette.ComObject);
                 }
 
                 var frameBag = encoder.CreateNewFrame();
 
                 if (encoderOptions != null)
                 {
-                    frameBag.Item2.Object.Write(encoderOptions);
+                    frameBag.Item2.Write(encoderOptions);
                 }
 
                 frameBag.Initialize();
@@ -389,14 +389,14 @@ namespace WicNet
 
                 if (framePalette != null)
                 {
-                    frameBag.Item1.Object.SetPalette(framePalette.ComObject.Object).ThrowOnError();
+                    frameBag.Item1.SetPalette(framePalette.ComObject);
                 }
 
                 // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
                 // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
                 frameBag.WriteSource(_comObject, sourceRectangle);
-                frameBag.Item1.Object.Commit().ThrowOnError();
-                encoder.Object.Commit().ThrowOnError();
+                frameBag.Item1.Commit();
+                encoder.Commit();
             }
         }
 

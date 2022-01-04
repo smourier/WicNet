@@ -1,11 +1,13 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices.ComTypes;
 using WicNet.Interop;
 
 namespace WicNet
 {
-    public sealed class WicBitmapDecoder : IDisposable
+    public sealed class WicBitmapDecoder : IDisposable, IEnumerable<WicBitmapSource>
     {
         private readonly IComObject<IWICBitmapDecoder> _comObject;
 
@@ -36,6 +38,17 @@ namespace WicNet
         {
             var reader = _comObject.GetMetadataQueryReader();
             return reader != null ? new WicMetadataQueryReader(reader) : null;
+        }
+
+        IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();
+        public IEnumerator<WicBitmapSource> GetEnumerator() => EnumerateFrames().GetEnumerator();
+
+        public IEnumerable<WicBitmapSource> EnumerateFrames()
+        {
+            for (var i = 0; i < FrameCount; i++)
+            {
+                yield return GetFrame(i);
+            }
         }
 
         public static WicBitmapDecoder Load(string filePath, Guid? guidVendor = null, FileAccess access = FileAccess.Read, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)

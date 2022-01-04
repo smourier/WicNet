@@ -5,6 +5,7 @@ namespace WicNet.Interop
 {
     public static class IPropertyBag2Extensions
     {
+        public static void Write(this IComObject<IPropertyBag2> bag, IEnumerable<KeyValuePair<string, object>> properties) => Write(bag?.Object, properties);
         public static void Write(this IPropertyBag2 bag, IEnumerable<KeyValuePair<string, object>> properties)
         {
             if (bag == null)

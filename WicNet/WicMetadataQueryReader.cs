@@ -113,7 +113,7 @@ namespace WicNet
             }
         }
 
-        public IEnumerable<WicMetadataKeyValue> Enumerate(bool recursive = true)
+        public IEnumerable<WicMetadataKeyValue> Enumerate(bool recursive = false)
         {
             foreach (var kv in this)
             {
