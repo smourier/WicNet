@@ -13,7 +13,7 @@
     <Company />
     <Version>1.1.2</Version>
     <PackageIcon>WicNet.png</PackageIcon>
-    <PackageIconUrl>https://github.com/smourier/WicNet/raw/master/WicNet/WicNet.png></PackageIconUrl>
+    <PackageIconUrl>https://raw.githubusercontent.com/smourier/WicNet/main/WicNet/WicNet.png</PackageIconUrl>
   </PropertyGroup>
 
   <ItemGroup>
