@@ -12,7 +12,7 @@ namespace DirectN
     {
         // ID2D1Resource
         [PreserveSig]
-        new void GetFactory(/* _Outptr_ */ [MarshalAs(UnmanagedType.IUnknown)] out /*ID2D1Factory*/ object factory);
+        new void GetFactory(/* _Outptr_ */ [MarshalAs(UnmanagedType.IUnknown)] out ID2D1Factory factory);
 
         // ID2D1Image
     }
