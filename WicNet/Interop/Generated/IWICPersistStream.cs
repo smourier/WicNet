@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("00675040-6908-45f8-86a3-49c7dfd6d9ad"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICPersistStream

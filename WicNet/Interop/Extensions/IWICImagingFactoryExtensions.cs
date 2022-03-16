@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class IWICImagingFactoryExtensions
     {

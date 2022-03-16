@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using REFWICPixelFormatGUID = System.Guid;
 using WICPixelFormatGUID = System.Guid;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("bebee9cb-83b0-4dcc-8132-b0aaa55eac96"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICPlanarFormatConverter : IWICBitmapSource

@@ -2,7 +2,7 @@
 using System.Globalization;
 using System.Linq;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     // https://docs.microsoft.com/en-us/windows/desktop/medfound/video-fourccs
     // https://docs.microsoft.com/en-us/windows/desktop/medfound/video-subtype-guids

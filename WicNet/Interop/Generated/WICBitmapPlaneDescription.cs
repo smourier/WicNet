@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using WICPixelFormatGUID = System.Guid;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [StructLayout(LayoutKind.Sequential)]
     public partial struct WICBitmapPlaneDescription

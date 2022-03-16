@@ -2,8 +2,9 @@
 using System;
 using System.Globalization;
 using System.Runtime.InteropServices;
+using WicNet;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [StructLayout(LayoutKind.Sequential)]
     public partial struct PROPBAG2

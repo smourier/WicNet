@@ -6,7 +6,7 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public sealed class ColorProfile
     {

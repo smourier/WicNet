@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("aba958bf-c672-44d1-8d61-ce6df2e682c2"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICMetadataHandlerInfo : IWICComponentInfo

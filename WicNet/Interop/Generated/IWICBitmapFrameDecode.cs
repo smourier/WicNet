@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using WICPixelFormatGUID = System.Guid;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("3b16811b-6a43-4ec9-a813-3d930c13b940"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICBitmapFrameDecode : IWICBitmapSource

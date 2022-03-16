@@ -2,9 +2,8 @@
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using WicNet.Interop.Manual;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class WICImagingFactory
     {

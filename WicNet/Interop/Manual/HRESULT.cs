@@ -5,7 +5,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct HRESULT : IEquatable<HRESULT>, IFormattable

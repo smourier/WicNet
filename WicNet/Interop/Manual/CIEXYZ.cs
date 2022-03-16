@@ -1,6 +1,6 @@
 ﻿using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct CIEXYZ

@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using PFNProgressNotification = System.IntPtr;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("64c1024e-c3cf-4462-8078-88c2b11c46d9"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICBitmapCodecProgressNotification

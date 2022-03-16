@@ -2,7 +2,7 @@
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class ComError
     {

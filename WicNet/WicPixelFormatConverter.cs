@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
-using WicNet.Interop;
+using DirectN;
 
 namespace WicNet
 {

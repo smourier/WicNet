@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("2f0c601f-d2c6-468c-abfa-49495d983ed1"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICJpegFrameEncode

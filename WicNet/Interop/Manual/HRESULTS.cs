@@ -1,4 +1,4 @@
-﻿namespace WicNet.Interop
+﻿namespace DirectN
 {
     public enum HRESULTS
     {

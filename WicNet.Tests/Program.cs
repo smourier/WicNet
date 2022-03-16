@@ -2,8 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using WicNet.Interop;
-using WicNet.Interop.Manual;
+using DirectN;
 
 namespace WicNet.Tests
 {

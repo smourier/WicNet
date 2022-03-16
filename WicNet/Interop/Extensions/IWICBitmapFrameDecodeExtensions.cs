@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class IWICBitmapFrameDecodeExtensions
     {

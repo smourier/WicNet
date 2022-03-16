@@ -1,5 +1,5 @@
 ﻿using System;
-using WicNet.Interop;
+using DirectN;
 
 namespace WicNet
 {

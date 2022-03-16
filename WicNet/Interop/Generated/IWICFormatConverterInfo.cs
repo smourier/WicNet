@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Text;
 using WICPixelFormatGUID = System.Guid;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("9f34fb65-13f4-4f15-bc57-3726b5e53d9f"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICFormatConverterInfo : IWICComponentInfo

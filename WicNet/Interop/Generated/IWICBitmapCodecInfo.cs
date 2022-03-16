@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("e87a44c4-b76e-4c47-8b09-298eb12a2714"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICBitmapCodecInfo : IWICComponentInfo

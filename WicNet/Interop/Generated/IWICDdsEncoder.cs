@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("5cacdb4c-407e-41b3-b936-d0f010cd6732"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICDdsEncoder

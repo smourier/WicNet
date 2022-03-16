@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     // stupid .NET's VarEnum does not define Flags and does not derive from ushort ...
     [Flags]

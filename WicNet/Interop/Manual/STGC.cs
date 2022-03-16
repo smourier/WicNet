@@ -1,6 +1,6 @@
 ﻿using System;
 
-namespace WicNet.Interop.Manual
+namespace DirectN
 {
     [Flags]
     public enum STGC

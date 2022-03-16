@@ -3,7 +3,7 @@ using System;
 using System.Runtime.InteropServices;
 using System.Text;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("a9db33a2-af5f-43c7-b679-74f5984b5aa4"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICPixelFormatInfo2 : IWICPixelFormatInfo

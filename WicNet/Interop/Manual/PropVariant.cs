@@ -5,7 +5,7 @@ using System.ComponentModel;
 using System.Linq;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [StructLayout(LayoutKind.Explicit)]
     public sealed class PropVariant : IDisposable

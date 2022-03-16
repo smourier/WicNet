@@ -2,7 +2,7 @@
 using System.Runtime.InteropServices;
 using System.Threading;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public class ComMemory : IDisposable
     {

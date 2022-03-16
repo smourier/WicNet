@@ -1,8 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using WicNet;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class IWICMetadataQueryWriterExtensions
     {

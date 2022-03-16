@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     /// <summary>
     /// Represents a producer of pixels that can fill an arbitrary 2D plane.

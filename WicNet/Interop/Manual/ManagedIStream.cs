@@ -3,7 +3,7 @@ using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 
-namespace WicNet.Interop.Manual
+namespace DirectN
 {
     public sealed class ManagedIStream : IStream
     {

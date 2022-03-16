@@ -4,7 +4,7 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using REFWICPixelFormatGUID = System.Guid;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("412d0c3a-9650-44fa-af5b-dd2a06c8e8fb"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICComponentFactory : IWICImagingFactory

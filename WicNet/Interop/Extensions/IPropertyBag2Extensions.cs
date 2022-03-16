@@ -1,7 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
+using WicNet;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class IPropertyBag2Extensions
     {

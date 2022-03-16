@@ -3,7 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices.ComTypes;
-using WicNet.Interop;
+using DirectN;
 
 namespace WicNet
 {

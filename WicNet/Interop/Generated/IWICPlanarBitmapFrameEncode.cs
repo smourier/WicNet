@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("f928b7b8-2221-40c1-b72e-7e82f1974d1a"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICPlanarBitmapFrameEncode

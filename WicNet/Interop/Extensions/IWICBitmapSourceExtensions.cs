@@ -1,6 +1,7 @@
 ﻿using System;
+using WicNet;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class IWICBitmapSourceExtensions
     {

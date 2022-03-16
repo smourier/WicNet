@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     public static class IWICBitmapFrameEncodeExtensions
     {

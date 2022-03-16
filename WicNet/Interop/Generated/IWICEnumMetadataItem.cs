@@ -2,7 +2,7 @@
 using System;
 using System.Runtime.InteropServices;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("dc2bb46d-3f07-481e-8625-220c4aedbb33"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICEnumMetadataItem

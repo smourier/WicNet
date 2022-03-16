@@ -1,8 +1,9 @@
 ﻿// c:\program files (x86)\windows kits\10\include\10.0.19041.0\um\wincodec.h(1118,5)
 using System;
 using System.Runtime.InteropServices;
+using WicNet;
 
-namespace WicNet.Interop
+namespace DirectN
 {
     [ComImport, Guid("00000040-a8f2-4877-ba0a-fd2b6645fb94"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public partial interface IWICPalette

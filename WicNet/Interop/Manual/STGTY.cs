@@ -1,4 +1,4 @@
-﻿namespace WicNet.Interop.Manual
+﻿namespace DirectN
 {
     public enum STGTY
     {
