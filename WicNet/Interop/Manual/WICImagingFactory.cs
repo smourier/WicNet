@@ -9,6 +9,7 @@ namespace WicNet.Interop
     public static class WICImagingFactory
     {
         public static IComObject<IWICPalette> CreatePalette() => WithFactory(f => f.CreatePalette());
+        public static IComObject<IWICColorContext> CreateColorContext() => WithFactory(f => f.CreateColorContext());
         public static IComObject<IWICBitmapClipper> CreateBitmapClipper() => WithFactory(f => f.CreateBitmapClipper());
         public static IComObject<IWICBitmapFlipRotator> CreateBitmapFlipRotator() => WithFactory(f => f.CreateBitmapFlipRotator());
         public static IComObject<IWICBitmapScaler> CreateBitmapScaler() => WithFactory(f => f.CreateBitmapScaler());

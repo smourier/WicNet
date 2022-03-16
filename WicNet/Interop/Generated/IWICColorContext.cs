@@ -20,7 +20,7 @@ namespace WicNet.Interop
         HRESULT GetType(/* [out] __RPC__out */ out WICColorContextType pType);
         
         [PreserveSig]
-        HRESULT GetProfileBytes(/* [in] */ int cbBuffer, /* [size_is][unique][out][in] __RPC__inout_ecount_full_opt(cbBuffer) */ [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] byte[] pbBuffer, /* [out] __RPC__out */ out uint pcbActual);
+        HRESULT GetProfileBytes(/* [in] */ int cbBuffer, /* [size_is][unique][out][in] __RPC__inout_ecount_full_opt(cbBuffer) */ [In, Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 0)] byte[] pbBuffer, /* [out] __RPC__out */ out int pcbActual);
         
         [PreserveSig]
         HRESULT GetExifColorSpace(/* [out] __RPC__out */ out uint pValue);

@@ -194,6 +194,16 @@ namespace WicNet.Interop
             return new ComObject<IWICBitmap>(value);
         }
 
+        public static IComObject<IWICColorContext> CreateColorContext(this IComObject<IWICImagingFactory> factory) => CreateColorContext(factory?.Object);
+        public static IComObject<IWICColorContext> CreateColorContext(this IWICImagingFactory factory)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            factory.CreateColorContext(out var value).ThrowOnError();
+            return new ComObject<IWICColorContext>(value);
+        }
+
         public static IEnumerable<IComObject<IWICComponentInfo>> EnumerateComponents(this IWICImagingFactory factory, WICComponentType type, WICComponentEnumerateOptions options)
         {
             using (var enumerator = factory.CreateComponentEnumerator(type, options))
