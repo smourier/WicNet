@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Concurrent;
+using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
@@ -124,6 +127,24 @@ namespace DirectN
             return (int)value;
         }
 
+        public static bool IsEmpty(this Array array) => array == null || array.Length == 0;
+        public static bool IsEmpty(this IEnumerable enumerable)
+        {
+            if (enumerable == null)
+                return true;
+
+            var enumerator = enumerable.GetEnumerator();
+            if (enumerator == null)
+                return true;
+
+            var next = enumerator.MoveNext();
+            if (enumerator is IDisposable disp)
+            {
+                disp.Dispose();
+            }
+            return !next;
+        }
+
         private static readonly Lazy<ConcurrentDictionary<Guid, string>> _guids = new Lazy<ConcurrentDictionary<Guid, string>>(ExtractAllGuids, true);
 
         public static ComMemory StructureToMemory(this object structure) => new ComMemory(structure);
@@ -148,6 +169,35 @@ namespace DirectN
             var ptr = Marshal.AllocCoTaskMem(size);
             Marshal.StructureToPtr<T>(structure, ptr, false);
             return ptr;
+        }
+
+        public static T[] ToArrayNullify<T>(this IEnumerable<IComObject<T>> enumerable)
+        {
+            if (enumerable == null)
+                return null;
+
+            return enumerable?.Where(e => e != null && e.Object != null)?.Select(e => e.Object)?.ToArray();
+        }
+
+        public static T[] ToArrayNullify<T>(this IEnumerable<T> enumerable)
+        {
+            if (enumerable == null)
+                return null;
+
+            return enumerable?.Where(e => e != null)?.ToArray();
+        }
+
+        public static T[] ToArrayOrEmpty<T>(this ICollection<T> collection, bool allowsNull = false)
+        {
+            if (collection.IsEmpty())
+            {
+                if (allowsNull)
+                    return null;
+
+                return Array.Empty<T>();
+            }
+
+            return collection.ToArray();
         }
 
         public static string ToName(this Guid guid, string formatIfNotFound = null)

@@ -297,6 +297,14 @@ namespace WicNet
             }
         }
 
+        public IComObject<IWICBitmap> AsBitmap() => _comObject.AsComObject<IWICBitmap>();
+
+        public WicBitmapSource Clone(WICBitmapCreateCacheOption options = WICBitmapCreateCacheOption.WICBitmapNoCache)
+        {
+            var bmp = WICImagingFactory.CreateBitmapFromSource(_comObject, options);
+            return new WicBitmapSource(bmp);
+        }
+
         private IWICBitmap CheckBitmap()
         {
             var bmp = _comObject.As<IWICBitmap>();
@@ -305,6 +313,22 @@ namespace WicNet
 
             return bmp;
         }
+
+        public bool IsSupportedRenderTarget => IsSupportedRenderTargetFormat(PixelFormat);
+
+        // https://stackoverflow.com/a/30669562/403671
+        public static bool IsSupportedRenderTargetFormat(Guid format) =>
+            format == WicPixelFormat.GUID_WICPixelFormat8bppAlpha ||
+            format == WicPixelFormat.GUID_WICPixelFormat32bppBGR ||
+            format == WicPixelFormat.GUID_WICPixelFormat32bppRGB ||
+            format == WicPixelFormat.GUID_WICPixelFormat32bppPBGRA ||
+            format == WicPixelFormat.GUID_WICPixelFormat32bppPRGBA ||
+            format == WicPixelFormat.GUID_WICPixelFormat64bppRGB ||
+            format == WicPixelFormat.GUID_WICPixelFormat64bppPRGBA ||
+            format == WicPixelFormat.GUID_WICPixelFormat64bppPRGBAHalf ||
+            format == WicPixelFormat.GUID_WICPixelFormat64bppRGBHalf ||
+            format == WicPixelFormat.GUID_WICPixelFormat128bppPRGBAFloat ||
+            format == WicPixelFormat.GUID_WICPixelFormat128bppRGBFloat;
 
         public void Save(string filePath,
             Guid? encoderContainerFormat = null,

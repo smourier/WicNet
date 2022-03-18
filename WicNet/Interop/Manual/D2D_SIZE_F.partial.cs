@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics;
+using WicNet;
 
 namespace DirectN
 {
@@ -25,6 +26,11 @@ namespace DirectN
 
             this.width = width;
             this.height = height;
+        }
+
+        public D2D_SIZE_F(WicIntSize size)
+            : this(size.Width, size.Height)
+        {
         }
 
         public D2D_SIZE_F(double width, double height)

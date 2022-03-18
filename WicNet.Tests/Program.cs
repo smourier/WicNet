@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Reflection;
 using DirectN;
 
 namespace WicNet.Tests
@@ -10,7 +11,32 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            CopyGif();
+            //CopyGif();
+            DrawEllipse();
+        }
+
+        static void DrawEllipse()
+        {
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            {
+                using (var converted = bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                {
+                    var width = 200;
+                    var height = width * bmp.Height / bmp.Width;
+                    using (var clone = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                    using (var fac = D2D1Functions.D2D1CreateFactory())
+                    using (var rt = fac.CreateWicBitmapRenderTarget<ID2D1DeviceContext>(clone.AsBitmap()))
+                    using (var dbmp = rt.CreateBitmapFromWicBitmap(converted.ComObject))
+                    using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Red))
+                    {
+                        rt.BeginDraw();
+                        rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(clone.Size)));
+                        rt.DrawEllipse(new D2D1_ELLIPSE(width / 2, height / 2, Math.Min(width, height) / 2), brush, 4);
+                        rt.EndDraw();
+                        clone.Save("test.jpg");
+                    }
+                }
+            }
         }
 
         static void CopyGif()
@@ -47,7 +73,7 @@ namespace WicNet.Tests
                             using (var writer = newFrame.GetMetadataQueryWriter())
                             {
                                 writer.EncodeMetadata(md);
-                                
+
                                 // change delay here
                                 writer.SetMetadataByName("/grctlext/Delay", (ushort)5);
                             }

@@ -8,8 +8,9 @@ namespace DirectN
     public class ComObject : IComObject
     {
         private object _object;
+        private readonly bool _dispose;
 
-        public ComObject(object comObject)
+        public ComObject(object comObject, bool dispose = true)
         {
             if (comObject == null)
                 throw new ArgumentNullException(nameof(comObject));
@@ -18,6 +19,7 @@ namespace DirectN
                 throw new ArgumentException("Argument is not a COM object", nameof(comObject));
 
             _object = comObject;
+            _dispose = dispose;
 
 #if DEBUG
             Id = Interlocked.Increment(ref _id);
@@ -76,6 +78,17 @@ namespace DirectN
             return Object as T;
         }
 
+        public IComObject<T> AsComObject<T>(bool throwOnError = false) where T : class
+        {
+            if (throwOnError)
+                return new ComObject<T>((T)Object, false); // will throw
+
+            if (!(Object is T obj))
+                return null;
+
+            return new ComObject<T>(obj, false);
+        }
+
         public static ComObject WrapAsGeneric(Type comType, object instance)
         {
             if (comType == null)
@@ -113,6 +126,9 @@ namespace DirectN
 
         protected virtual void Dispose(bool disposing)
         {
+            if (!_dispose)
+                return;
+
             //#if DEBUG
             //            Trace("~", "disposing: " + disposing + " duration: " + Duration.Milliseconds);
             //#endif
@@ -226,8 +242,8 @@ namespace DirectN
 
     public class ComObject<T> : ComObject, IComObject<T>
     {
-        public ComObject(T comObject)
-            : base(comObject)
+        public ComObject(T comObject, bool dispose = true)
+            : base(comObject, dispose)
         {
         }
 
@@ -246,6 +262,7 @@ namespace DirectN
         bool IsDisposed { get; }
         object Object { get; }
         I As<I>(bool throwOnError = false) where I : class;
+        IComObject<I> AsComObject<I>(bool throwOnError = false) where I : class;
     }
 
     public interface IComObject<out T> : IComObject

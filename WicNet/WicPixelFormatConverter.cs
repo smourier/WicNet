@@ -65,12 +65,10 @@ namespace WicNet
                 pal = p.CopyColors();
             }
 
-            using (var cvt = _comObject.CreateInstance())
-            {
-                cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
-                // TODO
-                return new WicBitmapSource(cvt);//, targetFormat);
-            }
+            var cvt = _comObject.CreateInstance();
+            cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
+            // TODO
+            return new WicBitmapSource(cvt);
         }
 
         public void Dispose() => _comObject?.Dispose();
