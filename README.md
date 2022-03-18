@@ -1,5 +1,5 @@
 # WicNet
-.NET interop classes for WIC (Windows Imaging Component) based on netstandard 2.0.
+.NET interop classes for WIC (Windows Imaging Component) and Direct2D, based on netstandard 2.0.
 
 Work in still progress, however basic operations should work. Create an issue if something's not working or feature is missing.
 
