@@ -5,13 +5,13 @@
     <Authors>Simon Mourier</Authors>
     <Copyright>Copyright (c) 2020-2022 Simon Mourier. All rights reserved.</Copyright>
     <PackageProjectUrl>https://github.com/smourier/WicNet</PackageProjectUrl>
-    <Description>WicNet are .NET interop classes for WIC (Windows Imaging Component) based on netstandard 2.0.</Description>
+    <Description>WicNet are .NET interop classes for WIC (Windows Imaging Component) and Direct2D without any dependency. Based on netstandard 2.0.</Description>
     <PackageLicenseExpression>MIT</PackageLicenseExpression>
-    <PackageTags>Windows Imaging Component C# .NET WIC PNG JPG JPEG GIF BMP</PackageTags>
+    <PackageTags>Windows Imaging Component C# .NET WIC PNG JPG JPEG GIF BMP D2D HEIC HEIF</PackageTags>
     <RepositoryUrl>https://github.com/smourier/WicNet</RepositoryUrl>
     <GeneratePackageOnBuild>false</GeneratePackageOnBuild>
     <Company />
-    <Version>1.1.2</Version>
+    <Version>1.2.0</Version>
     <PackageIcon>WicNet.png</PackageIcon>
     <PackageIconUrl>https://raw.githubusercontent.com/smourier/WicNet/main/WicNet/WicNet.png</PackageIconUrl>
   </PropertyGroup>
