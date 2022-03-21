@@ -893,6 +893,145 @@ namespace WicNet
                 }
             }
 
+            if (input is byte[] bytes)
+            {
+                if (conversionType == typeof(int[]))
+                {
+                    var len = bytes.Length % 4;
+                    if (len == 0)
+                    {
+                        var ints = new int[bytes.Length / 4];
+                        for (var i = 0; i < ints.Length; i++)
+                        {
+                            ints[i] = BitConverter.ToInt32(bytes, i * 4);
+                        }
+
+                        value = ints;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(uint[]))
+                {
+                    var len = bytes.Length % 4;
+                    if (len == 0)
+                    {
+                        var uints = new uint[bytes.Length / 4];
+                        for (var i = 0; i < uints.Length; i++)
+                        {
+                            uints[i] = BitConverter.ToUInt32(bytes, i * 4);
+                        }
+
+                        value = uints;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(long[]))
+                {
+                    var len = bytes.Length % 8;
+                    if (len == 0)
+                    {
+                        var longs = new long[bytes.Length / 8];
+                        for (var i = 0; i < longs.Length; i++)
+                        {
+                            longs[i] = BitConverter.ToInt64(bytes, i * 8);
+                        }
+
+                        value = longs;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(ulong[]))
+                {
+                    var len = bytes.Length % 8;
+                    if (len == 0)
+                    {
+                        var ulongs = new ulong[bytes.Length / 8];
+                        for (var i = 0; i < ulongs.Length; i++)
+                        {
+                            ulongs[i] = BitConverter.ToUInt64(bytes, i * 8);
+                        }
+
+                        value = ulongs;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(short[]))
+                {
+                    var len = bytes.Length % 2;
+                    if (len == 0)
+                    {
+                        var shorts = new short[bytes.Length / 2];
+                        for (var i = 0; i < shorts.Length; i++)
+                        {
+                            shorts[i] = BitConverter.ToInt16(bytes, i * 2);
+                        }
+
+                        value = shorts;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(ushort[]))
+                {
+                    var len = bytes.Length % 2;
+                    if (len == 0)
+                    {
+                        var ushorts = new ushort[bytes.Length / 2];
+                        for (var i = 0; i < ushorts.Length; i++)
+                        {
+                            ushorts[i] = BitConverter.ToUInt16(bytes, i * 2);
+                        }
+
+                        value = ushorts;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(float[]))
+                {
+                    var len = bytes.Length % 4;
+                    if (len == 0)
+                    {
+                        var floats = new float[bytes.Length / 4];
+                        for (var i = 0; i < floats.Length; i++)
+                        {
+                            floats[i] = BitConverter.ToSingle(bytes, i * 4);
+                        }
+
+                        value = floats;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(double[]))
+                {
+                    var len = bytes.Length % 8;
+                    if (len == 0)
+                    {
+                        var doubles = new double[bytes.Length / 8];
+                        for (var i = 0; i < doubles.Length; i++)
+                        {
+                            doubles[i] = BitConverter.ToDouble(bytes, i * 8);
+                        }
+
+                        value = doubles;
+                        return true;
+                    }
+                }
+                else if (conversionType == typeof(bool[]))
+                {
+                    var len = bytes.Length % 4;
+                    if (len == 0)
+                    {
+                        var bools = new bool[bytes.Length / 4];
+                        for (var i = 0; i < bools.Length; i++)
+                        {
+                            bools[i] = BitConverter.ToBoolean(bytes, i * 4);
+                        }
+
+                        value = bools;
+                        return true;
+                    }
+                }
+            }
+
             if (conversionType == typeof(Guid))
             {
                 var svalue = string.Format(provider, "{0}", input).Nullify();
@@ -1228,7 +1367,7 @@ namespace WicNet
                 }
             }
 
-            bool isGenericList = IsGenericList(conversionType, out var elementType);
+            var isGenericList = IsGenericList(conversionType, out var elementType);
             if (conversionType.IsArray || isGenericList)
             {
                 if (input is IEnumerable enumerable)

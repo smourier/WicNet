@@ -11,8 +11,51 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            Histogram();
+            //Grayscale();
             //CopyGif();
-            DrawEllipse();
+            //DrawEllipse();
+        }
+
+        static void Histogram()
+        {
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            using (var converted = bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA))
+            using (var clone = converted.Clone())
+            using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+            using (var rt = newBmp.CreateDeviceContext())
+            using (var cb = rt.CreateBitmapFromWicBitmap(clone.AsBitmap()))
+            using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Histogram))
+            {
+                fx.SetInput(0, cb);
+                rt.BeginDraw();
+                rt.DrawImage(fx);
+                rt.EndDraw();
+
+                var floats = fx.GetValue<float[]>("HistogramOutput", null);
+                foreach (var o in floats)
+                {
+                    Console.WriteLine(o);
+                }
+            }
+        }
+
+        static void Grayscale()
+        {
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            using (var converted = bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA))
+            using (var clone = converted.Clone())
+            using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+            using (var rt = newBmp.CreateDeviceContext())
+            using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Grayscale))
+            using (var cb = rt.CreateBitmapFromWicBitmap(clone.AsBitmap()))
+            {
+                fx.SetInput(0, cb);
+                rt.BeginDraw();
+                rt.DrawImage(fx);
+                rt.EndDraw();
+                newBmp.Save("gray.jpg");
+            }
         }
 
         static void DrawEllipse()
@@ -24,8 +67,7 @@ namespace WicNet.Tests
                     var width = 200;
                     var height = width * bmp.Height / bmp.Width;
                     using (var clone = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
-                    using (var fac = D2D1Functions.D2D1CreateFactory())
-                    using (var rt = fac.CreateWicBitmapRenderTarget<ID2D1DeviceContext>(clone.AsBitmap()))
+                    using (var rt = clone.CreateDeviceContext())
                     using (var dbmp = rt.CreateBitmapFromWicBitmap(converted.ComObject))
                     using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Red))
                     {
@@ -33,7 +75,7 @@ namespace WicNet.Tests
                         rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(clone.Size)));
                         rt.DrawEllipse(new D2D1_ELLIPSE(width / 2, height / 2, Math.Min(width, height) / 2), brush, 4);
                         rt.EndDraw();
-                        clone.Save("test.jpg");
+                        clone.Save("ellipse.jpg");
                     }
                 }
             }

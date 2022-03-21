@@ -12,50 +12,50 @@ namespace DirectN
     {
         // ID2D1Properties
         [PreserveSig]
-        new uint GetPropertyCount();
+        new int GetPropertyCount();
         
         [PreserveSig]
-        new HRESULT GetPropertyName(uint index, /* _Out_writes_(nameCount) */ [MarshalAs(UnmanagedType.LPWStr)] string name, uint nameCount);
+        new HRESULT GetPropertyName(int index, /* _Out_writes_(nameCount) */ [MarshalAs(UnmanagedType.LPWStr)] string name, int nameCount);
         
         [PreserveSig]
-        new uint GetPropertyNameLength(uint index);
+        new int GetPropertyNameLength(int index);
         
         [PreserveSig]
-        new D2D1_PROPERTY_TYPE GetType(uint index);
+        new D2D1_PROPERTY_TYPE GetType(int index);
         
         [PreserveSig]
-        new uint GetPropertyIndex(/* _In_ */ [MarshalAs(UnmanagedType.LPWStr)] string name);
+        new int GetPropertyIndex(/* _In_ */ [MarshalAs(UnmanagedType.LPWStr)] string name);
         
         [PreserveSig]
         new HRESULT SetValueByName(/* _In_ */ [MarshalAs(UnmanagedType.LPWStr)] string name, D2D1_PROPERTY_TYPE type, /* _In_reads_(dataSize) */ [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] data, int dataSize);
         
         [PreserveSig]
-        new HRESULT SetValue(uint index, D2D1_PROPERTY_TYPE type, /* _In_reads_(dataSize) */ [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] data, int dataSize);
+        new HRESULT SetValue(int index, D2D1_PROPERTY_TYPE type, /* _In_reads_(dataSize) */ [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] data, int dataSize);
         
         [PreserveSig]
         new HRESULT GetValueByName(/* _In_ */ [MarshalAs(UnmanagedType.LPWStr)] string name, D2D1_PROPERTY_TYPE type, /* _Out_writes_(dataSize) */ [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] data, int dataSize);
         
         [PreserveSig]
-        new HRESULT GetValue(uint index, D2D1_PROPERTY_TYPE type, /* _Out_writes_(dataSize) */ [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] data, int dataSize);
+        new HRESULT GetValue(int index, D2D1_PROPERTY_TYPE type, /* _Out_writes_(dataSize) */ [Out, MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 3)] byte[] data, int dataSize);
         
         [PreserveSig]
-        new uint GetValueSize(uint index);
+        new int GetValueSize(int index);
         
         [PreserveSig]
-        new HRESULT GetSubProperties(uint index, /* _COM_Outptr_result_maybenull_ */ out ID2D1Properties subProperties);
+        new HRESULT GetSubProperties(int index, /* _COM_Outptr_result_maybenull_ */ out ID2D1Properties subProperties);
         
         // ID2D1Effect
         [PreserveSig]
-        void SetInput(uint index, /* _In_opt_ */ ID2D1Image input, bool invalidate);
+        void SetInput(int index, /* _In_opt_ */ ID2D1Image input, bool invalidate);
         
         [PreserveSig]
-        HRESULT SetInputCount(uint inputCount);
+        HRESULT SetInputCount(int inputCount);
         
         [PreserveSig]
-        void GetInput(uint index, /* _Outptr_result_maybenull_ */ out ID2D1Image input);
+        void GetInput(int index, /* _Outptr_result_maybenull_ */ out ID2D1Image input);
         
         [PreserveSig]
-        uint GetInputCount();
+        int GetInputCount();
         
         [PreserveSig]
         void GetOutput(/* _Outptr_ */ out ID2D1Image outputImage);
