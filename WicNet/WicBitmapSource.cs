@@ -168,6 +168,20 @@ namespace WicNet
             _comObject = clip;
         }
 
+        public void ConvertTo(Guid pixelFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
+        {
+            if (WicPixelFormat == null)
+                throw new InvalidOperationException();
+
+            var cvt = WicPixelFormat.GetPixelFormatConvertersTo(pixelFormat).FirstOrDefault();
+            if (cvt == null)
+                throw new InvalidOperationException();
+
+            var converter = cvt.Convert(this, pixelFormat, ditherType, palette, alphaThresholdPercent, paletteTranslate);
+            _comObject?.Dispose();
+            _comObject = converter;
+        }
+
         public void CopyPixels(int stride, int bufferSize, IntPtr buffer) => _comObject.Object.CopyPixels(IntPtr.Zero, stride, bufferSize, buffer).ThrowOnError();
         public void CopyPixels(int left, int top, int width, int height, int stride, int bufferSize, IntPtr buffer)
         {
@@ -442,18 +456,6 @@ namespace WicNet
         {
             _palette?.Dispose();
             _comObject?.Dispose();
-        }
-
-        public WicBitmapSource ConvertTo(Guid pixelFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
-        {
-            if (WicPixelFormat == null)
-                throw new InvalidOperationException();
-
-            var cvt = WicPixelFormat.GetPixelFormatConvertersTo(pixelFormat).FirstOrDefault();
-            if (cvt == null)
-                throw new InvalidOperationException();
-
-            return cvt.Convert(this, pixelFormat, ditherType, palette, alphaThresholdPercent, paletteTranslate);
         }
 
         int IComparable.CompareTo(object obj) => CompareTo(obj as WicBitmapSource);

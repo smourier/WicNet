@@ -52,7 +52,7 @@ namespace WicNet
             }
         }
 
-        public WicBitmapSource Convert(WicBitmapSource source, Guid targetFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
+        public IComObject<IWICFormatConverter> Convert(WicBitmapSource source, Guid targetFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
         {
             if (source == null)
                 throw new ArgumentNullException(nameof(source));
@@ -67,8 +67,7 @@ namespace WicNet
 
             var cvt = _comObject.CreateInstance();
             cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
-            // TODO
-            return new WicBitmapSource(cvt);
+            return cvt;
         }
 
         public void Dispose() => _comObject?.Dispose();
