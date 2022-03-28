@@ -233,10 +233,29 @@ namespace WicNet
         public static WicBitmapSource FromSource(WicBitmapSource source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromSource(source?.ComObject, option));
         public static WicBitmapSource FromSourceRect(WicBitmapSource source, int x, int y, int width, int height) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromSourceRect(source?.ComObject, x, y, width, height));
 
+        public void Scale(int boxSize, WICBitmapInterpolationMode mode = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
+        {
+            if (boxSize <= 0)
+                throw new ArgumentOutOfRangeException(nameof(boxSize));
+
+            if (Width > Height)
+            {
+                Scale(boxSize, null, mode, options);
+                return;
+            }
+            Scale(null, boxSize, mode, options);
+        }
+
         public void Scale(int? width, int? height, WICBitmapInterpolationMode mode = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
         {
             if (!width.HasValue && !height.HasValue)
                 return;
+
+            if (width.HasValue && width.Value <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width));
+
+            if (height.HasValue && height.Value <= 0)
+                throw new ArgumentOutOfRangeException(nameof(height));
 
             int neww;
             int newh;

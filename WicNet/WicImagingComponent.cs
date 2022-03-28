@@ -60,6 +60,7 @@ namespace WicNet
 
                     //WicEncoder.CreateBuiltIn();
                     //WicDecoder.CreateBuiltIn();
+                    component.Dispose();
                 }
             });
             return dic;

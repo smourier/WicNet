@@ -4,20 +4,19 @@ using DirectN;
 
 namespace WicNet
 {
-    public sealed class WicPixelFormatConverter : WicImagingComponent, IDisposable
+    public sealed class WicPixelFormatConverter : WicImagingComponent
     {
-        private readonly IComObject<IWICFormatConverterInfo> _comObject;
         private readonly Lazy<IReadOnlyList<WicPixelFormat>> _pixelFormatsList;
 
         public WicPixelFormatConverter(object comObject)
             : base(comObject)
         {
-            _comObject = new ComObjectWrapper<IWICFormatConverterInfo>(comObject).ComObject;
-            _comObject.Object.GetPixelFormats(0, null, out var len);
+            var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject).ComObject;
+            info.Object.GetPixelFormats(0, null, out var len);
             var pf = new Guid[len];
             if (len > 0)
             {
-                _comObject.Object.GetPixelFormats(len, pf, out _);
+                info.Object.GetPixelFormats(len, pf, out _);
             }
 
             PixelFormats = pf;
@@ -26,6 +25,12 @@ namespace WicNet
 
         public IReadOnlyList<Guid> PixelFormats { get; }
         public IReadOnlyList<WicPixelFormat> PixelFormatsList => _pixelFormatsList.Value;
+
+        private IComObject<IWICFormatConverterInfo> GetComObject() => WICImagingFactory.WithFactory(f =>
+        {
+            f.CreateComponentInfo(Clsid, out var info).ThrowOnError();
+            return new ComObject<IWICFormatConverterInfo>((IWICFormatConverterInfo)info);
+        });
 
         private IReadOnlyList<WicPixelFormat> GetPixelFormatsList()
         {
@@ -45,9 +50,11 @@ namespace WicNet
 
         public bool CanConvert(Guid from, Guid to)
         {
-            using (var cvt = _comObject.CreateInstance())
+            using (var cvt = GetComObject().CreateInstance())
             {
-                cvt.Object.CanConvert(from, to, out var can).ThrowOnError();
+                if (!cvt.Object.CanConvert(from, to, out var can).IsSuccess)
+                    return false;
+
                 return can;
             }
         }
@@ -65,11 +72,9 @@ namespace WicNet
                 pal = p.CopyColors();
             }
 
-            var cvt = _comObject.CreateInstance();
+            var cvt = GetComObject().CreateInstance();
             cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
             return cvt;
         }
-
-        public void Dispose() => _comObject?.Dispose();
     }
 }

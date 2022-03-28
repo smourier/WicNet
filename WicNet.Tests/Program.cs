@@ -12,11 +12,21 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
+            do
             {
-                Console.WriteLine(f);
+                foreach (var c in WicPixelFormat.AllComponents.OfType<WicPixelFormatConverter>().Where(pf => pf.CanConvert(WicPixelFormat.GUID_WICPixelFormat32bppBGR, WicPixelFormat.GUID_WICPixelFormat32bppBGRA)))
+                {
+                    Console.WriteLine(c);
+                }
             }
-            //Grayscale();
+            while (true);
+            return;
+            //Histograms();
+            //foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
+            //{
+            //    Console.WriteLine(f);
+            //}
+            //RotateAndGrayscale();
             //CopyGif();
             //DrawEllipse();
         }
@@ -32,6 +42,35 @@ namespace WicNet.Tests
             return (float)Math.Sqrt(distance);
         }
 
+        static void Histograms(int thumbSize = 100)
+        {
+            var hists = new List<Tuple<string, float[]>>();
+            using (var memBmp = new WicBitmapSource(thumbSize, thumbSize, WicPixelFormat.GUID_WICPixelFormat32bppBGR))
+            using (var dc = memBmp.CreateDeviceContext())
+            using (var fx = dc.CreateEffect(Direct2DEffects.CLSID_D2D1Histogram))
+            {
+                foreach (var file in Directory.EnumerateFiles(@"d:\temp\", "*.*", SearchOption.AllDirectories))
+                {
+                    Console.WriteLine(file);
+                    var hist = GetHistogram(file, dc, fx);
+                    hists.Add(new Tuple<string, float[]>(file, hist));
+                    //if (hists.Count > 10)
+                    //    break;
+                }
+            }
+
+            for (var i = 0; i < hists.Count; i++)
+            {
+                Console.WriteLine(hists[i].Item1);
+                for (var j = 0; j < hists.Count; j++)
+                {
+                    var dist1 = distance1(hists[i].Item2, hists[j].Item2);
+                    Console.WriteLine(" " + dist1 + " " + hists[j].Item1);
+                }
+            }
+        }
+
+
         static float[] GetHistogram(string filePath, int thumbSize = 100)
         {
             using (var memBmp = new WicBitmapSource(thumbSize, thumbSize, WicPixelFormat.GUID_WICPixelFormat32bppBGR))
@@ -46,8 +85,7 @@ namespace WicNet.Tests
             {
                 bmp.Scale(100, null);
                 bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
-                using (var clone = bmp.Clone())
-                using (var cb = dc.CreateBitmapFromWicBitmap(clone.AsBitmap()))
+                using (var cb = dc.CreateBitmapFromWicBitmap(bmp.ComObject))
                 {
                     fx.SetInput(0, cb);
                     dc.BeginDraw();
@@ -64,11 +102,10 @@ namespace WicNet.Tests
             {
                 bmp.Rotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
                 bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
-                using (var clone = bmp.Clone())
                 using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
                 using (var rt = newBmp.CreateDeviceContext())
                 using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Grayscale))
-                using (var cb = rt.CreateBitmapFromWicBitmap(clone.AsBitmap()))
+                using (var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
                 {
                     fx.SetInput(0, cb);
                     rt.BeginDraw();
@@ -87,16 +124,16 @@ namespace WicNet.Tests
                 bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
                 var width = 200;
                 var height = width * bmp.Height / bmp.Width;
-                using (var clone = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
-                using (var rt = clone.CreateDeviceContext())
+                using (var memBmp = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                using (var rt = memBmp.CreateDeviceContext())
                 using (var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
                 using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Red))
                 {
                     rt.BeginDraw();
-                    rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(clone.Size)));
+                    rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(memBmp.Size)));
                     rt.DrawEllipse(new D2D1_ELLIPSE(width / 2, height / 2, Math.Min(width, height) / 2), brush, 4);
                     rt.EndDraw();
-                    clone.Save("ellipse.jpg");
+                    memBmp.Save("ellipse.jpg");
                     Process.Start(new ProcessStartInfo("ellipse.jpg") { UseShellExecute = true });
                 }
             }
