@@ -308,19 +308,13 @@ namespace WicNet
         public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(fileHandle, options: options).GetFrame(frameIndex);
         public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(stream, options: options).GetFrame(frameIndex);
 
-        public IComObject<ID2D1RenderTarget> CreateRenderTarget() => CreateRenderTarget<ID2D1RenderTarget>();
-        public IComObject<ID2D1DeviceContext> CreateDeviceContext() => CreateRenderTarget<ID2D1DeviceContext>();
-        public IComObject<T> CreateRenderTarget<T>() where T : ID2D1RenderTarget
+        public IComObject<ID2D1RenderTarget> CreateRenderTarget(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateRenderTarget<ID2D1RenderTarget>(renderTargetProperties);
+        public IComObject<ID2D1DeviceContext> CreateDeviceContext(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateRenderTarget<ID2D1DeviceContext>(renderTargetProperties);
+        public IComObject<T> CreateRenderTarget<T>(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget
         {
             var bitmap = AsBitmap();
             using (var fac = D2D1Functions.D2D1CreateFactory())
-            {
-                var rt = fac.CreateWicBitmapRenderTarget(bitmap);
-                if (typeof(T) == typeof(ID2D1RenderTarget))
-                    return (IComObject<T>)rt;
-
-                return new ComObject<T>((T)rt.Object);
-            }
+                return fac.CreateWicBitmapRenderTarget<T>(bitmap, renderTargetProperties);
         }
 
         public void WithLock(WICBitmapLockFlags flags, Action<WicBitmapLock> action, WICRect? rect = null)

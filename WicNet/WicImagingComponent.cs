@@ -93,8 +93,10 @@ namespace WicNet
         }
 
         public static IEnumerable<WicImagingComponent> AllComponents => _allComponents.Value.Values;
-        public static IEnumerable<string> DecoderFileExtensions => _decoderExtensions.Value;
-        public static IEnumerable<string> EncoderFileExtensions => _encoderExtensions.Value;
+
+        // one day, these should become IReadOnlySet<string>
+        public static ISet<string> DecoderFileExtensions => _decoderExtensions.Value;
+        public static ISet<string> EncoderFileExtensions => _encoderExtensions.Value;
 
         protected WicImagingComponent(object comObject)
         {

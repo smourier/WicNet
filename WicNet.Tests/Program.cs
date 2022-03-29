@@ -12,16 +12,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            do
-            {
-                foreach (var c in WicPixelFormat.AllComponents.OfType<WicPixelFormatConverter>().Where(pf => pf.CanConvert(WicPixelFormat.GUID_WICPixelFormat32bppBGR, WicPixelFormat.GUID_WICPixelFormat32bppBGRA)))
-                {
-                    Console.WriteLine(c);
-                }
-            }
-            while (true);
-            return;
-            //Histograms();
+            Histograms();
             //foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
             //{
             //    Console.WriteLine(f);
@@ -49,8 +40,15 @@ namespace WicNet.Tests
             using (var dc = memBmp.CreateDeviceContext())
             using (var fx = dc.CreateEffect(Direct2DEffects.CLSID_D2D1Histogram))
             {
-                foreach (var file in Directory.EnumerateFiles(@"d:\temp\", "*.*", SearchOption.AllDirectories))
+                foreach (var file in Directory.EnumerateFiles(@"d:\temp\", "*.*", SearchOption.TopDirectoryOnly))
                 {
+                    var ext = Path.GetExtension(file);
+                    if (!WicImagingComponent.DecoderFileExtensions.Contains(ext))
+                        continue;
+
+                    if (new FileInfo(file).Length == 0)
+                        continue;
+
                     Console.WriteLine(file);
                     var hist = GetHistogram(file, dc, fx);
                     hists.Add(new Tuple<string, float[]>(file, hist));
