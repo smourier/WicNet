@@ -10,48 +10,44 @@ Simple use case is load & save:
         bmp.Save("myHeicFile.heic");
     }
 
-Draw ellipse over an image & save (uses D2D):
+Draw ellipse over an image and save (uses D2D):
 
-    using (var bmp = WicBitmapSource.Load("myJpegFile.jpg"))
-    // we need a D2D1-compatible Wic bitmap
-    using (var converted = bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+    using (var bmp = WicBitmapSource.Load("MyImag.jpg"))
     {
+        bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);  // needed to be able to work with Direct2D
         var width = 200;
         var height = width * bmp.Height / bmp.Width;
-                
-        // create a bitmap (black)
-        using (var clone = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
-        using (var rt = clone.CreateDeviceContext())
-        using (var dbmp = rt.CreateBitmapFromWicBitmap(converted.ComObject)) // import Wic => D2D (CPU => GPU)
-        using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Red)) // create a red brush
+        using (var memBmp = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+        using (var rt = memBmp.CreateDeviceContext())
+        using (var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
+        using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Red))
         {
             rt.BeginDraw();
-                    
-            // draw bitmap
-            rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(clone.Size)));
-
-            // draw red ellipse
+            rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(memBmp.Size)));
             rt.DrawEllipse(new D2D1_ELLIPSE(width / 2, height / 2, Math.Min(width, height) / 2), brush, 4);
             rt.EndDraw();
-
-            // save
-            clone.Save("ellipse.jpg");
+            memBmp.Save("ellipse.jpg");
         }
     }
 
-Convert image to grayscale & save (uses D2D effects):
+Rotate image, convert to grayscale and save (uses D2D effects):
 
-    using (var bmp = WicBitmapSource.Load("myJpegFile.jpg"))
-    using (var converted = bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA))
-    using (var clone = converted.Clone())
-    using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
-    using (var rt = newBmp.CreateDeviceContext())
-    using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Grayscale))
-    using (var cb = rt.CreateBitmapFromWicBitmap(clone.AsBitmap()))
+    static void RotateAndGrayscale()
     {
-        fx.SetInput(0, cb);
-        rt.BeginDraw();
-        rt.DrawImage(fx);
-        rt.EndDraw();
-        newBmp.Save("gray.jpg");
+        using (var bmp = WicBitmapSource.Load("MyImage.jpg"))
+        {
+            bmp.Rotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
+            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR); // needed to be able to work with Direct2D
+            using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+            using (var rt = newBmp.CreateDeviceContext())
+            using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Grayscale))
+            using (var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
+            {
+                fx.SetInput(0, cb);
+                rt.BeginDraw();
+                rt.DrawImage(fx);
+                rt.EndDraw();
+                newBmp.Save("gray.jpg");
+            }
+        }
     }
