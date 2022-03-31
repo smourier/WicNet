@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using DirectN;
+using WicNet.Utilities;
 
 namespace WicNet
 {
@@ -304,9 +305,23 @@ namespace WicNet
             _comObject = clip;
         }
 
-        public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(filePath, options: options).GetFrame(frameIndex);
-        public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(fileHandle, options: options).GetFrame(frameIndex);
-        public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand) => WicBitmapDecoder.Load(stream, options: options).GetFrame(frameIndex);
+        public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+        {
+            using (var decoder = WicBitmapDecoder.Load(filePath, options: options))
+                return decoder.GetFrame(frameIndex);
+        }
+
+        public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+        {
+            using (var decoder = WicBitmapDecoder.Load(fileHandle, options: options))
+                return decoder.GetFrame(frameIndex);
+        }
+
+        public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+        {
+            using (var decoder = WicBitmapDecoder.Load(stream, options: options))
+                return decoder.GetFrame(frameIndex);
+        }
 
         public IComObject<ID2D1RenderTarget> CreateRenderTarget(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateRenderTarget<ID2D1RenderTarget>(renderTargetProperties);
         public IComObject<ID2D1DeviceContext> CreateDeviceContext(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateRenderTarget<ID2D1DeviceContext>(renderTargetProperties);

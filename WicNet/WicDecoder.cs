@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using WicNet.Utilities;
 
 namespace WicNet
 {

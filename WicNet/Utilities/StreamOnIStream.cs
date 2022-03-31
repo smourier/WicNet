@@ -5,8 +5,9 @@ using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
 using System.Text;
 using System.Threading;
+using DirectN;
 
-namespace DirectN
+namespace WicNet.Utilities
 {
     public class StreamOnIStream : Stream
     {

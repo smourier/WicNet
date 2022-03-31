@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Reflection;
 using DirectN;
+using WicNet.Utilities;
 
 namespace WicNet.Tests
 {
@@ -67,7 +68,6 @@ namespace WicNet.Tests
                 }
             }
         }
-
 
         static float[] GetHistogram(string filePath, int thumbSize = 100)
         {

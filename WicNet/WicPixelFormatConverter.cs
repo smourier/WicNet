@@ -11,16 +11,18 @@ namespace WicNet
         public WicPixelFormatConverter(object comObject)
             : base(comObject)
         {
-            var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject).ComObject;
-            info.Object.GetPixelFormats(0, null, out var len);
-            var pf = new Guid[len];
-            if (len > 0)
+            using (var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject))
             {
-                info.Object.GetPixelFormats(len, pf, out _);
-            }
+                info.Object.GetPixelFormats(0, null, out var len);
+                var pf = new Guid[len];
+                if (len > 0)
+                {
+                    info.Object.GetPixelFormats(len, pf, out _);
+                }
 
-            PixelFormats = pf;
-            _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
+                PixelFormats = pf;
+                _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
+            }
         }
 
         public IReadOnlyList<Guid> PixelFormats { get; }
@@ -50,7 +52,8 @@ namespace WicNet
 
         public bool CanConvert(Guid from, Guid to)
         {
-            using (var cvt = GetComObject().CreateInstance())
+            using (var co = GetComObject())
+            using (var cvt = co.CreateInstance())
             {
                 if (!cvt.Object.CanConvert(from, to, out var can).IsSuccess)
                     return false;
@@ -72,9 +75,12 @@ namespace WicNet
                 pal = p.CopyColors();
             }
 
-            var cvt = GetComObject().CreateInstance();
-            cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
-            return cvt;
+            using (var co = GetComObject())
+            {
+                var cvt = co.CreateInstance();
+                cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
+                return cvt;
+            }
         }
     }
 }

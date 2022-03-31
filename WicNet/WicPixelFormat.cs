@@ -59,7 +59,7 @@ namespace WicNet
         public static bool operator >(WicPixelFormat left, WicPixelFormat right) => left is object && left.CompareTo(right) > 0;
         public static bool operator >=(WicPixelFormat left, WicPixelFormat right) => left is null ? right is null : left.CompareTo(right) >= 0;
 
-        public static string GetFormatName(Guid guid) => Extensions.GetGuidName(typeof(WicPixelFormat), guid);
+        public static string GetFormatName(Guid guid) => Utilities.Extensions.GetGuidName(typeof(WicPixelFormat), guid);
 
         public static readonly Guid GUID_WICPixelFormat112bpp6ChannelsAlpha = new Guid("6fddc324-4e03-4bfe-b185-3d77768dc937");
         public static readonly Guid GUID_WICPixelFormat112bpp7Channels = new Guid("6fddc324-4e03-4bfe-b185-3d77768dc92a");

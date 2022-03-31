@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using DirectN;
+using WicNet.Utilities;
 
 namespace WicNet
 {
@@ -14,77 +15,78 @@ namespace WicNet
         protected WicCodec(object comObject)
             : base(comObject)
         {
-            var info = new ComObjectWrapper<IWICBitmapCodecInfo>(comObject).ComObject;
-
-            _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
-            info.Object.GetContainerFormat(out Guid guid);
-            ContainerFormat = guid;
-
-            info.Object.GetFileExtensions(0, null, out var len);
-            if (len >= 0)
+            using (var info = new ComObjectWrapper<IWICBitmapCodecInfo>(comObject).ComObject)
             {
-                var sb = new StringBuilder(len);
-                info.Object.GetFileExtensions(len + 1, sb, out _);
-                FileExtensions = sb.ToString();
-            }
+                _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
+                info.Object.GetContainerFormat(out Guid guid);
+                ContainerFormat = guid;
 
-            info.Object.GetColorManagementVersion(0, null, out len);
-            if (len >= 0)
-            {
-                var sb = new StringBuilder(len);
-                info.Object.GetColorManagementVersion(len + 1, sb, out _);
-                ColorManagementVersion = sb.ToString();
-            }
+                info.Object.GetFileExtensions(0, null, out var len);
+                if (len >= 0)
+                {
+                    var sb = new StringBuilder(len);
+                    info.Object.GetFileExtensions(len + 1, sb, out _);
+                    FileExtensions = sb.ToString();
+                }
 
-            info.Object.GetDeviceManufacturer(0, null, out len);
-            if (len >= 0)
-            {
-                var sb = new StringBuilder(len);
-                info.Object.GetDeviceManufacturer(len + 1, sb, out _);
-                DeviceManufacturer = sb.ToString();
-            }
+                info.Object.GetColorManagementVersion(0, null, out len);
+                if (len >= 0)
+                {
+                    var sb = new StringBuilder(len);
+                    info.Object.GetColorManagementVersion(len + 1, sb, out _);
+                    ColorManagementVersion = sb.ToString();
+                }
 
-            info.Object.GetDeviceModels(0, null, out len);
-            if (len >= 0)
-            {
-                var sb = new StringBuilder(len);
-                info.Object.GetDeviceModels(len + 1, sb, out _);
-                DeviceModels = sb.ToString();
-            }
+                info.Object.GetDeviceManufacturer(0, null, out len);
+                if (len >= 0)
+                {
+                    var sb = new StringBuilder(len);
+                    info.Object.GetDeviceManufacturer(len + 1, sb, out _);
+                    DeviceManufacturer = sb.ToString();
+                }
 
-            info.Object.GetMimeTypes(0, null, out len);
-            if (len >= 0)
-            {
-                var sb = new StringBuilder(len);
-                info.Object.GetMimeTypes(len + 1, sb, out _);
-                MimeTypes = sb.ToString();
-            }
+                info.Object.GetDeviceModels(0, null, out len);
+                if (len >= 0)
+                {
+                    var sb = new StringBuilder(len);
+                    info.Object.GetDeviceModels(len + 1, sb, out _);
+                    DeviceModels = sb.ToString();
+                }
 
-            info.Object.DoesSupportAnimation(out bool b);
-            SupportsAnimation = b;
+                info.Object.GetMimeTypes(0, null, out len);
+                if (len >= 0)
+                {
+                    var sb = new StringBuilder(len);
+                    info.Object.GetMimeTypes(len + 1, sb, out _);
+                    MimeTypes = sb.ToString();
+                }
 
-            info.Object.DoesSupportChromakey(out b);
-            SupportsChromakey = b;
+                info.Object.DoesSupportAnimation(out bool b);
+                SupportsAnimation = b;
 
-            info.Object.DoesSupportLossless(out b);
-            SupportsLossless = b;
+                info.Object.DoesSupportChromakey(out b);
+                SupportsChromakey = b;
 
-            info.Object.DoesSupportMultiframe(out b);
-            SupportsMultiframe = b;
+                info.Object.DoesSupportLossless(out b);
+                SupportsLossless = b;
 
-            FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
-            MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
+                info.Object.DoesSupportMultiframe(out b);
+                SupportsMultiframe = b;
 
-            info.Object.GetPixelFormats(0, null, out len);
-            if (len > 0)
-            {
-                var pf = new Guid[len];
-                info.Object.GetPixelFormats(len, pf, out _).ThrowOnError();
-                PixelFormats = pf;
-            }
-            else
-            {
-                PixelFormats = Array.Empty<Guid>();
+                FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
+                MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
+
+                info.Object.GetPixelFormats(0, null, out len);
+                if (len > 0)
+                {
+                    var pf = new Guid[len];
+                    info.Object.GetPixelFormats(len, pf, out _).ThrowOnError();
+                    PixelFormats = pf;
+                }
+                else
+                {
+                    PixelFormats = Array.Empty<Guid>();
+                }
             }
         }
 
@@ -146,7 +148,7 @@ namespace WicNet
 
         public static T FromContainerFormatGuid<T>(Guid guid) where T : WicCodec => AllComponents.OfType<T>().FirstOrDefault(c => c.ContainerFormat == guid);
 
-        public static string GetFormatName(Guid guid) => Extensions.GetGuidName(typeof(WicCodec), guid);
+        public static string GetFormatName(Guid guid) => Utilities.Extensions.GetGuidName(typeof(WicCodec), guid);
 
         public static readonly Guid GUID_ContainerFormatAdng = new Guid("f3ff6d0d-38c0-41c4-b1fe-1f3824f17b84");
         public static readonly Guid GUID_ContainerFormatBmp = new Guid("0af1d87e-fcfe-4188-bdeb-a7906471cbe3");

@@ -1,10 +1,10 @@
 ﻿using System;
 
-namespace WicNet
+namespace DirectN
 {
     public static class Direct2DEffects
     {
-        public static string GetEffectName(Guid guid) => Extensions.GetGuidName(typeof(Direct2DEffects), guid);
+        public static string GetEffectName(Guid guid) => WicNet.Utilities.Extensions.GetGuidName(typeof(Direct2DEffects), guid);
 
         public static readonly Guid CLSID_D2D12DAffineTransform = new Guid("6aa97485-6354-4cfc-908c-e4a74f62c96c");
         public static readonly Guid CLSID_D2D13DPerspectiveTransform = new Guid("c2844d0b-3d86-46e7-85ba-526c9240f3fb");

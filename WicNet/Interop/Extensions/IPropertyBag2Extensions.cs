@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using WicNet;
+using WicNet.Utilities;
 
 namespace DirectN
 {

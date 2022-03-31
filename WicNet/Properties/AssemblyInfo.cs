@@ -1,6 +1,5 @@
 ﻿using System.Reflection;
 using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
 
 #if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
@@ -16,5 +15,5 @@ using System.Runtime.Versioning;
 [assembly: ComVisible(false)]
 [assembly: Guid("40d973c4-2a06-4a0f-a91f-029fce007a04")]
 
-[assembly: AssemblyVersion("1.4.2.0")]
-[assembly: AssemblyFileVersion("1.4.2.0")]
+[assembly: AssemblyVersion("1.4.2.1")]
+[assembly: AssemblyFileVersion("1.4.2.1")]

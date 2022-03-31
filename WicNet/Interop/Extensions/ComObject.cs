@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Diagnostics;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
+using WicNet.Utilities;
 
 namespace DirectN
 {
@@ -23,8 +25,9 @@ namespace DirectN
 
 #if DEBUG
             Id = Interlocked.Increment(ref _id);
+            LiveObjects[Id] = this;
             ConstructorThreadId = Environment.CurrentManagedThreadId;
-            Trace("+");
+            Trace(null, "+");
 #endif
         }
 
@@ -37,7 +40,7 @@ namespace DirectN
                 if (obj == null)
                 {
 #if DEBUG
-                    Trace("!!!", "Already disposed");
+                    Trace("!!! Already disposed");
 #endif
                     throw new ObjectDisposedException(nameof(Object));
                 }
@@ -130,7 +133,7 @@ namespace DirectN
                 return;
 
             //#if DEBUG
-            //            Trace("~", "disposing: " + disposing + " duration: " + Duration.Milliseconds);
+            //            Trace("~disposing: " + disposing + " duration: " + Duration.Milliseconds);
             //#endif
             if (!IsDisposed)
             {
@@ -152,7 +155,8 @@ namespace DirectN
                     //    return;
 
                     var count = Marshal.ReleaseComObject(obj);
-                    Trace("~", "disposing: " + disposing + " count: " + count);
+                    Trace("disposing: " + disposing + " count: " + count, "~");
+                    LiveObjects.TryRemove(Id, out _);
 #else
                     Marshal.ReleaseComObject(obj);
 #endif
@@ -176,6 +180,16 @@ namespace DirectN
         }
 
 #if DEBUG
+        public static void TraceLiveObjects()
+        {
+            var array = LiveObjects.ToArray();
+            foreach (var kv in array)
+            {
+                kv.Value.Trace(null, "? ");
+            }
+        }
+
+        public static readonly System.Collections.Concurrent.ConcurrentDictionary<long, ComObject> LiveObjects = new System.Collections.Concurrent.ConcurrentDictionary<long, ComObject>();
         protected virtual string ObjectTypeName => null;
         private static long _id;
         private static readonly Stopwatch _sw = new Stopwatch();
@@ -185,7 +199,7 @@ namespace DirectN
             _sw.Start();
         }
 
-        protected void Trace(string methodName, string message = null)
+        protected void Trace(string message, [CallerMemberName] string methodName = null)
         {
             // many COM objects (like DXGI ones) dont' like to be used on different threads
             // so we tracks calls on different threads
@@ -207,7 +221,13 @@ namespace DirectN
             {
                 s += " " + message;
             }
-            //System.Diagnostics.Trace.WriteLine(s, methodName);
+
+            if (methodName != null)
+            {
+                s = methodName + s;
+            }
+
+            EventProvider.Default.WriteMessageEvent(s);
         }
 
         public long Id { get; }
@@ -252,9 +272,6 @@ namespace DirectN
 #if DEBUG
         protected override string ObjectTypeName => typeof(T).Name;
 #endif
-
-        //public static implicit operator ComObject<T>(T value) => new ComObject<T>(value);
-        //public static implicit operator T(ComObject<T> value) => value.Object;
     }
 
     public interface IComObject : IDisposable

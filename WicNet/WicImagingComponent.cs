@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using DirectN;
+using WicNet.Utilities;
 
 namespace WicNet
 {
@@ -93,7 +94,7 @@ namespace WicNet
         }
 
         public static IEnumerable<WicImagingComponent> AllComponents => _allComponents.Value.Values;
-
+        
         // one day, these should become IReadOnlySet<string>
         public static ISet<string> DecoderFileExtensions => _decoderExtensions.Value;
         public static ISet<string> EncoderFileExtensions => _encoderExtensions.Value;
@@ -217,7 +218,7 @@ namespace WicNet
             return DecoderFileExtensions.Contains(ext);
         }
 
-        public static string GetClassName(Guid guid) => Extensions.GetGuidName(typeof(WicImagingComponent), guid);
+        public static string GetClassName(Guid guid) => Utilities.Extensions.GetGuidName(typeof(WicImagingComponent), guid);
 
         public static readonly Guid CLSID_WICAdngDecoder = new Guid("981d9411-909e-42a7-8f5d-a747ff052edb");
         public static readonly Guid CLSID_WICBmpDecoder = new Guid("6b462062-7cbf-400d-9fdb-813dd10f2778");

@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Text;
 using DirectN;
+using WicNet.Utilities;
 
 namespace WicNet
 {
@@ -176,10 +177,10 @@ namespace WicNet
 
         public static string GetFormatName(Guid guid)
         {
-            if (Extensions.TryGetGuidName(typeof(WicMetadataQueryReader), guid, out var name))
+            if (Utilities.Extensions.TryGetGuidName(typeof(WicMetadataQueryReader), guid, out var name))
                 return name;
 
-            return Extensions.GetGuidName(typeof(WicCodec), guid);
+            return Utilities.Extensions.GetGuidName(typeof(WicCodec), guid);
         }
 
         public static readonly Guid GUID_MetadataFormat8BIMIPTC = new Guid("0010568c-0852-4e6a-b191-5c33ac5b0430");

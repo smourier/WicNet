@@ -7,10 +7,6 @@ namespace WicNet
         public WicMetadataWriter(object comObject)
             : base(comObject)
         {
-            using (var info = new ComObjectWrapper<IWICMetadataWriterInfo>(comObject))
-            {
-                // nothing here today
-            }
         }
     }
 }

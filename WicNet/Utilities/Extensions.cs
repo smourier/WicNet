@@ -3,7 +3,7 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Reflection;
 
-namespace WicNet
+namespace WicNet.Utilities
 {
     public static class Extensions
     {

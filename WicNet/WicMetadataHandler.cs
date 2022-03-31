@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using DirectN;
+using WicNet.Utilities;
 
 namespace WicNet
 {
@@ -11,46 +12,48 @@ namespace WicNet
         protected WicMetadataHandler(object comObject)
             : base(comObject)
         {
-            var info = new ComObjectWrapper<IWICMetadataHandlerInfo>(comObject);
-            info.Object.GetMetadataFormat(out Guid guid);
-            Guid = guid;
-
-            info.Object.GetDeviceManufacturer(0, null, out var len);
-            if (len >= 0)
+            using (var info = new ComObjectWrapper<IWICMetadataHandlerInfo>(comObject))
             {
-                var sb = new StringBuilder(len);
-                info.Object.GetDeviceManufacturer(len + 1, sb, out _);
-                DeviceManufacturer = sb.ToString();
-            }
+                info.Object.GetMetadataFormat(out Guid guid);
+                Guid = guid;
 
-            info.Object.GetDeviceModels(0, null, out len);
-            if (len >= 0)
-            {
-                var sb = new StringBuilder(len);
-                info.Object.GetDeviceModels(len + 1, sb, out _);
-                DeviceModels = sb.ToString();
-            }
-
-            info.Object.GetContainerFormats(0, null, out var count);
-            if (count > 0)
-            {
-                var guids = new Guid[count];
-                if (info.Object.GetContainerFormats(count, guids, out _) == 0)
+                info.Object.GetDeviceManufacturer(0, null, out var len);
+                if (len >= 0)
                 {
-                    ContainerFormats = guids;
+                    var sb = new StringBuilder(len);
+                    info.Object.GetDeviceManufacturer(len + 1, sb, out _);
+                    DeviceManufacturer = sb.ToString();
                 }
+
+                info.Object.GetDeviceModels(0, null, out len);
+                if (len >= 0)
+                {
+                    var sb = new StringBuilder(len);
+                    info.Object.GetDeviceModels(len + 1, sb, out _);
+                    DeviceModels = sb.ToString();
+                }
+
+                info.Object.GetContainerFormats(0, null, out var count);
+                if (count > 0)
+                {
+                    var guids = new Guid[count];
+                    if (info.Object.GetContainerFormats(count, guids, out _) == 0)
+                    {
+                        ContainerFormats = guids;
+                    }
+                }
+
+                ContainerFormats = ContainerFormats ?? Array.Empty<Guid>();
+
+                info.Object.DoesRequireFullStream(out var b);
+                RequiresFullStream = b;
+
+                info.Object.DoesSupportPadding(out b);
+                SupportsPadding = b;
+
+                info.Object.DoesRequireFixedSize(out b);
+                RequiresFixedSize = b;
             }
-
-            ContainerFormats = ContainerFormats ?? Array.Empty<Guid>();
-
-            info.Object.DoesRequireFullStream(out var b);
-            RequiresFullStream = b;
-
-            info.Object.DoesSupportPadding(out b);
-            SupportsPadding = b;
-
-            info.Object.DoesRequireFixedSize(out b);
-            RequiresFixedSize = b;
         }
 
         public Guid Guid { get; }
