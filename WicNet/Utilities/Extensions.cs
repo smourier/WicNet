@@ -42,6 +42,17 @@ namespace WicNet.Utilities
             return false;
         }
 
+        public static int GetStride(int width, int bitsPerPixel)
+        {
+            if (width < 0)
+                throw new ArgumentOutOfRangeException(nameof(width));
+
+            if (bitsPerPixel <= 0)
+                throw new ArgumentOutOfRangeException(nameof(bitsPerPixel));
+
+            return (width * bitsPerPixel + 31) / 32 * 4;
+        }
+
         public static bool EqualsIgnoreCase(this string str, string text, bool trim = false)
         {
             if (trim)

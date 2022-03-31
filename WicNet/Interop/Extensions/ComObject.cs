@@ -201,6 +201,7 @@ namespace DirectN
 
         protected void Trace(string message, [CallerMemberName] string methodName = null)
         {
+            return;
             // many COM objects (like DXGI ones) dont' like to be used on different threads
             // so we tracks calls on different threads
             var s = Id.ToString();

@@ -30,6 +30,7 @@ namespace WicNet
         public IComObject<IWICBitmapSource> ComObject => _comObject;
         public WicIntSize Size => new WicIntSize(Width, Height);
         public WICRect Bounds => new WICRect(0, 0, Width, Height);
+        public int DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat.BitsPerPixel);
 
         public WicPalette Palette
         {
@@ -183,8 +184,19 @@ namespace WicNet
             _comObject = converter;
         }
 
-        public void CopyPixels(int stride, int bufferSize, IntPtr buffer) => _comObject.Object.CopyPixels(IntPtr.Zero, stride, bufferSize, buffer).ThrowOnError();
-        public void CopyPixels(int left, int top, int width, int height, int stride, int bufferSize, IntPtr buffer)
+        public void CopyPixels(int bufferSize, IntPtr buffer, int? stride = null)
+        {
+            if (bufferSize < 0)
+                throw new ArgumentOutOfRangeException(nameof(bufferSize));
+
+            if (buffer == IntPtr.Zero)
+                throw new ArgumentOutOfRangeException(nameof(buffer));
+
+            stride = stride ?? DefaultStride;
+            _comObject.Object.CopyPixels(IntPtr.Zero, stride.Value, bufferSize, buffer).ThrowOnError();
+        }
+
+        public void CopyPixels(int left, int top, int width, int height, int bufferSize, IntPtr buffer, int? stride = null)
         {
             if (width < 0)
                 throw new ArgumentOutOfRangeException(nameof(width));
@@ -192,9 +204,13 @@ namespace WicNet
             if (height < 0)
                 throw new ArgumentOutOfRangeException(nameof(height));
 
-            if (stride <= 0)
+            if (stride.HasValue && stride.Value <= 0)
                 throw new ArgumentOutOfRangeException(nameof(stride));
 
+            if (buffer == IntPtr.Zero)
+                throw new ArgumentOutOfRangeException(nameof(buffer));
+
+            stride = stride ?? DefaultStride;
             var rect = new WICRect();
             rect.X = left;
             rect.Y = top;
@@ -202,11 +218,12 @@ namespace WicNet
             rect.Height = height;
             using (var mem = new ComMemory(rect))
             {
-                _comObject.Object.CopyPixels(mem.Pointer, stride, bufferSize, buffer).ThrowOnError();
+                _comObject.Object.CopyPixels(mem.Pointer, stride.Value, bufferSize, buffer).ThrowOnError();
             }
         }
 
-        public byte[] CopyPixels(int left, int top, int width, int height, int stride)
+        public byte[] CopyPixels(int? stride = null) => CopyPixels(0, 0, Width, Height, stride);
+        public byte[] CopyPixels(int left, int top, int width, int height, int? stride = null)
         {
             if (width < 0)
                 throw new ArgumentOutOfRangeException(nameof(width));
@@ -214,15 +231,16 @@ namespace WicNet
             if (height < 0)
                 throw new ArgumentOutOfRangeException(nameof(height));
 
-            if (stride <= 0)
+            if (stride.HasValue && stride.Value <= width)
                 throw new ArgumentOutOfRangeException(nameof(stride));
 
-            var size = height * stride;
+            stride = stride ?? DefaultStride;
+            var size = height * stride.Value;
             var bytes = new byte[size];
             if (size > 0)
             {
                 var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0);
-                CopyPixels(left, top, width, height, stride, size, ptr);
+                CopyPixels(left, top, width, height, size, ptr, stride);
             }
             return bytes;
         }
@@ -338,9 +356,7 @@ namespace WicNet
                 throw new ArgumentNullException(nameof(action));
 
             using (var lck = CheckBitmap().Lock(flags, rect))
-            {
                 action(new WicBitmapLock(lck));
-            }
         }
 
         public T WithLock<T>(WICBitmapLockFlags flags, Func<WicBitmapLock, T> func, WICRect? rect = null)
@@ -349,9 +365,7 @@ namespace WicNet
                 throw new ArgumentNullException(nameof(func));
 
             using (var lck = CheckBitmap().Lock(flags, rect))
-            {
                 return func(new WicBitmapLock(lck));
-            }
         }
 
         public IComObject<IWICBitmap> AsBitmap(bool throwOnError = true) => _comObject.AsComObject<IWICBitmap>(throwOnError);
@@ -415,9 +429,7 @@ namespace WicNet
             }
 
             using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-            {
                 Save(file, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle);
-            }
         }
 
         public void Save(

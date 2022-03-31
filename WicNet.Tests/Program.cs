@@ -13,7 +13,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            Histograms();
+            BuildAtlasWithGPU();
+            //Histograms();
             //foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
             //{
             //    Console.WriteLine(f);
@@ -21,6 +22,100 @@ namespace WicNet.Tests
             //RotateAndGrayscale();
             //CopyGif();
             //DrawEllipse();
+        }
+
+        static void BuildAtlasWithCPU(int thumbSize = 96, int dimension = 20)
+        {
+            using (var memBmp = new WicBitmapSource(thumbSize * dimension, thumbSize * dimension, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+            {
+                memBmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, l =>
+                {
+                    var row = 0;
+                    var col = 0;
+                    var path = @"d:\temp";
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    foreach (var file in Directory.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly))
+                    {
+                        var ext = Path.GetExtension(file);
+                        if (!WicImagingComponent.DecoderFileExtensions.Contains(ext))
+                            continue;
+
+                        if (new FileInfo(file).Length < 32)
+                            continue;
+
+                        using (var bmp = WicBitmapSource.Load(file))
+                        {
+                            bmp.Scale(thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
+                            if (bmp.PixelFormat != memBmp.PixelFormat)
+                            {
+                                bmp.ConvertTo(memBmp.PixelFormat);
+                            }
+
+                            var stride = bmp.DefaultStride;
+                            var bytes = bmp.CopyPixels(stride);
+                            l.WriteRectangle(col * thumbSize, row * thumbSize, bytes, stride);
+                        }
+
+                        col++;
+                        if (col > dimension)
+                        {
+                            col = 0;
+                            row++;
+                        }
+                    }
+                    Console.WriteLine(sw.Elapsed);
+                });
+
+                memBmp.Save("atlas.jpg");
+            }
+        }
+
+        static void BuildAtlasWithGPU(int thumbSize = 96, int dimension = 20)
+        {
+            using (var memBmp = new WicBitmapSource(thumbSize * dimension, thumbSize * dimension, WicPixelFormat.GUID_WICPixelFormat32bppBGR))
+            {
+                using (var dc = memBmp.CreateDeviceContext())
+                {
+                    var row = 0;
+                    var col = 0;
+                    var path = @"d:\temp";
+                    var sw = new Stopwatch();
+                    sw.Start();
+                    foreach (var file in Directory.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly))
+                    {
+                        var ext = Path.GetExtension(file);
+                        if (!WicImagingComponent.DecoderFileExtensions.Contains(ext))
+                            continue;
+
+                        if (new FileInfo(file).Length < 32)
+                            continue;
+
+                        using (var bmp = WicBitmapSource.Load(file))
+                        {
+                            bmp.Scale(thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
+                            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+                            using (var cb = dc.CreateBitmapFromWicBitmap(bmp.ComObject))
+                            {
+                                var dr = D2D_RECT_F.Sized(col * thumbSize, row * thumbSize, bmp.Width, bmp.Height);
+                                dc.BeginDraw();
+                                dc.DrawBitmap(cb, destinationRectangle: dr);
+                                dc.EndDraw();
+                            }
+                        }
+
+                        col++;
+                        if (col > dimension)
+                        {
+                            col = 0;
+                            row++;
+                        }
+                    }
+
+                    Console.WriteLine(sw.Elapsed);
+                }
+                memBmp.Save("atlas.jpg");
+            }
         }
 
         static float distance1(float[] h1, float[] h2)
