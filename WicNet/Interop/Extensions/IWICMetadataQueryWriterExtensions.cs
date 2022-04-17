@@ -13,7 +13,10 @@ namespace DirectN
             if (writer == null)
                 throw new ArgumentNullException(nameof(writer));
 
-            if (metadata?.Any() == false)
+            if (metadata == null)
+                return;
+
+            if (!metadata.Any())
                 return;
 
             WICImagingFactory.WithFactory(factory =>

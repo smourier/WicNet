@@ -13,7 +13,10 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            BuildAtlasWithGPU();
+            //Dump("test.WICTiffCompressionZIP.tiff");
+            //return;
+            ToTiff("file_example_TIFF_1MB.tiff");
+            //BuildAtlasWithGPU();
             //Histograms();
             //foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
             //{
@@ -73,7 +76,7 @@ namespace WicNet.Tests
 
         static void BuildAtlasWithGPU(int thumbSize = 96, int dimension = 20)
         {
-            using (var memBmp = new WicBitmapSource(thumbSize * dimension, thumbSize * dimension, WicPixelFormat.GUID_WICPixelFormat32bppBGR))
+            using (var memBmp = new WicBitmapSource(thumbSize * dimension, thumbSize * dimension, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
             {
                 using (var dc = memBmp.CreateDeviceContext())
                 {
@@ -94,7 +97,11 @@ namespace WicNet.Tests
                         using (var bmp = WicBitmapSource.Load(file))
                         {
                             bmp.Scale(thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
-                            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+                            if (bmp.PixelFormat != WicPixelFormat.GUID_WICPixelFormat32bppPRGBA)
+                            {
+                                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+                            }
+
                             using (var cb = dc.CreateBitmapFromWicBitmap(bmp.ComObject))
                             {
                                 var dr = D2D_RECT_F.Sized(col * thumbSize, row * thumbSize, bmp.Width, bmp.Height);
@@ -293,8 +300,47 @@ namespace WicNet.Tests
             }
         }
 
+        static void ToTiff(string path)
+        {
+            using (var bmp = WicBitmapSource.Load(path))
+            {
+                //Dump(bmp.GetMetadataReader());
+
+                for (var i = 0; i < 8; i++)
+                {
+                    var option = (WICTiffCompressionOption)i;
+                    using var file = File.OpenWrite("test." + option + ".tiff");
+                    using var encoder = WICImagingFactory.CreateEncoder(WicCodec.GUID_ContainerFormatTiff);
+                    var mis = new ManagedIStream(file);
+                    encoder.Initialize(mis);
+
+                    var newFrame = encoder.CreateNewFrame();
+
+                    var dic = new Dictionary<string, object>();
+                    dic["TiffCompressionMethod"] = option;
+                    newFrame.Item2.Write(dic);
+                    newFrame.Initialize();
+
+                    using (var writer = newFrame.GetMetadataQueryWriter())
+                    {
+                        //writer.SetMetadataByName("/ifd/{ushort=296}", 1);
+                        writer.SetMetadataByName("/ifd/xmp/exif:ImageUniqueID", "ImageId" + option);
+                    }
+
+                    newFrame.WriteSource(bmp.ComObject);
+                    newFrame.Item1.Commit();
+
+                    encoder.Commit();
+                }
+            }
+        }
+
         static void Dump(string path)
         {
+            //using (var bmp = WicBitmapSource.Load(path))
+            //{
+            //}
+
             using (var dec = WicBitmapDecoder.Load(path))
             {
                 var reader = dec.GetMetadataQueryReader();
