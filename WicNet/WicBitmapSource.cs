@@ -100,6 +100,8 @@ namespace WicNet
             }
         }
 
+        public int Stride => WicPixelFormat.BitsPerPixel * Width / 8;
+
         public WicBitmapSource GetThumbnail()
         {
             var bmp = _comObject.As<IWICBitmapFrameDecode>(false)?.GetThumbnail();
