@@ -13,8 +13,9 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            DrawText();
             //Dump("test.WICTiffCompressionZIP.tiff");
-            //return;
+            return;
             ToTiff("file_example_TIFF_1MB.tiff");
             //BuildAtlasWithGPU();
             //Histograms();
@@ -237,6 +238,30 @@ namespace WicNet.Tests
                     Process.Start(new ProcessStartInfo("ellipse.jpg") { UseShellExecute = true });
                 }
             }
+        }
+
+        static void DrawText()
+        {
+            using (var fac = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED))
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            {
+                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+                using (var memBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                {
+                    using (var rt = memBmp.CreateDeviceContext())
+                    using (var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
+                    using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Green))
+                    using (var format = fac.CreateTextFormat("Segoe UI", 20))
+                    {
+                        rt.BeginDraw();
+                        rt.DrawBitmap(dbmp);
+                        rt.DrawText("Hello World!" + Environment.NewLine + "🤩😛😂", format, new D2D_RECT_F(10, 10, 200, 30), brush, D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+                        rt.EndDraw();
+                    }
+                    memBmp.Save("helloworld.jpg");
+                }
+            }
+            Process.Start(new ProcessStartInfo("helloworld.jpg") { UseShellExecute = true });
         }
 
         static void CopyGif()

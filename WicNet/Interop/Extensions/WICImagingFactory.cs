@@ -31,7 +31,7 @@ namespace DirectN
             if (func == null)
                 throw new ArgumentNullException(nameof(func));
 
-            var factory = (IWICImagingFactory)new ComFactory();
+            var factory = (IWICImagingFactory)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")));
             try
             {
                 return func(factory);
@@ -47,7 +47,7 @@ namespace DirectN
             if (action == null)
                 throw new ArgumentNullException(nameof(action));
 
-            var factory = (IWICImagingFactory)new ComFactory();
+            var factory = (IWICImagingFactory)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")));
             try
             {
                 action(factory);
@@ -56,11 +56,6 @@ namespace DirectN
             {
                 Marshal.ReleaseComObject(factory);
             }
-        }
-
-        [ComImport, Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")]
-        private class ComFactory
-        {
         }
     }
 }

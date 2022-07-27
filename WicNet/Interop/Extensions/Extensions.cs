@@ -7,6 +7,7 @@ using System.Linq;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
+using System.Text;
 
 namespace DirectN
 {
@@ -69,7 +70,6 @@ namespace DirectN
 
             return value;
         }
-
 
         public static uint ToUInt32(this float value)
         {
@@ -376,6 +376,34 @@ namespace DirectN
             }
             while (true);
             return total;
+        }
+
+        public static string GetAllMessages(this Exception exception) => GetAllMessages(exception, Environment.NewLine);
+        public static string GetAllMessages(this Exception exception, string separator)
+        {
+            if (exception == null)
+                return null;
+
+            var sb = new StringBuilder();
+            AppendMessages(sb, exception, separator);
+            return sb.ToString().Replace("..", ".");
+        }
+
+        private static void AppendMessages(StringBuilder sb, Exception e, string separator)
+        {
+            if (e == null)
+                return;
+
+            // this one is not interesting...
+            if (!(e is TargetInvocationException))
+            {
+                if (sb.Length > 0)
+                {
+                    sb.Append(separator);
+                }
+                sb.Append(e.Message);
+            }
+            AppendMessages(sb, e.InnerException, separator);
         }
     }
 }
