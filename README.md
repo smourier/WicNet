@@ -1,5 +1,7 @@
 # WicNet
-.NET interop classes for WIC (Windows Imaging Component) and Direct2D, based on netstandard 2.0, with zero dependency.
+.NET interop classes for WIC (Windows Imaging Component) Direct2D, and DirectWrire, based on netstandard 2.0, with zero dependency.
+
+Nuget Package is available here: https://www.nuget.org/packages/WicNet
 
 Work in still progress, however most operations should work. Create an issue if something's not working or feature is missing.
 
