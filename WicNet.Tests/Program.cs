@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Reflection;
 using DirectN;
 using WicNet.Utilities;
 
@@ -13,10 +12,10 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            DrawText();
+            DumpAllComponentsPossibleConversions();
+            //DrawText();
             //Dump("test.WICTiffCompressionZIP.tiff");
-            return;
-            ToTiff("file_example_TIFF_1MB.tiff");
+            //ToTiff("file_example_TIFF_1MB.tiff");
             //BuildAtlasWithGPU();
             //Histograms();
             //foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
@@ -26,6 +25,26 @@ namespace WicNet.Tests
             //RotateAndGrayscale();
             //CopyGif();
             //DrawEllipse();
+        }
+
+        static void DumpAllComponentsPossibleConversions()
+        {
+            var formats = WicImagingComponent.AllComponents.OfType<WicPixelFormat>();
+            foreach (var comp in WicImagingComponent.AllComponents.OfType<WicPixelFormatConverter>())
+            {
+                Console.WriteLine(comp.Type + " " + comp);
+                foreach (var to in comp.PixelFormatsList)
+                {
+                    foreach (var from in formats)
+                    {
+                        if (comp.CanConvert(from.Guid, to.Guid))
+                        {
+                            Console.WriteLine(" " + from + " => " + to);
+                        }
+                    }
+                }
+                Console.WriteLine();
+            }
         }
 
         static void BuildAtlasWithCPU(int thumbSize = 96, int dimension = 20)
@@ -317,7 +336,7 @@ namespace WicNet.Tests
             }
         }
 
-        static void DumpComponents()
+        static void DumpEncoderComponents()
         {
             foreach (var ext in WicImagingComponent.EncoderFileExtensions)
             {
