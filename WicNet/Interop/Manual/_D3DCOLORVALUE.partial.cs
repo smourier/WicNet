@@ -71,6 +71,40 @@ namespace DirectN
             this.b = b;
         }
 
+        public float ScA => RgbToScRgb(BA);
+        public float ScR => RgbToScRgb(BR);
+        public float ScG => RgbToScRgb(BG);
+        public float ScB => RgbToScRgb(BB);
+
+        public static float RgbToScRgb(byte value)
+        {
+            var val = value / 255.0f;
+            if (val <= 0)
+                return 0;
+
+            if (val <= 0.04045)
+                return val / 12.92f;
+
+            if (val < 1)
+                return (float)Math.Pow((val + 0.055) / 1.055, 2.4);
+
+            return 1;
+        }
+
+        public static byte ScRgbToRgb(float value)
+        {
+            if ((value <= 0))
+                return 0;
+
+            if (value <= 0.0031308)
+                return (byte)((255 * value * 12.92f) + 0.5f);
+
+            if (value < 1)
+                return (byte)((255 * ((1.055f * (float)Math.Pow(value, 1.0 / 2.4)) - 0.055f)) + 0.5f);
+
+            return 255;
+        }
+
         private static bool IsHexa(char c) => (c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F');
 
         public static _D3DCOLORVALUE FromColor(System.Drawing.Color color) => FromArgb(color.A, color.R, color.G, color.B);

@@ -187,7 +187,7 @@ namespace DirectN
             }
         }
 
-        public static object BytesToStructure(byte[] bytes, Type structureType)
+        public static object BytesToStructure(this byte[] bytes, Type structureType)
         {
             if (bytes == null)
                 throw new ArgumentNullException(nameof(bytes));

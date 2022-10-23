@@ -69,17 +69,30 @@ namespace WicNet
                 if (_comObject == null)
                     throw new ArgumentException("Source must be an " + nameof(IWICColorContext) + ".", nameof(source));
             }
-            _profile = new Lazy<ColorProfile>(() => ColorProfile.FromMemory(ProfileBytes), true);
+            _profile = new Lazy<ColorProfile>(() =>
+            {
+                var bytes = ProfileBytes;
+                if (bytes == null || bytes.Length == 0)
+                    return null;
+
+                return ColorProfile.FromMemory(ProfileBytes);
+            }, true);
         }
 
         public IComObject<IWICColorContext> ComObject => _comObject;
 
         public ColorProfile Profile => _profile.Value;
 
-        public uint ExifColorSpace
+        // 1 => A sRGB color space
+        // 2 => An Adobe RGB color space
+        // 3 => Unused
+        public uint? ExifColorSpace
         {
             get
             {
+                if (Type != WICColorContextType.WICColorContextExifColorSpace)
+                    return null;
+
                 _comObject.Object.GetExifColorSpace(out var value).ThrowOnError();
                 return value;
             }

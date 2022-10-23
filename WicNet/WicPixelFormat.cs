@@ -38,6 +38,18 @@ namespace WicNet
         public bool SupportsTransparency { get; }
         public override string ClsidName => GetFormatName(Clsid);
 
+        public WicColorContext GetColorContext() => WICImagingFactory.WithFactory(factory =>
+        {
+            factory.CreateComponentInfo(Clsid, out var info);
+            if (info is IWICPixelFormatInfo format)
+            {
+                format.GetColorContext(out var ctx);
+                if (ctx != null)
+                    return new WicColorContext(ctx);
+            }
+            return null;
+        });
+
         public static WicPixelFormat FromName(string name) => FromName<WicPixelFormat>(name);
         public static WicPixelFormat FromClsid(Guid clsid) => FromClsid<WicPixelFormat>(clsid);
         public IEnumerable<WicPixelFormatConverter> GetPixelFormatConvertersTo(Guid targetFormat) => AllComponents.OfType<WicPixelFormatConverter>().Where(pf => pf.CanConvert(Guid, targetFormat));
