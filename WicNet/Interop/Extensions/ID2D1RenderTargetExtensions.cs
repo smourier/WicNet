@@ -6,6 +6,33 @@ namespace DirectN
 {
     public static class ID2D1RenderTargetExtensions
     {
+        public static void Resize(this IComObject<ID2D1HwndRenderTarget> renderTarget, D2D_SIZE_U size) => Resize(renderTarget?.Object, size);
+        public static void Resize(this ID2D1HwndRenderTarget renderTarget, D2D_SIZE_U size)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException(nameof(renderTarget));
+
+            renderTarget.Resize(ref size).ThrowOnError();
+        }
+
+        public static D2D1_WINDOW_STATE CheckWindowState(this IComObject<ID2D1HwndRenderTarget> renderTarget) => CheckWindowState(renderTarget?.Object);
+        public static D2D1_WINDOW_STATE CheckWindowState(this ID2D1HwndRenderTarget renderTarget)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException(nameof(renderTarget));
+
+            return renderTarget.CheckWindowState();
+        }
+
+        public static IntPtr GetHwnd(this IComObject<ID2D1HwndRenderTarget> renderTarget) => GetHwnd(renderTarget?.Object);
+        public static IntPtr GetHwnd(this ID2D1HwndRenderTarget renderTarget)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException(nameof(renderTarget));
+
+            return renderTarget.GetHwnd();
+        }
+
         public static IComObject<ID2D1Bitmap> GetBitmap(this IComObject<ID2D1BitmapRenderTarget> renderTarget) => GetBitmap<ID2D1Bitmap>(renderTarget?.Object);
         public static IComObject<T> GetBitmap<T>(this IComObject<ID2D1BitmapRenderTarget> renderTarget) where T : ID2D1Bitmap => GetBitmap<T>(renderTarget?.Object);
         public static IComObject<T> GetBitmap<T>(this ID2D1BitmapRenderTarget renderTarget) where T : ID2D1Bitmap

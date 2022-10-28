@@ -1,11 +1,13 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.30907.101
+# Visual Studio Version 17
+VisualStudioVersion = 17.3.32929.385
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WicNet", "WicNet\WicNet.csproj", "{741BC93E-1510-48A9-895C-0CD9C2D21C0D}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WicNet", "WicNet\WicNet.csproj", "{741BC93E-1510-48A9-895C-0CD9C2D21C0D}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WicNet.Tests", "WicNet.Tests\WicNet.Tests.csproj", "{15339295-2E3A-4E0D-91FC-576CCE55B056}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WicNet.Tests", "WicNet.Tests\WicNet.Tests.csproj", "{15339295-2E3A-4E0D-91FC-576CCE55B056}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WicNetExplorer", "WicNetExplorer\WicNetExplorer.csproj", "{33F703F7-E491-4D8C-86E4-F2152EF2ECA3}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{15339295-2E3A-4E0D-91FC-576CCE55B056}.Release|Any CPU.Build.0 = Release|Any CPU
+		{33F703F7-E491-4D8C-86E4-F2152EF2ECA3}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{33F703F7-E491-4D8C-86E4-F2152EF2ECA3}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{33F703F7-E491-4D8C-86E4-F2152EF2ECA3}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{33F703F7-E491-4D8C-86E4-F2152EF2ECA3}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

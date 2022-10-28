@@ -21,6 +21,32 @@ namespace DirectN
             return new ComObject<T>((T)renderTarget);
         }
 
+        public static IComObject<ID2D1RenderTarget> CreateDxgiSurfaceRenderTarget(this IComObject<ID2D1Factory> factory, object dxgiSurface, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateDxgiSurfaceRenderTarget<ID2D1RenderTarget>(factory?.Object, dxgiSurface, renderTargetProperties);
+        public static IComObject<T> CreateDxgiSurfaceRenderTarget<T>(this IComObject<ID2D1Factory> factory, object dxgiSurface, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget => CreateDxgiSurfaceRenderTarget<T>(factory?.Object, dxgiSurface, renderTargetProperties);
+        public static IComObject<T> CreateDxgiSurfaceRenderTarget<T>(this ID2D1Factory factory, object dxgiSurface, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            if (dxgiSurface == null)
+                throw new ArgumentNullException(nameof(dxgiSurface));
+
+            var props = renderTargetProperties ?? new D2D1_RENDER_TARGET_PROPERTIES();
+            factory.CreateDxgiSurfaceRenderTarget(dxgiSurface, ref props, out var renderTarget).ThrowOnError();
+            return new ComObject<T>((T)renderTarget);
+        }
+
+        public static IComObject<ID2D1HwndRenderTarget> CreateHwndRenderTarget(this IComObject<ID2D1Factory> factory, D2D1_HWND_RENDER_TARGET_PROPERTIES hwndRenderTargetProperties, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateHwndRenderTarget(factory?.Object, hwndRenderTargetProperties, renderTargetProperties);
+        public static IComObject<ID2D1HwndRenderTarget> CreateHwndRenderTarget(this ID2D1Factory factory, D2D1_HWND_RENDER_TARGET_PROPERTIES hwndRenderTargetProperties, D2D1_RENDER_TARGET_PROPERTIES ? renderTargetProperties = null)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            var props = renderTargetProperties ?? new D2D1_RENDER_TARGET_PROPERTIES();
+            factory.CreateHwndRenderTarget(ref props, ref hwndRenderTargetProperties, out var renderTarget).ThrowOnError();
+            return new ComObject<ID2D1HwndRenderTarget>(renderTarget);
+        }
+
         public static IComObject<ID2D1EllipseGeometry> CreateEllipseGeometry(this IComObject<ID2D1Factory> factory, D2D1_ELLIPSE ellipse) => CreateEllipseGeometry(factory?.Object, ellipse);
         public static IComObject<ID2D1EllipseGeometry> CreateEllipseGeometry(this ID2D1Factory factory, D2D1_ELLIPSE ellipse)
         {

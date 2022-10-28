@@ -95,7 +95,7 @@ namespace WicNet
 
         public static IEnumerable<WicImagingComponent> AllComponents => _allComponents.Value.Values;
         
-        // one day, these should become IReadOnlySet<string>
+        // these should be IReadOnlySet<string> (but it's not in .NET standard...)
         public static ISet<string> DecoderFileExtensions => _decoderExtensions.Value;
         public static ISet<string> EncoderFileExtensions => _encoderExtensions.Value;
 

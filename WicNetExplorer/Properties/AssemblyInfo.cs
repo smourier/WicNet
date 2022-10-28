@@ -6,11 +6,11 @@ using System.Runtime.InteropServices;
 #else
 [assembly: AssemblyConfiguration("RELEASE")]
 #endif
-[assembly: AssemblyTitle("WicNet")]
-[assembly: AssemblyDescription("WIC, Direct2D and DWrite interop code.")]
+[assembly: AssemblyTitle("WicNetExplorer")]
+[assembly: AssemblyDescription("WIC Explorer")]
 [assembly: AssemblyCompany("Simon Mourier")]
 [assembly: AssemblyProduct("WicNet")]
 [assembly: AssemblyCopyright("Copyright (C) 2021-2022 Simon Mourier. All rights reserved.")]
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
-[assembly: Guid("40d973c4-2a06-4a0f-a91f-029fce007a04")]
+[assembly: Guid("4f39b26c-c2c2-49fd-bc3e-cafa2f9cef57")]
