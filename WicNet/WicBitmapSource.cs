@@ -69,7 +69,7 @@ namespace WicNet
             get
             {
                 _comObject.Object.GetSize(out var width, out _);
-                return width;
+                return (int)width;
             }
         }
 
@@ -78,7 +78,7 @@ namespace WicNet
             get
             {
                 _comObject.Object.GetSize(out _, out var height);
-                return height;
+                return (int)height;
             }
         }
 
@@ -195,7 +195,7 @@ namespace WicNet
                 throw new ArgumentOutOfRangeException(nameof(buffer));
 
             stride = stride ?? DefaultStride;
-            _comObject.Object.CopyPixels(IntPtr.Zero, stride.Value, bufferSize, buffer).ThrowOnError();
+            _comObject.Object.CopyPixels(IntPtr.Zero, (uint)stride.Value, (uint)bufferSize, buffer).ThrowOnError();
         }
 
         public void CopyPixels(int left, int top, int width, int height, int bufferSize, IntPtr buffer, int? stride = null)
@@ -220,7 +220,7 @@ namespace WicNet
             rect.Height = height;
             using (var mem = new ComMemory(rect))
             {
-                _comObject.Object.CopyPixels(mem.Pointer, stride.Value, bufferSize, buffer).ThrowOnError();
+                _comObject.Object.CopyPixels(mem.Pointer, (uint)stride.Value, (uint)bufferSize, buffer).ThrowOnError();
             }
         }
 
@@ -269,56 +269,19 @@ namespace WicNet
 
         public void Scale(int? width, int? height, WICBitmapInterpolationMode mode = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
         {
-            if (!width.HasValue && !height.HasValue)
+            if (width.HasValue && width.Value < 0)
+                throw new ArgumentException(null, nameof(width));
+
+            if (height.HasValue && height.Value < 0)
+                throw new ArgumentException(null, nameof(height));
+
+            var size = Size;
+            var factor = size.GetScaleFactor(width, height, options);
+            if (factor.width== 1 && factor.height == 1)
                 return;
 
-            if (width.HasValue && width.Value <= 0)
-                throw new ArgumentOutOfRangeException(nameof(width));
-
-            if (height.HasValue && height.Value <= 0)
-                throw new ArgumentOutOfRangeException(nameof(height));
-
-            int neww;
-            int newh;
-            if (width.HasValue && height.HasValue)
-            {
-                neww = width.Value;
-                newh = height.Value;
-            }
-            else
-            {
-                int w = Width;
-                int h = Height;
-                if (w == 0 || h == 0)
-                    return;
-
-                if (width.HasValue)
-                {
-                    if ((options & WicBitmapScaleOptions.DownOnly) == WicBitmapScaleOptions.DownOnly)
-                    {
-                        if (width.Value > w)
-                            return;
-                    }
-
-                    neww = width.Value;
-                    newh = width.Value * h / w;
-                }
-                else // height.HasValue
-                {
-                    if ((options & WicBitmapScaleOptions.DownOnly) == WicBitmapScaleOptions.DownOnly)
-                    {
-                        if (height.Value > h)
-                            return;
-                    }
-
-                    newh = height.Value;
-                    neww = height.Value * w / h;
-                }
-            }
-
-            if (neww == 0 || newh == 0)
-                return;
-
+            var neww = (uint)(size.Width * factor.width);
+            var newh = (uint)(size.Height * factor.height);
             var clip = WICImagingFactory.CreateBitmapScaler();
             clip.Object.Initialize(_comObject.Object, neww, newh, mode).ThrowOnError();
             _comObject?.Dispose();

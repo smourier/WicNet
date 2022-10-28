@@ -39,6 +39,29 @@ namespace WicNetExplorer
             }
         }
 
+        protected virtual void ResizeRenderTarget()
+        {
+            if (IsValidRenderTarget)
+            {
+                var d2dsize = new D2D_SIZE_U(Width, Height);
+                var hr = _target!.Object.Resize(ref d2dsize);
+                if (hr.IsError)
+                {
+                    ReleaseRenderTarget();
+                }
+                else
+                {
+                    Invalidate();
+                }
+            }
+        }
+
+        protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
+        protected virtual void OnDraw(IComObject<ID2D1HwndRenderTarget> target)
+        {
+            target.Clear(_D3DCOLORVALUE.FromColor(BackColor));
+        }
+
         protected sealed override void OnPaintBackground(PaintEventArgs pevent)
         {
             // use Clear (or not)
@@ -76,29 +99,6 @@ namespace WicNetExplorer
         {
             base.OnResize(e);
             ResizeRenderTarget();
-        }
-
-        protected virtual void ResizeRenderTarget()
-        {
-            if (IsValidRenderTarget)
-            {
-                var d2dsize = new D2D_SIZE_U(Width, Height);
-                var hr = _target!.Object.Resize(ref d2dsize);
-                if (hr.IsError)
-                {
-                    ReleaseRenderTarget();
-                }
-                else
-                {
-                    Invalidate();
-                }
-            }
-        }
-
-        protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
-        protected virtual void OnDraw(IComObject<ID2D1HwndRenderTarget> target)
-        {
-            target.Clear(_D3DCOLORVALUE.FromColor(BackColor));
         }
 
         protected override void Dispose(bool disposing)

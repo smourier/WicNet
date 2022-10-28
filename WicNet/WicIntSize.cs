@@ -1,4 +1,5 @@
 ﻿using System;
+using DirectN;
 
 namespace WicNet
 {
@@ -31,5 +32,8 @@ namespace WicNet
 
         public static bool operator ==(WicIntSize left, WicIntSize right) => left.Equals(right);
         public static bool operator !=(WicIntSize left, WicIntSize right) => !left.Equals(right);
+
+        public D2D_SIZE_F GetScaleFactor(uint? width = null, uint? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default) => new D2D_SIZE_F(Width, Height).GetScaleFactor(width, height, options);
+        public D2D_SIZE_F GetScaleFactor(int? width = null, int? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default) => new D2D_SIZE_F(Width, Height).GetScaleFactor(width, height, options);
     }
 }

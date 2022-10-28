@@ -1,3 +1,5 @@
+using System;
+using System.ComponentModel;
 using System.Linq;
 using System.Windows.Forms;
 using DirectN;
@@ -9,7 +11,7 @@ namespace WicNetExplorer
     {
         private IComObject<ID2D1Bitmap>? _bitmap;
         private WicBitmapSource? _bitmapSource;
-        private readonly D2DControl _d2d = new D2DControl();
+        private readonly D2DControl _d2d = new();
 
         public Main()
         {
@@ -30,7 +32,11 @@ namespace WicNetExplorer
 
                 if (_bitmap != null)
                 {
-                    e.Target.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: new D2D_RECT_F(0, 0, _d2d.Width, _d2d.Height));
+                    // keep proportions
+                    var size = _bitmap.GetSize();
+                    var factor = size.GetScaleFactor(_d2d.Width, _d2d.Height);
+                    var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height); 
+                    e.Target.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
                 }
                 e.Handled = true;
             };
@@ -38,8 +44,8 @@ namespace WicNetExplorer
             panelMain.Controls.Add(_d2d);
         }
 
-        private void ExitToolStripMenuItem_Click(object sender, System.EventArgs e) => Close();
-        private void ToolStripMenuItemOpen_Click(object sender, System.EventArgs e)
+        private void ExitToolStripMenuItem_Click(object sender, EventArgs e) => Close();
+        private void ToolStripMenuItemOpen_Click(object sender, EventArgs e)
         {
             var allExts = WicImagingComponent.DecoderFileExtensions.OrderBy(ext => ext).ToArray();
             var imageExts = string.Join(";", allExts.Select(ext => "*" + ext));
@@ -63,6 +69,10 @@ namespace WicNetExplorer
             _bitmapSource = WicBitmapSource.Load(ofd.FileName);
             _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
             _d2d.Invalidate();
+
+            // reset title
+            new ComponentResourceManager(GetType()).ApplyResources(this, "$this");
+            Text += " - " + ofd.FileName;
         }
     }
 }

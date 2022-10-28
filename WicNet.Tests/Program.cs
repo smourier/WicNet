@@ -15,11 +15,12 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            TryVariousConversions();
+            LoadAndScale(1000);
+            return;
+            //TryVariousConversions();
             //DumpAllFormats();
             //DumpAllComponents();
             //DumpAllComponentsPossibleConversions();
-            return;
             //DrawText();
             //Dump("test.WICTiffCompressionZIP.tiff");
             //ToTiff("file_example_TIFF_1MB.tiff");
@@ -183,7 +184,7 @@ namespace WicNet.Tests
 
                         using (var bmp = WicBitmapSource.Load(file))
                         {
-                            bmp.Scale(thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
+                            bmp.Scale(thumbSize, thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
                             if (bmp.PixelFormat != memBmp.PixelFormat)
                             {
                                 bmp.ConvertTo(memBmp.PixelFormat);
@@ -230,7 +231,7 @@ namespace WicNet.Tests
 
                         using (var bmp = WicBitmapSource.Load(file))
                         {
-                            bmp.Scale(thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
+                            bmp.Scale(thumbSize, thumbSize, WICBitmapInterpolationMode.WICBitmapInterpolationModeFant);
                             if (bmp.PixelFormat != WicPixelFormat.GUID_WICPixelFormat32bppPRGBA)
                             {
                                 bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
@@ -327,6 +328,17 @@ namespace WicNet.Tests
                     dc.EndDraw();
                     return fx.GetValue<float[]>("HistogramOutput", null);
                 }
+            }
+        }
+
+        static void LoadAndScale(int? boxWidth = null, int? boxHeight = null)
+        {
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            {
+                bmp.Scale(boxWidth, boxHeight);
+                var name = boxWidth + "x" + boxHeight + ".jpg";
+                bmp.Save(name);
+                Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
             }
         }
 

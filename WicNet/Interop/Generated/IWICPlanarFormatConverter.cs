@@ -11,7 +11,7 @@ namespace DirectN
     {
         // IWICBitmapSource
         [PreserveSig]
-        new HRESULT GetSize(/* [out] __RPC__out */ out int puiWidth, /* [out] __RPC__out */ out int puiHeight);
+        new HRESULT GetSize(/* [out] __RPC__out */ out uint puiWidth, /* [out] __RPC__out */ out uint puiHeight);
         
         [PreserveSig]
         new HRESULT GetPixelFormat(/* [out] __RPC__out */ out WICPixelFormatGUID pPixelFormat);
@@ -23,7 +23,7 @@ namespace DirectN
         new HRESULT CopyPalette(/* [in] __RPC__in_opt */ IWICPalette pIPalette);
         
         [PreserveSig]
-        new HRESULT CopyPixels(/* optional(WICRect) */ IntPtr prc, /* [in] */ int cbStride, /* [in] */ int cbBufferSize, /* [size_is][out] __RPC__out_ecount_full(cbBufferSize) */ IntPtr pbBuffer);
+        new HRESULT CopyPixels(/* optional(WICRect) */ IntPtr prc, /* [in] */ uint cbStride, /* [in] */ uint cbBufferSize, /* [size_is][out] __RPC__out_ecount_full(cbBufferSize) */ IntPtr pbBuffer);
         
         // IWICPlanarFormatConverter
         [PreserveSig]

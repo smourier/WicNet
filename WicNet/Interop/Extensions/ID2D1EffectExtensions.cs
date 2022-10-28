@@ -14,6 +14,7 @@ namespace DirectN
             return new ComObject<ID2D1Image>(image);
         }
 
+        public static int GetInputCount(this IComObject<ID2D1Effect> effect) => GetInputCount(effect?.Object);
         public static int GetInputCount(this ID2D1Effect effect)
         {
             if (effect == null)
@@ -31,6 +32,7 @@ namespace DirectN
             effect.SetInput(index, input, invalidate);
         }
 
+        public static void SetInputCount(this IComObject<ID2D1Effect> effect, int count) => SetInputCount(effect?.Object, count);
         public static void SetInputCount(this ID2D1Effect effect, int count)
         {
             if (effect == null)

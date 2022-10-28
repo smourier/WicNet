@@ -99,5 +99,79 @@ namespace DirectN
             var scale = D2D1Functions.DpiScale;
             return new D2D_SIZE_F(width * scale.width, height * scale.height);
         }
+
+        public D2D_SIZE_F GetScaleFactor(int? width = null, int? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
+        {
+            float? fw = width.HasValue ? width : null;
+            float? fh = height.HasValue ? height : null;
+            return GetScaleFactor(fw, fh, options);
+        }
+
+        public D2D_SIZE_F GetScaleFactor(uint? width = null, uint? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
+        {
+            float? fw = width.HasValue ? width : null;
+            float? fh = height.HasValue ? height : null;
+            return GetScaleFactor(fw, fh, options);
+        }
+
+        public D2D_SIZE_F GetScaleFactor(float? width = null, float? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
+        {
+            if (width.HasValue && width.Value <= 0)
+                throw new ArgumentOutOfRangeException(nameof(width));
+
+            if (height.HasValue && height.Value <= 0)
+                throw new ArgumentOutOfRangeException(nameof(height));
+
+            if (this.width == 0 || this.height == 0 || (!width.HasValue && !height.HasValue))
+                return new D2D_SIZE_F(1, 1);
+
+            var scaleW = this.width == 0 ? 0 : (width.HasValue ? width.Value : float.PositiveInfinity) / this.width;
+            var scaleH = this.height == 0 ? 0 : (height.HasValue ? height.Value : float.PositiveInfinity) / this.height;
+            if (!width.HasValue)
+            {
+                scaleW = scaleH;
+            }
+            else if (!height.HasValue)
+            {
+                scaleH = scaleW;
+            }
+            else if (options.HasFlag(WicBitmapScaleOptions.Uniform))
+            {
+                var minscale = scaleW < scaleH ? scaleW : scaleH;
+                scaleW = scaleH = minscale;
+            }
+            else if (options.HasFlag(WicBitmapScaleOptions.UniformToFill))
+            {
+                var maxscale = scaleW > scaleH ? scaleW : scaleH;
+                scaleW = scaleH = maxscale;
+            }
+
+            if (options.HasFlag(WicBitmapScaleOptions.UpOnly))
+            {
+                if (scaleW < 1)
+                {
+                    scaleW = 1;
+                }
+
+                if (scaleH < 1)
+                {
+                    scaleH = 1;
+                }
+            }
+
+            if (options.HasFlag(WicBitmapScaleOptions.DownOnly))
+            {
+                if (scaleW > 1)
+                {
+                    scaleW = 1;
+                }
+
+                if (scaleH > 1)
+                {
+                    scaleH = 1;
+                }
+            }
+            return new D2D_SIZE_F(scaleW, scaleH);
+        }
     }
 }
