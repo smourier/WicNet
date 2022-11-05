@@ -15,22 +15,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
-            {
-                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
-                using (var memBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
-                {
-                    using (var rt = memBmp.CreateDeviceContext())
-                    using (var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
-                    {
-                        rt.BeginDraw();
-                        rt.DrawBitmap(dbmp);
-                        rt.EndDraw();
-                    }
-                    memBmp.Save("helloworld.jpg");
-                }
-            }
-            Process.Start(new ProcessStartInfo("helloworld.jpg") { UseShellExecute = true });
+            CopyGif();
             return;
 
             LoadAndScale(1000);
@@ -473,7 +458,7 @@ namespace WicNet.Tests
                                 }
 
                                 newFrame.WriteSource(frame.ComObject);
-                                newFrame.Encode.Commit();
+                                newFrame.Commit();
                             }
                         }
                         encoder.Commit();
@@ -519,8 +504,7 @@ namespace WicNet.Tests
                         }
 
                         newFrame.WriteSource(bmp.ComObject);
-                        newFrame.Encode.Commit();
-
+                        newFrame.Commit();
                         encoder.Commit();
                     }
                 }

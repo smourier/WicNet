@@ -8,7 +8,6 @@ using System.Windows.Forms;
 using DirectN;
 using WicNet;
 using WicNetExplorer.Utilities;
-using static System.Windows.Forms.DataFormats;
 
 namespace WicNetExplorer
 {
@@ -39,7 +38,6 @@ namespace WicNetExplorer
                             _bitmap = dc.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
                             _bitmapSource.Dispose();
                             _bitmapSource = null;
-                            var lo = ComObject.LiveObjects;
                         }
                     }
                 }
@@ -158,7 +156,7 @@ namespace WicNetExplorer
             if (_bitmap == null || _d2d.Target == null)
                 return;
 
-            var filter = BuildFilters(WicImagingComponent.DecoderFileExtensions);
+            var filter = BuildFilters(WicImagingComponent.EncoderFileExtensions);
             var fd = new SaveFileDialog
             {
                 RestoreDirectory = true,
