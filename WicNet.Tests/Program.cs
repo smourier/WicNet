@@ -15,6 +15,24 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            {
+                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+                using (var memBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                {
+                    using (var rt = memBmp.CreateDeviceContext())
+                    using (var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
+                    {
+                        rt.BeginDraw();
+                        rt.DrawBitmap(dbmp);
+                        rt.EndDraw();
+                    }
+                    memBmp.Save("helloworld.jpg");
+                }
+            }
+            Process.Start(new ProcessStartInfo("helloworld.jpg") { UseShellExecute = true });
+            return;
+
             LoadAndScale(1000);
             return;
             //TryVariousConversions();
@@ -436,25 +454,27 @@ namespace WicNet.Tests
 
                         foreach (var frame in dec)
                         {
-                            var newFrame = encoder.CreateNewFrame();
-                            newFrame.Initialize();
-
-                            var md = frame.GetMetadataReader().Enumerate();
-                            using (var writer = newFrame.GetMetadataQueryWriter())
+                            using (var newFrame = encoder.CreateNewFrame())
                             {
-                                writer.EncodeMetadata(md);
+                                newFrame.Initialize();
 
-                                // change delay here
-                                writer.SetMetadataByName("/grctlext/Delay", (ushort)5);
+                                var md = frame.GetMetadataReader().Enumerate();
+                                using (var writer = newFrame.GetMetadataQueryWriter())
+                                {
+                                    writer.EncodeMetadata(md);
+
+                                    // change delay here
+                                    writer.SetMetadataByName("/grctlext/Delay", (ushort)5);
+                                }
+
+                                if (frame.Palette != null)
+                                {
+                                    newFrame.SetPalette(frame.Palette.ComObject);
+                                }
+
+                                newFrame.WriteSource(frame.ComObject);
+                                newFrame.Encode.Commit();
                             }
-
-                            if (frame.Palette != null)
-                            {
-                                newFrame.SetPalette(frame.Palette.ComObject);
-                            }
-
-                            newFrame.WriteSource(frame.ComObject);
-                            newFrame.Item1.Commit();
                         }
                         encoder.Commit();
                     }
@@ -484,23 +504,25 @@ namespace WicNet.Tests
                     var mis = new ManagedIStream(file);
                     encoder.Initialize(mis);
 
-                    var newFrame = encoder.CreateNewFrame();
-
-                    var dic = new Dictionary<string, object>();
-                    dic["TiffCompressionMethod"] = option;
-                    newFrame.Item2.Write(dic);
-                    newFrame.Initialize();
-
-                    using (var writer = newFrame.GetMetadataQueryWriter())
+                    using (var newFrame = encoder.CreateNewFrame())
                     {
-                        //writer.SetMetadataByName("/ifd/{ushort=296}", 1);
-                        writer.SetMetadataByName("/ifd/xmp/exif:ImageUniqueID", "ImageId" + option);
+
+                        var dic = new Dictionary<string, object>();
+                        dic["TiffCompressionMethod"] = option;
+                        newFrame.Bag.Write(dic);
+                        newFrame.Initialize();
+
+                        using (var writer = newFrame.GetMetadataQueryWriter())
+                        {
+                            //writer.SetMetadataByName("/ifd/{ushort=296}", 1);
+                            writer.SetMetadataByName("/ifd/xmp/exif:ImageUniqueID", "ImageId" + option);
+                        }
+
+                        newFrame.WriteSource(bmp.ComObject);
+                        newFrame.Encode.Commit();
+
+                        encoder.Commit();
                     }
-
-                    newFrame.WriteSource(bmp.ComObject);
-                    newFrame.Item1.Commit();
-
-                    encoder.Commit();
                 }
             }
         }

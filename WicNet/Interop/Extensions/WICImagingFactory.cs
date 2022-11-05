@@ -25,6 +25,23 @@ namespace DirectN
         public static IComObject<IWICBitmap> CreateBitmapFromMemory(int width, int height, Guid pixelFormat, int stride, byte[] buffer) => WithFactory(f => f.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
         public static IComObject<IWICBitmap> CreateBitmapFromSource(IComObject<IWICBitmapSource> source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => WithFactory(f => f.CreateBitmapFromSource(source?.Object, option));
         public static IComObject<IWICBitmap> CreateBitmapFromSourceRect(IComObject<IWICBitmapSource> source, int x, int y, int width, int height) => WithFactory(f => f.CreateBitmapFromSourceRect(source?.Object, x, y, width, height));
+        public static IComObject<IWICImageEncoder> CreateImageEncoder(IComObject<ID2D1Device> device) => WithFactory2(f => f.CreateImageEncoder(device?.Object));
+
+        public static T WithFactory2<T>(Func<IWICImagingFactory2, T> func)
+        {
+            if (func == null)
+                throw new ArgumentNullException(nameof(func));
+
+            var factory = (IWICImagingFactory2)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")));
+            try
+            {
+                return func(factory);
+            }
+            finally
+            {
+                Marshal.ReleaseComObject(factory);
+            }
+        }
 
         public static T WithFactory<T>(Func<IWICImagingFactory, T> func)
         {
@@ -35,6 +52,22 @@ namespace DirectN
             try
             {
                 return func(factory);
+            }
+            finally
+            {
+                Marshal.ReleaseComObject(factory);
+            }
+        }
+
+        public static void WithFactory2(Action<IWICImagingFactory2> action)
+        {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var factory = (IWICImagingFactory2)Activator.CreateInstance(Type.GetTypeFromCLSID(new Guid("CACAF262-9370-4615-A13B-9F5539DA4C0A")));
+            try
+            {
+                action(factory);
             }
             finally
             {

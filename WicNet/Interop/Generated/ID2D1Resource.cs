@@ -11,6 +11,6 @@ namespace DirectN
     public partial interface ID2D1Resource
     {
         [PreserveSig]
-        void GetFactory(/* _Outptr_ */ [MarshalAs(UnmanagedType.IUnknown)] out ID2D1Factory factory);
+        void GetFactory(/* _Outptr_ */ out ID2D1Factory factory);
     }
 }

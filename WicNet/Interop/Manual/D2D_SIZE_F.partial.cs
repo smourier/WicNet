@@ -125,8 +125,8 @@ namespace DirectN
             if (this.width == 0 || this.height == 0 || (!width.HasValue && !height.HasValue))
                 return new D2D_SIZE_F(1, 1);
 
-            var scaleW = this.width == 0 ? 0 : (width.HasValue ? width.Value : float.PositiveInfinity) / this.width;
-            var scaleH = this.height == 0 ? 0 : (height.HasValue ? height.Value : float.PositiveInfinity) / this.height;
+            var scaleW = this.width == 0 ? 0 : (width ?? float.PositiveInfinity) / this.width;
+            var scaleH = this.height == 0 ? 0 : (height ?? float.PositiveInfinity) / this.height;
             if (!width.HasValue)
             {
                 scaleW = scaleH;

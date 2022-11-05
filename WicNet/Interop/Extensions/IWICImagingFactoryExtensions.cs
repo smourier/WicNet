@@ -76,7 +76,7 @@ namespace DirectN
                     acc |= GENERIC_READ;
                 }
 
-                if (desiredAccess.HasFlag(FileAccess.Read))
+                if (desiredAccess.HasFlag(FileAccess.Write))
                 {
                     acc |= GENERIC_WRITE;
                 }
@@ -221,6 +221,19 @@ namespace DirectN
                 }
                 while (true);
             }
+        }
+
+        public static IComObject<IWICImageEncoder> CreateImageEncoder(this IComObject<IWICImagingFactory2> factory, IComObject<ID2D1Device> device) => CreateImageEncoder(factory?.Object, device?.Object);
+        public static IComObject<IWICImageEncoder> CreateImageEncoder(this IWICImagingFactory2 factory, ID2D1Device device)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            if (device == null)
+                throw new ArgumentNullException(nameof(device));
+
+            factory.CreateImageEncoder(device, out var value).ThrowOnError();
+            return new ComObject<IWICImageEncoder>(value);
         }
     }
 }

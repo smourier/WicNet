@@ -277,7 +277,7 @@ namespace WicNet
 
             var size = Size;
             var factor = size.GetScaleFactor(width, height, options);
-            if (factor.width== 1 && factor.height == 1)
+            if (factor.width == 1 && factor.height == 1)
                 return;
 
             var neww = (uint)(size.Width * factor.width);
@@ -422,38 +422,39 @@ namespace WicNet
                     encoder.SetPalette(encoderPalette.ComObject);
                 }
 
-                var frameBag = encoder.CreateNewFrame();
-
-                if (encoderOptions != null)
+                using (var frame = encoder.CreateNewFrame())
                 {
-                    frameBag.Item2.Write(encoderOptions);
-                }
-
-                frameBag.Initialize();
-
-                if (metadata?.Any() == true)
-                {
-                    using (var writer = frameBag.GetMetadataQueryWriter())
+                    if (encoderOptions != null)
                     {
-                        writer.EncodeMetadata(metadata);
+                        frame.Bag.Write(encoderOptions);
                     }
-                }
 
-                if (pixelFormat.HasValue)
-                {
-                    frameBag.SetPixelFormat(pixelFormat.Value);
-                }
+                    frame.Initialize();
 
-                if (framePalette != null)
-                {
-                    frameBag.Item1.SetPalette(framePalette.ComObject);
-                }
+                    if (metadata?.Any() == true)
+                    {
+                        using (var writer = frame.GetMetadataQueryWriter())
+                        {
+                            writer.EncodeMetadata(metadata);
+                        }
+                    }
 
-                // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
-                // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
-                frameBag.WriteSource(_comObject, sourceRectangle);
-                frameBag.Item1.Commit();
-                encoder.Commit();
+                    if (pixelFormat.HasValue)
+                    {
+                        frame.SetPixelFormat(pixelFormat.Value);
+                    }
+
+                    if (framePalette != null)
+                    {
+                        frame.Encode.SetPalette(framePalette.ComObject);
+                    }
+
+                    // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
+                    // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
+                    frame.WriteSource(_comObject, sourceRectangle);
+                    frame.Commit();
+                    encoder.Commit();
+                }
             }
         }
 

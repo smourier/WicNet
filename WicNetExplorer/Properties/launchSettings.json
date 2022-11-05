@@ -1,0 +1,8 @@
+{
+  "profiles": {
+    "WicNetExplorer": {
+      "commandName": "Project",
+      "nativeDebugging": true
+    }
+  }
+}

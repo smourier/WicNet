@@ -10,14 +10,24 @@ namespace WicNetExplorer
         private IComObject<ID2D1HwndRenderTarget>? _target;
 
         public event EventHandler<D2DDrawEventArgs>? Draw;
+        public event EventHandler<D2DReleaseEventArgs>? Releasing;
 
         public D2DControl()
         {
         }
 
         protected virtual bool IsValidRenderTarget => _target != null && !_target.IsDisposed;
+        public IComObject<ID2D1HwndRenderTarget>? Target => _target;
 
-        protected virtual void ReleaseRenderTarget() => Interlocked.Exchange(ref _target, null)?.Dispose();
+        protected virtual void ReleaseRenderTarget()
+        {
+            if (_target != null)
+            {
+                OnReleasing(this, new D2DReleaseEventArgs(_target));
+            }
+            Interlocked.Exchange(ref _target, null)?.Dispose();
+        }
+
         protected virtual void CreateRenderTarget()
         {
             ReleaseRenderTarget();
@@ -49,13 +59,11 @@ namespace WicNetExplorer
                 {
                     ReleaseRenderTarget();
                 }
-                else
-                {
-                    Invalidate();
-                }
             }
+            Invalidate();
         }
 
+        protected virtual void OnReleasing(object sender, D2DReleaseEventArgs e) => Releasing?.Invoke(sender, e);
         protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
         protected virtual void OnDraw(IComObject<ID2D1HwndRenderTarget> target)
         {
