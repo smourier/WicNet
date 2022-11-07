@@ -144,19 +144,19 @@
     <value>&amp;Tools</value>
   </data>
   <data name="cascadeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="cascadeToolStripMenuItem.Text" xml:space="preserve">
-    <value> Cascade Windows</value>
+    <value>Cascade Windows</value>
   </data>
   <data name="tileHorizontallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="tileHorizontallyToolStripMenuItem.Text" xml:space="preserve">
     <value>Tile Horizontally</value>
   </data>
   <data name="tileVerticallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>173, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="tileVerticallyToolStripMenuItem.Text" xml:space="preserve">
     <value>Tile Vertically</value>

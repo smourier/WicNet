@@ -1,6 +1,10 @@
 ﻿using System;
+using System.Collections;
+using System.Collections.Generic;
 using System.Diagnostics;
+using System.Drawing;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices;
 using DirectN;
 using Microsoft.Win32;
@@ -52,6 +56,7 @@ namespace WicNet.Utilities
         public static int TextScaleFactor => _textScaleFactor.Value;
 
         // https://stackoverflow.com/a/61681245/403671
+        public static tagRECT GetWindowCaptionRect(IntPtr handle) => GetWindowCaptionRect(DpiUtilities.GetDpiForWindow(handle));
         public static tagRECT GetWindowCaptionRect(int dpi)
         {
             var rc = new tagRECT();
@@ -68,10 +73,10 @@ namespace WicNet.Utilities
 
         private const int WS_OVERLAPPEDWINDOW = 0x00CF0000;
 
-        [DllImport("user32")]
+        [DllImport("user32", SetLastError = true)]
         private static extern bool AdjustWindowRectEx(ref tagRECT lpRect, int dwStyle, bool bMenu, int dwExStyle);
 
-        [DllImport("user32")]
+        [DllImport("user32", SetLastError = true)]
         private static extern bool AdjustWindowRectExForDpi(ref tagRECT lpRect, int dwStyle, bool bMenu, int dwExStyle, int dpi);
     }
 }

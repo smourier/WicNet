@@ -17,6 +17,8 @@ namespace WicNetExplorer.Utilities
         private readonly Button _restoreButton = new() { Text = "1", FlatStyle = FlatStyle.Flat, Name = "Restore" };
         private readonly Button _minimizeButton = new() { Text = "0", FlatStyle = FlatStyle.Flat, Name = "Minimize" };
 
+        private const int _frameSize = 4;
+
         public MdiForm()
         {
             SuspendLayout();
@@ -25,19 +27,105 @@ namespace WicNetExplorer.Utilities
             Name = "MdiForm";
             Text = Name;
 
-            _closeButton.FlatAppearance.BorderSize = 0;
-            _closeButton.Click += (s, e) => Close();
-            Controls.Add(_closeButton);
-
-            _restoreButton.FlatAppearance.BorderSize = _closeButton.FlatAppearance.BorderSize;
-            _restoreButton.Click += (s, e) => Restore();
-            Controls.Add(_restoreButton);
-
-            _minimizeButton.FlatAppearance.BorderSize = _closeButton.FlatAppearance.BorderSize;
+            _minimizeButton.FlatAppearance.BorderSize = 0;
+            _minimizeButton.FlatAppearance.BorderColor = BackColor;
             _minimizeButton.Click += (s, e) => WindowState = FormWindowState.Minimized;
             Controls.Add(_minimizeButton);
 
+            _restoreButton.FlatAppearance.BorderSize = 0;
+            _restoreButton.FlatAppearance.BorderColor = BackColor;
+            _restoreButton.Click += (s, e) => Restore();
+            Controls.Add(_restoreButton);
+
+            _closeButton.FlatAppearance.BorderSize = 0;
+            _closeButton.FlatAppearance.BorderColor = BackColor;
+            _closeButton.Click += (s, e) => Close();
+            Controls.Add(_closeButton);
+
+            DoubleBuffered = true;
             ResumeLayout(false);
+        }
+
+        public bool IsActive { get; private set; }
+
+        // for some reason, the builtin LayoutMdi command doesn't work with FormBorderStyle = None
+        public static void LayoutMdi(Form mdiParent, MdiLayout layout)
+        {
+            ArgumentNullException.ThrowIfNull(mdiParent);
+            var children = mdiParent.MdiChildren;
+            if (children.Length == 0)
+                return;
+
+            const int pad = _frameSize;
+
+            Size size;
+            int width;
+            int height;
+            switch (layout)
+            {
+                case MdiLayout.TileHorizontal:
+                    size = mdiParent.ClientSize;
+                    width = size.Width - pad * 3;
+
+                    height = size.Height;
+                    if (mdiParent.MainMenuStrip != null)
+                    {
+                        height -= mdiParent.MainMenuStrip.Height + mdiParent.MainMenuStrip.Padding.Vertical;
+                    }
+                    height = (height - pad * (children.Length + 1)) / children.Length;
+
+                    for (var i = 0; i < children.Length; i++)
+                    {
+                        var child = children[i];
+                        child.WindowState = FormWindowState.Normal;
+
+                        child.Left = pad;
+                        child.Top = pad + i * (height + pad);
+                        child.Width = width;
+                        child.Height = height;
+                    }
+                    break;
+
+                case MdiLayout.TileVertical:
+                    size = mdiParent.ClientSize;
+                    width = (size.Width - pad * (children.Length + 2)) / children.Length;
+                    height = size.Height - pad * 2;
+                    if (mdiParent.MainMenuStrip != null)
+                    {
+                        height -= mdiParent.MainMenuStrip.Height + mdiParent.MainMenuStrip.Padding.Vertical;
+                    }
+
+                    for (var i = 0; i < children.Length; i++)
+                    {
+                        var child = children[i];
+                        child.WindowState = FormWindowState.Normal;
+
+                        child.Left = pad + i * (width + pad);
+                        child.Top = pad;
+                        child.Width = width;
+                        child.Height = height;
+                    }
+                    break;
+
+                case MdiLayout.Cascade:
+                    // for some reason, the CascadeWindows api doesn't seem to work either
+                    var captionSize = WindowsUtilities.GetWindowCaptionRect(mdiParent.Handle);
+                    var offset = Math.Abs(captionSize.top);
+                    var current = _frameSize;
+                    foreach (var child in children)
+                    {
+                        child.WindowState = FormWindowState.Normal;
+                        child.Left = current;
+                        child.Top = current;
+                        child.BringToFront();
+
+                        current += offset;
+                    }
+                    break;
+
+                default:
+                    throw new NotSupportedException();
+            }
         }
 
         protected override void Dispose(bool disposing)
@@ -70,6 +158,16 @@ namespace WicNetExplorer.Utilities
                 {
                     m.Result = IntPtr.Zero;
                     return;
+                }
+            }
+
+            if (m.Msg == MessageDecoder.WM_MOUSEACTIVATE)
+            {
+                base.WndProc(ref m);
+                // not sure why me must do this ourselves
+                if (m.Result == (IntPtr)1 || m.Result == (IntPtr)2)
+                {
+                    Activate();
                 }
             }
 
@@ -141,6 +239,9 @@ namespace WicNetExplorer.Utilities
                         m.Result = (IntPtr)HT.HTCAPTION;
                         return;
                     }
+
+                    m.Result = (IntPtr)HT.HTCLIENT;
+                    return;
                 }
             }
             base.WndProc(ref m);
@@ -153,15 +254,40 @@ namespace WicNetExplorer.Utilities
             {
                 RecomputeSizes();
                 var height = Padding.Top;
-                using (var brush = new SolidBrush(BackColor))
-                {
-                    e.Graphics.FillRectangle(brush, Padding.Left, Padding.Bottom, Width - Padding.Horizontal, height);
-                }
+
+                var brush = IsActive ? SystemBrushes.ActiveCaption : SystemBrushes.InactiveCaption;
+                e.Graphics.FillRectangle(brush, Padding.Left, Padding.Bottom, Width - Padding.Horizontal, height);
 
                 var size = TextRenderer.MeasureText(Text, _textFont);
-                var maxWidth = _minimizeButton.Left;
-                TextRenderer.DrawText(e.Graphics, Text, _textFont, new Rectangle(Padding.Left, (height - size.Height) / 2, Math.Min(size.Width, maxWidth), size.Height), ForeColor);
+
+                var flags = TextFormatFlags.PreserveGraphicsClipping; // make sure Grapchis.SetClip below works
+                var left = Padding.Left;
+                var maxWidth = _minimizeButton.Left - _frameSize * 2;
+                if (size.Width > maxWidth)
+                {
+                    // case of smaller sizes
+                    left -= size.Width - maxWidth;
+                    e.Graphics.SetClip(new Rectangle(_frameSize * 2, _frameSize, maxWidth, height));
+                }
+
+                TextRenderer.DrawText(e.Graphics, Text, _textFont, new Rectangle(left, (height - size.Height) / 2, size.Width, size.Height), IsActive ? SystemColors.ActiveCaptionText : SystemColors.GrayText, flags);
             }
+        }
+
+        protected override void OnActivated(EventArgs e)
+        {
+            base.OnActivated(e);
+            SetCaptionColors();
+            InvalidateCaption();
+            IsActive = true;
+        }
+
+        protected override void OnDeactivate(EventArgs e)
+        {
+            base.OnDeactivate(e);
+            SetCaptionColors();
+            InvalidateCaption();
+            IsActive = false;
         }
 
         protected override void OnResize(EventArgs e)
@@ -169,6 +295,15 @@ namespace WicNetExplorer.Utilities
             base.OnResize(e);
             RecomputeSizes();
             InvalidateCaption();
+        }
+
+        protected override void OnMove(EventArgs e)
+        {
+            base.OnMove(e);
+            if (!IsActive)
+            {
+                Activate();
+            }
         }
 
         protected override void OnHandleCreated(EventArgs e)
@@ -210,10 +345,18 @@ namespace WicNetExplorer.Utilities
             _buttonFont = new Font("Marlett", fontSize);
         }
 
+        private void SetCaptionColors()
+        {
+            BackColor = IsActive ? SystemColors.InactiveCaption : SystemColors.ActiveCaption;
+            _closeButton.BackColor = BackColor;
+            _restoreButton.BackColor = BackColor;
+            _minimizeButton.BackColor = BackColor;
+        }
+
         private void SetCaptionButtons()
         {
             var buttonWidth = Padding.Top;
-            var buttonHeight = Padding.Top - Padding.Bottom * 2;
+            var buttonHeight = Padding.Top - Padding.Bottom;
 
             _closeButton.Font = _buttonFont;
             _closeButton.Width = buttonWidth;
@@ -236,9 +379,8 @@ namespace WicNetExplorer.Utilities
             if (WindowState == FormWindowState.Maximized)
                 return new Padding(0);
 
-            var dpi = DpiUtilities.GetDpiForWindow(Handle);
-            var captionSize = WindowsUtilities.GetWindowCaptionRect(dpi);
-            var border = DpiUtilities.AdjustForWindowDpi(4, Handle);
+            var captionSize = WindowsUtilities.GetWindowCaptionRect(Handle);
+            var border = DpiUtilities.AdjustForWindowDpi(_frameSize, Handle);
             return new Padding(border, Math.Abs(captionSize.top), border, border);
         }
 
