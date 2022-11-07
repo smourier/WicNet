@@ -9,6 +9,11 @@ namespace WicNet.Utilities
     {
         private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>> _guidsNames = new ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>>();
 
+        public static int GET_X_LPARAM(this IntPtr lParam) => LOWORD(lParam.ToInt32());
+        public static int GET_Y_LPARAM(this IntPtr lParam) => HIWORD(lParam.ToInt32());
+        public static int HIWORD(int i) => (short)(i >> 16);
+        public static int LOWORD(int i) => (short)(i & 65535);
+
         public static string GetGuidName(this Type type, Guid guid)
         {
             if (type == null)

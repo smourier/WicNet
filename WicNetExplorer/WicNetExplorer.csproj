@@ -7,7 +7,12 @@
     <UseWindowsForms>true</UseWindowsForms>
     <ApplicationIcon>WicNet.ico</ApplicationIcon>
     <GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
   </PropertyGroup>
+
+  <ItemGroup>
+    <AdditionalFiles Remove="app.manifest" />
+  </ItemGroup>
 
   <ItemGroup>
     <Compile Include="..\WicNet\Properties\AssemblyVersionInfo.cs" Link="Properties\AssemblyVersionInfo.cs" />

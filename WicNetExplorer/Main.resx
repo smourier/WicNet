@@ -66,61 +66,61 @@
   </data>
   <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="toolStripMenuItemOpen.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>155, 22</value>
   </data>
   <data name="toolStripMenuItemOpen.Text" xml:space="preserve">
     <value>&amp;Open...</value>
   </data>
   <data name="toolStripSeparator4.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>158, 6</value>
   </data>
   <data name="clearRecentListToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>161, 22</value>
   </data>
   <data name="clearRecentListToolStripMenuItem.Text" xml:space="preserve">
     <value>Clear Recent List</value>
   </data>
   <data name="openRecentToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>155, 22</value>
   </data>
   <data name="openRecentToolStripMenuItem.Text" xml:space="preserve">
     <value>Open Recent</value>
   </data>
   <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>152, 6</value>
   </data>
   <data name="saveToolStripMenuItem.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
     <value>Ctrl+S</value>
   </data>
   <data name="saveToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>155, 22</value>
   </data>
   <data name="saveToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;Save</value>
   </data>
   <data name="saveAsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>155, 22</value>
   </data>
   <data name="saveAsToolStripMenuItem.Text" xml:space="preserve">
     <value>Save &amp;As...</value>
   </data>
   <data name="toolStripSeparator3.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>152, 6</value>
   </data>
   <data name="closeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>155, 22</value>
   </data>
   <data name="closeToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;Close</value>
   </data>
   <data name="toolStripSeparator2.Size" type="System.Drawing.Size, System.Drawing">
-    <value>177, 6</value>
+    <value>152, 6</value>
   </data>
   <data name="exitToolStripMenuItem.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
     <value>Alt+F4</value>
   </data>
   <data name="exitToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>155, 22</value>
   </data>
   <data name="exitToolStripMenuItem.Text" xml:space="preserve">
     <value>E&amp;xit</value>
@@ -143,11 +143,35 @@
   <data name="toolsToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;Tools</value>
   </data>
+  <data name="cascadeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>173, 22</value>
+  </data>
+  <data name="cascadeToolStripMenuItem.Text" xml:space="preserve">
+    <value> Cascade Windows</value>
+  </data>
+  <data name="tileHorizontallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>173, 22</value>
+  </data>
+  <data name="tileHorizontallyToolStripMenuItem.Text" xml:space="preserve">
+    <value>Tile Horizontally</value>
+  </data>
+  <data name="tileVerticallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>173, 22</value>
+  </data>
+  <data name="tileVerticallyToolStripMenuItem.Text" xml:space="preserve">
+    <value>Tile Vertically</value>
+  </data>
+  <data name="windowToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>63, 20</value>
+  </data>
+  <data name="windowToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Window</value>
+  </data>
   <data name="menuStripMain.Location" type="System.Drawing.Point, System.Drawing">
     <value>0, 0</value>
   </data>
   <data name="menuStripMain.Size" type="System.Drawing.Size, System.Drawing">
-    <value>806, 24</value>
+    <value>1126, 24</value>
   </data>
   <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="menuStripMain.TabIndex" type="System.Int32, mscorlib">
@@ -166,34 +190,6 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;menuStripMain.ZOrder" xml:space="preserve">
-    <value>1</value>
-  </data>
-  <data name="panelMain.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
-    <value>Fill</value>
-  </data>
-  <data name="panelMain.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 24</value>
-  </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
-  <data name="panelMain.Padding" type="System.Windows.Forms.Padding, System.Windows.Forms">
-    <value>10, 10, 10, 10</value>
-  </data>
-  <data name="panelMain.Size" type="System.Drawing.Size, System.Drawing">
-    <value>806, 457</value>
-  </data>
-  <data name="panelMain.TabIndex" type="System.Int32, mscorlib">
-    <value>1</value>
-  </data>
-  <data name="&gt;&gt;panelMain.Name" xml:space="preserve">
-    <value>panelMain</value>
-  </data>
-  <data name="&gt;&gt;panelMain.Type" xml:space="preserve">
-    <value>System.Windows.Forms.Panel, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;panelMain.Parent" xml:space="preserve">
-    <value>$this</value>
-  </data>
-  <data name="&gt;&gt;panelMain.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
@@ -203,7 +199,7 @@
     <value>7, 15</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>806, 481</value>
+    <value>1126, 673</value>
   </data>
   <data name="$this.StartPosition" type="System.Windows.Forms.FormStartPosition, System.Windows.Forms">
     <value>CenterScreen</value>
@@ -293,6 +289,30 @@
     <value>gCCollectToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;gCCollectToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;windowToolStripMenuItem.Name" xml:space="preserve">
+    <value>windowToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;windowToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;cascadeToolStripMenuItem.Name" xml:space="preserve">
+    <value>cascadeToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;cascadeToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tileHorizontallyToolStripMenuItem.Name" xml:space="preserve">
+    <value>tileHorizontallyToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;tileHorizontallyToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;tileVerticallyToolStripMenuItem.Name" xml:space="preserve">
+    <value>tileVerticallyToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;tileVerticallyToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

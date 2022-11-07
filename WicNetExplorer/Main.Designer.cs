@@ -31,7 +31,10 @@
             this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.gCCollectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.panelMain = new System.Windows.Forms.Panel();
+            this.windowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tileHorizontallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.tileVerticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -39,8 +42,10 @@
             // 
             this.menuStripMain.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.fileToolStripMenuItem,
-            this.toolsToolStripMenuItem});
+            this.toolsToolStripMenuItem,
+            this.windowToolStripMenuItem});
             resources.ApplyResources(this.menuStripMain, "menuStripMain");
+            this.menuStripMain.MdiWindowListItem = this.windowToolStripMenuItem;
             this.menuStripMain.Name = "menuStripMain";
             // 
             // fileToolStripMenuItem
@@ -136,17 +141,39 @@
             resources.ApplyResources(this.gCCollectToolStripMenuItem, "gCCollectToolStripMenuItem");
             this.gCCollectToolStripMenuItem.Click += new System.EventHandler(this.GCCollectToolStripMenuItem_Click);
             // 
-            // panelMain
+            // windowToolStripMenuItem
             // 
-            resources.ApplyResources(this.panelMain, "panelMain");
-            this.panelMain.Name = "panelMain";
+            this.windowToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.cascadeToolStripMenuItem,
+            this.tileHorizontallyToolStripMenuItem,
+            this.tileVerticallyToolStripMenuItem});
+            this.windowToolStripMenuItem.Name = "windowToolStripMenuItem";
+            resources.ApplyResources(this.windowToolStripMenuItem, "windowToolStripMenuItem");
+            // 
+            // cascadeToolStripMenuItem
+            // 
+            this.cascadeToolStripMenuItem.Name = "cascadeToolStripMenuItem";
+            resources.ApplyResources(this.cascadeToolStripMenuItem, "cascadeToolStripMenuItem");
+            this.cascadeToolStripMenuItem.Click += new System.EventHandler(this.CascadeToolStripMenuItem_Click);
+            // 
+            // tileHorizontallyToolStripMenuItem
+            // 
+            this.tileHorizontallyToolStripMenuItem.Name = "tileHorizontallyToolStripMenuItem";
+            resources.ApplyResources(this.tileHorizontallyToolStripMenuItem, "tileHorizontallyToolStripMenuItem");
+            this.tileHorizontallyToolStripMenuItem.Click += new System.EventHandler(this.TileHorizontallyToolStripMenuItem_Click);
+            // 
+            // tileVerticallyToolStripMenuItem
+            // 
+            this.tileVerticallyToolStripMenuItem.Name = "tileVerticallyToolStripMenuItem";
+            resources.ApplyResources(this.tileVerticallyToolStripMenuItem, "tileVerticallyToolStripMenuItem");
+            this.tileVerticallyToolStripMenuItem.Click += new System.EventHandler(this.TileVerticallyToolStripMenuItem_Click);
             // 
             // Main
             // 
             resources.ApplyResources(this, "$this");
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.Controls.Add(this.panelMain);
             this.Controls.Add(this.menuStripMain);
+            this.IsMdiContainer = true;
             this.MainMenuStrip = this.menuStripMain;
             this.Name = "Main";
             this.menuStripMain.ResumeLayout(false);
@@ -163,7 +190,6 @@
         private System.Windows.Forms.ToolStripMenuItem toolStripMenuItemOpen;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator2;
         private System.Windows.Forms.ToolStripMenuItem exitToolStripMenuItem;
-        private System.Windows.Forms.Panel panelMain;
         private System.Windows.Forms.ToolStripMenuItem saveToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem saveAsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
@@ -174,5 +200,9 @@
         private System.Windows.Forms.ToolStripMenuItem openRecentToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem clearRecentListToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator4;
+        private System.Windows.Forms.ToolStripMenuItem windowToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem cascadeToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tileHorizontallyToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem tileVerticallyToolStripMenuItem;
     }
 }
