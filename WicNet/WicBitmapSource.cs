@@ -111,6 +111,18 @@ namespace WicNet
             return reader != null ? new WicMetadataQueryReader(reader) : null;
         }
 
+        public IReadOnlyList<WicColorContext> GetColorContexts()
+        {
+            var list = new List<WicColorContext>();
+            var contexts = _comObject.As<IWICBitmapFrameDecode>(false)?.GetColorContexts();
+            if (contexts != null)
+            {
+                list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
+                contexts.Dispose();
+            }
+            return list;
+        }
+
         public void CenterClip(int? width, int? height)
         {
             if (!width.HasValue && !height.HasValue)

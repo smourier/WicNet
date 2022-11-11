@@ -145,6 +145,25 @@ namespace DirectN
             return !next;
         }
 
+        public static void Dispose<T>(this IReadOnlyCollection<T> disposables, bool throwOnError = false) where T : IDisposable
+        {
+            if (disposables == null)
+                return;
+
+            foreach (var disposable in disposables)
+            {
+                try
+                {
+                    disposable.Dispose();
+                }
+                catch
+                {
+                    if (throwOnError)
+                        throw;
+                }
+            }
+        }
+
         private static readonly Lazy<ConcurrentDictionary<Guid, string>> _guids = new Lazy<ConcurrentDictionary<Guid, string>>(ExtractAllGuids, true);
 
         public static ComMemory StructureToMemory(this object structure) => new ComMemory(structure);

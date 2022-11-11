@@ -67,7 +67,7 @@ namespace WicNetExplorer
             if (fileName == null)
                 return;
 
-            var model = new BitmapSourceModel(fileName);
+            var model = FileBitmapSourceModel.Load(fileName);
             var dlg = new ObjectForm(model);
             dlg.Size = new Size(dlg.Width, Height);
             dlg.ShowDialog(this);

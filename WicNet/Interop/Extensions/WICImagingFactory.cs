@@ -27,6 +27,19 @@ namespace DirectN
         public static IComObject<IWICBitmap> CreateBitmapFromSourceRect(IComObject<IWICBitmapSource> source, int x, int y, int width, int height) => WithFactory(f => f.CreateBitmapFromSourceRect(source?.Object, x, y, width, height));
         public static IComObject<IWICImageEncoder> CreateImageEncoder(IComObject<ID2D1Device> device) => WithFactory2(f => f.CreateImageEncoder(device?.Object));
 
+        public static IComObject<IWICColorContext>[] CreateColorContexts(int count) => WithFactory(f =>
+        {
+            if (count <= 0)
+                throw new ArgumentOutOfRangeException(nameof(count));
+
+            var colorContexts = new IComObject<IWICColorContext>[count];
+            for (var i = 0; i < count; i++)
+            {
+                colorContexts[i] = f.CreateColorContext();
+            }
+            return colorContexts;
+        });
+
         public static T WithFactory2<T>(Func<IWICImagingFactory2, T> func)
         {
             if (func == null)

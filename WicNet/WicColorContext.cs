@@ -85,7 +85,7 @@ namespace WicNet
 
         // 1 => A sRGB color space
         // 2 => An Adobe RGB color space
-        // 3 => Unused
+        // 0xFFFF => Uncalibrated cf https://home.jeita.or.jp/tsc/std-pdf/CP3451C.pdf "Tags Relating to ColorSpace"
         public uint? ExifColorSpace
         {
             get
@@ -111,7 +111,10 @@ namespace WicNet
         {
             get
             {
-                _comObject.Object.GetProfileBytes(0, null, out var count).ThrowOnError();
+                var hr = _comObject.Object.GetProfileBytes(0, null, out var count);
+                if (hr.IsError)
+                    return null;
+
                 var bytes = new byte[count];
                 _comObject.Object.GetProfileBytes(count, bytes, out _).ThrowOnError();
                 return bytes;

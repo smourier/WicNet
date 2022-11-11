@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 
 namespace DirectN
 {
@@ -28,6 +29,21 @@ namespace DirectN
                 return null;
 
             return new ComObject<IWICBitmapSource>(value);
+        }
+
+        public static IComObject<IWICColorContext>[] GetColorContexts(this IComObject<IWICBitmapFrameDecode> frame) => GetColorContexts(frame?.Object);
+        public static IComObject<IWICColorContext>[] GetColorContexts(this IWICBitmapFrameDecode frame)
+        {
+            if (frame == null)
+                throw new ArgumentNullException(nameof(frame));
+
+            frame.GetColorContexts(0, null, out var count).ThrowOnError();
+            if (count == 0)
+                return Array.Empty<IComObject<IWICColorContext>>();
+
+            var colorContexts = WICImagingFactory.CreateColorContexts(count);
+            frame.GetColorContexts(colorContexts.Length, colorContexts.Select(cc => cc.Object).ToArray(), out _).ThrowOnError();
+            return colorContexts;
         }
     }
 }

@@ -2,6 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Runtime.InteropServices.ComTypes;
 using DirectN;
 
@@ -38,6 +39,15 @@ namespace WicNet
         {
             var reader = _comObject.GetMetadataQueryReader();
             return reader != null ? new WicMetadataQueryReader(reader) : null;
+        }
+
+        public IReadOnlyList<WicColorContext> GetColorContexts()
+        {
+            var list = new List<WicColorContext>();
+            var contexts = _comObject.GetColorContexts();
+            list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
+            contexts.Dispose();
+            return list;
         }
 
         IEnumerator IEnumerable.GetEnumerator() => GetEnumerator();

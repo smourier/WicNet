@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Linq;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace DirectN
 {
@@ -78,6 +80,55 @@ namespace DirectN
                 return null;
 
             return new ComObject<IWICBitmapSource>(value);
+        }
+
+        public static WICBitmapDecoderCapabilities QueryCapability(this IComObject<IWICBitmapDecoder> decoder, IStream stream) => QueryCapability(decoder?.Object, stream);
+        public static WICBitmapDecoderCapabilities QueryCapability(this IWICBitmapDecoder decoder, IStream stream)
+        {
+            if (decoder == null)
+                throw new ArgumentNullException(nameof(decoder));
+
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            decoder.QueryCapability(stream, out var capabilities).ThrowOnError(false);
+            return capabilities;
+        }
+
+        public static void CopyPalette(this IComObject<IWICBitmapDecoder> decoder, IWICPalette palette) => CopyPalette(decoder?.Object, palette);
+        public static void CopyPalette(this IWICBitmapDecoder decoder, IWICPalette palette)
+        {
+            if (decoder == null)
+                throw new ArgumentNullException(nameof(decoder));
+
+            decoder.CopyPalette(palette).ThrowOnError(false);
+        }
+
+        public static void Initialize(this IComObject<IWICBitmapDecoder> decoder, IStream stream, WICDecodeOptions options) => Initialize(decoder?.Object, stream, options);
+        public static void Initialize(this IWICBitmapDecoder decoder, IStream stream, WICDecodeOptions options)
+        {
+            if (decoder == null)
+                throw new ArgumentNullException(nameof(decoder));
+
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            decoder.Initialize(stream, options).ThrowOnError(false);
+        }
+
+        public static IComObject<IWICColorContext>[] GetColorContexts(this IComObject<IWICBitmapDecoder> decoder) => GetColorContexts(decoder?.Object);
+        public static IComObject<IWICColorContext>[] GetColorContexts(this IWICBitmapDecoder decoder)
+        {
+            if (decoder == null)
+                throw new ArgumentNullException(nameof(decoder));
+
+            decoder.GetColorContexts(0, null, out var count).ThrowOnError();
+            if (count == 0)
+                return Array.Empty<IComObject<IWICColorContext>>();
+
+            var colorContexts = WICImagingFactory.CreateColorContexts(count);
+            decoder.GetColorContexts(colorContexts.Length, colorContexts.Select(cc => cc.Object).ToArray(), out _).ThrowOnError();
+            return colorContexts;
         }
     }
 }

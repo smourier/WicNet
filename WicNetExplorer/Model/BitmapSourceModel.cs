@@ -1,16 +1,16 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Linq;
 using WicNet;
 
 namespace WicNetExplorer.Model
 {
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class BitmapSourceModel
     {
-        public BitmapSourceModel(string filePath)
+        public BitmapSourceModel(WicBitmapSource source)
         {
-            ArgumentNullException.ThrowIfNull(filePath);
-            FilePath = filePath;
-            using var source = WicBitmapSource.Load(filePath);
+            ArgumentNullException.ThrowIfNull(source);
             Size = source.Size;
             Stride = source.Stride;
             PixelFormat = new PixelFormatModel(source.WicPixelFormat);
@@ -21,13 +21,23 @@ namespace WicNetExplorer.Model
             {
                 Palette = new PaletteModel(palette);
             }
+
+            MemorySize = Stride * source.Height;
+            ColorContexts = source.GetColorContexts().Select(cc => new ColorContextModel(cc)).ToArray();
+            using var th = source.GetThumbnail();
+            if (th != null)
+            {
+                Thumbnail = new BitmapSourceModel(th);
+            }
         }
 
-        [DisplayName("File Path")]
-        public string FilePath { get; }
         public WicIntSize Size { get; }
         public int Stride { get; }
         public PaletteModel? Palette { get; }
+        public BitmapSourceModel? Thumbnail { get; }
+
+        [DisplayName("Color Contexts")]
+        public ColorContextModel[] ColorContexts { get; } = Array.Empty<ColorContextModel>();
 
         [DisplayName("Dpi X")]
         public double DpiX { get; }
@@ -36,8 +46,11 @@ namespace WicNetExplorer.Model
         public double DpiY { get; }
 
         [DisplayName("Pixel Format")]
-        public PixelFormatModel PixelFormat { get; }
+        public PixelFormatModel? PixelFormat { get; }
 
-        public override string ToString() => FilePath;
+        [DisplayName("Image Size")]
+        public long MemorySize { get; }
+
+        public override string ToString() => Size.ToString();
     }
 }
