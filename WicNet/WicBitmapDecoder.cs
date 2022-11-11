@@ -46,7 +46,6 @@ namespace WicNet
             var list = new List<WicColorContext>();
             var contexts = _comObject.GetColorContexts();
             list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
-            contexts.Dispose();
             return list;
         }
 

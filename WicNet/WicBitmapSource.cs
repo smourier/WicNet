@@ -118,7 +118,6 @@ namespace WicNet
             if (contexts != null)
             {
                 list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
-                contexts.Dispose();
             }
             return list;
         }
