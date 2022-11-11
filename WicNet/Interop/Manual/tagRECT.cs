@@ -56,16 +56,16 @@ namespace DirectN
         {
             this.left = left;
             this.top = top;
-            right = (int)(left + size.width);
-            bottom = (int)(top + size.height);
+            right = left + size.width;
+            bottom = top + size.height;
         }
 
         public tagRECT(tagPOINT pt, tagSIZE size)
         {
             left = pt.x;
             top = pt.y;
-            right = (int)(left + size.width);
-            bottom = (int)(top + size.height);
+            right = left + size.width;
+            bottom = top + size.height;
         }
 
         public tagRECT(float left, float top, float right, float bottom)

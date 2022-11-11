@@ -8,12 +8,8 @@ using WicNet.Utilities;
 
 namespace WicNet
 {
-#pragma warning disable CA1036 // Override methods on comparable types
     public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicBitmapSource>
-#pragma warning restore CA1036 // Override methods on comparable types
     {
-        public static bool NoHardwareSupport { get; set; } // azure
-
         private IComObject<IWICBitmapSource> _comObject;
         private WicPalette _palette;
 
@@ -31,6 +27,7 @@ namespace WicNet
         public WicIntSize Size => new WicIntSize(Width, Height);
         public WICRect Bounds => new WICRect(0, 0, Width, Height);
         public int DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat.BitsPerPixel);
+        public bool IsSupportedRenderTarget => IsSupportedRenderTargetFormat(PixelFormat);
 
         public WicPalette Palette
         {
@@ -349,8 +346,6 @@ namespace WicNet
 
             return bmp;
         }
-
-        public bool IsSupportedRenderTarget => IsSupportedRenderTargetFormat(PixelFormat);
 
         // https://stackoverflow.com/a/30669562/403671
         public static bool IsSupportedRenderTargetFormat(Guid format) =>

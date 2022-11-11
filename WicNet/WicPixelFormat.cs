@@ -5,9 +5,7 @@ using DirectN;
 
 namespace WicNet
 {
-#pragma warning disable CA1036 // Override methods on comparable types
     public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparable<WicPixelFormat>
-#pragma warning restore CA1036 // Override methods on comparable types
     {
         public WicPixelFormat(object comObject)
             : base(comObject)

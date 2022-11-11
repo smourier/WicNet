@@ -18,7 +18,10 @@ namespace DirectN
             Height = height;
         }
 
-        public override string ToString() => X + ", " + Y + " " + Width + " x " + Height;
+        public int Right => X + Width;
+        public int Bottom => Y + Height;
+
+        public override string ToString() => "L:" + X + " T:" + Y + " W:" + Width + " H:" + Height + " R:" + Right + " B:" + Bottom;
         public override bool Equals(object obj) => obj is WICRect rect && rect.X == X && rect.Y == Y && rect.Width == Width && rect.Height == Height;
         public override int GetHashCode() => X.GetHashCode() ^ Y.GetHashCode() ^ Width.GetHashCode() ^ Height.GetHashCode();
 

@@ -35,5 +35,27 @@ namespace WicNetExplorer.Utilities
             var t = text.Trim();
             return t.Length == 0 ? null : t;
         }
+
+        public static string GetEnumName(this object value, string? prefix = null)
+        {
+            ArgumentNullException.ThrowIfNull(value);
+            var type = value.GetType();
+            if (!type.IsEnum)
+                throw new ArgumentException(null, nameof(value));
+
+            prefix ??= type.Name;
+            var name = value.ToString()!;
+            if (name.StartsWith(prefix))
+                return name.Substring(prefix.Length);
+
+            const string tok = "Type";
+            if (prefix.Length > tok.Length && prefix.EndsWith(tok))
+            {
+                prefix = prefix.Substring(0, prefix.Length - tok.Length);
+                if (name.StartsWith(prefix))
+                    return name.Substring(prefix.Length);
+            }
+            return name;
+        }
     }
 }

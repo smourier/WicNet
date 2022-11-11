@@ -131,6 +131,18 @@
   <data name="fileToolStripMenuItem.Text" xml:space="preserve">
     <value>&amp;File</value>
   </data>
+  <data name="infoToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="infoToolStripMenuItem.Text" xml:space="preserve">
+    <value>Info...</value>
+  </data>
+  <data name="imageToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>52, 20</value>
+  </data>
+  <data name="imageToolStripMenuItem.Text" xml:space="preserve">
+    <value>&amp;Image</value>
+  </data>
   <data name="gCCollectToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>130, 22</value>
   </data>
@@ -144,19 +156,19 @@
     <value>&amp;Tools</value>
   </data>
   <data name="cascadeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>170, 22</value>
   </data>
   <data name="cascadeToolStripMenuItem.Text" xml:space="preserve">
     <value>Cascade Windows</value>
   </data>
   <data name="tileHorizontallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>170, 22</value>
   </data>
   <data name="tileHorizontallyToolStripMenuItem.Text" xml:space="preserve">
     <value>Tile Horizontally</value>
   </data>
   <data name="tileVerticallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>180, 22</value>
+    <value>170, 22</value>
   </data>
   <data name="tileVerticallyToolStripMenuItem.Text" xml:space="preserve">
     <value>Tile Vertically</value>
@@ -279,6 +291,12 @@
   <data name="&gt;&gt;exitToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;imageToolStripMenuItem.Name" xml:space="preserve">
+    <value>imageToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;imageToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;toolsToolStripMenuItem.Name" xml:space="preserve">
     <value>toolsToolStripMenuItem</value>
   </data>
@@ -313,6 +331,12 @@
     <value>tileVerticallyToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;tileVerticallyToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;infoToolStripMenuItem.Name" xml:space="preserve">
+    <value>infoToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;infoToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

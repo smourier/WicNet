@@ -146,9 +146,12 @@ namespace WicNet
 
         public override string ToString()
         {
-            var list = new List<string>();
-            list.Add(Type.ToString());
-            list.Add(ColorCount + " Color(s)");
+            var list = new List<string>
+            {
+                Type.ToString(),
+                ColorCount + " Color(s)"
+            };
+
             if (HasAlpha)
             {
                 list.Add(nameof(HasAlpha));

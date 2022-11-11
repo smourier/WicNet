@@ -1,6 +1,8 @@
 using System;
+using System.Drawing;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WicNetExplorer.Model;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer
@@ -12,12 +14,17 @@ namespace WicNetExplorer
             InitializeComponent();
             Icon = Resources.WicNetIcon;
 
+            imageToolStripMenuItem.Visible = false;
             Task.Run(() => Settings.Current.CleanRecentFiles());
         }
 
         public ImageForm? ActiveImageForm => ActiveMdiChild as ImageForm;
 
-        private void OpenFile(string? fileName = null) => ImageForm.OpenFile(this, fileName);
+        private void OpenFile(string? fileName = null)
+        {
+            ImageForm.OpenFile(this, fileName);
+            imageToolStripMenuItem.Visible = true;
+        }
 
         private void CascadeToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.Cascade);
         private void TileHorizontallyToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.TileHorizontal);
@@ -52,6 +59,23 @@ namespace WicNetExplorer
                 }
             }
             openRecentToolStripMenuItem.Enabled = openRecentToolStripMenuItem.DropDownItems.Count > fixedRecentItemsCount;
+        }
+
+        private void InfoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var fileName = ActiveImageForm?.FileName;
+            if (fileName == null)
+                return;
+
+            var model = new BitmapSourceModel(fileName);
+            var dlg = new ObjectForm(model);
+            dlg.Size = new Size(dlg.Width, Height);
+            dlg.ShowDialog(this);
+        }
+
+        protected override void OnMdiChildActivate(EventArgs e)
+        {
+            imageToolStripMenuItem.Visible = ActiveImageForm != null;
         }
     }
 }

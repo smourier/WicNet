@@ -132,6 +132,21 @@ namespace WicNetExplorer
 
             Text = fileName;
             FileName = fileName;
+
+            if (_bitmapSource.Width > 0 && _bitmapSource.Height > 0)
+            {
+                var bounds = MdiBounds;
+                Size newSize;
+                if (_bitmapSource.Width > _bitmapSource.Height && _bitmapSource.Width > 0)
+                {
+                    newSize = new(bounds.Width, (int)(bounds.Width * (_bitmapSource.Height / (float)_bitmapSource.Width)));
+                }
+                else
+                {
+                    newSize = new((int)(bounds.Height * _bitmapSource.Width / (float)_bitmapSource.Height), bounds.Height);
+                }
+                MdiResizeClient(newSize);
+            }
         }
 
         public void SaveFile() => SaveFile(false);

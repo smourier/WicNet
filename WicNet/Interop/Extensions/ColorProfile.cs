@@ -8,6 +8,7 @@ using System.Text;
 
 namespace DirectN
 {
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public sealed class ColorProfile
     {
         private static readonly Lazy<IReadOnlyList<ColorProfile>> _localProfiles = new Lazy<IReadOnlyList<ColorProfile>>(() => GetColorProfiles(null), true);
@@ -198,6 +199,7 @@ namespace DirectN
         }
 
         public string FilePath { get; } // null if loaded from memory
+        [Browsable(false)] // avoid to display in property grid
         public byte[] Profile { get; }
         public int Size { get; }
         public int Version { get; }

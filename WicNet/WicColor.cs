@@ -30,11 +30,11 @@ namespace WicNet
             return (int)ui;
         }
 
-        public static WicColor FromArgb(int argb) => FromArgb((int)argb);
+        public static WicColor FromArgb(int argb) => FromArgb(argb);
         public static WicColor FromArgb(uint argb) => new WicColor((byte)(argb >> 24), (byte)((argb >> 16) & 255), (byte)((argb >> 8) & 255), (byte)(argb & 255));
-        public static WicColor FromArgb(int r, int g, int b) => FromArgb((byte)255, (byte)r, (byte)g, (byte)b);
+        public static WicColor FromArgb(int r, int g, int b) => FromArgb(255, (byte)r, (byte)g, (byte)b);
         public static WicColor FromArgb(int a, int r, int g, int b) => FromArgb((byte)a, (byte)r, (byte)g, (byte)b);
-        public static WicColor FromArgb(byte r, byte g, byte b) => FromArgb((byte)255, r, g, b);
+        public static WicColor FromArgb(byte r, byte g, byte b) => FromArgb(255, r, g, b);
 
         public override bool Equals(object obj) => obj is WicColor color && Equals(color);
 

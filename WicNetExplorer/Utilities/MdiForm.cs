@@ -47,6 +47,20 @@ namespace WicNetExplorer.Utilities
         }
 
         public bool IsActive { get; private set; }
+        public Rectangle MdiBounds
+        {
+            get
+            {
+                var padding = Padding;
+                return new(padding.Left, padding.Top, Width - padding.Horizontal, Height - padding.Vertical);
+            }
+        }
+
+        public virtual void MdiResizeClient(Size size)
+        {
+            var padding = Padding;
+            ClientSize = new Size(padding.Horizontal + size.Width, padding.Vertical + size.Height);
+        }
 
         // for some reason, the builtin LayoutMdi command doesn't work with FormBorderStyle = None
         public static void LayoutMdi(Form mdiParent, MdiLayout layout)
