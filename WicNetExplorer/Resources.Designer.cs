@@ -79,11 +79,65 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to WicNetExplorer.
+        /// </summary>
+        internal static string AppName {
+            get {
+                return ResourceManager.GetString("AppName", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Length: {0}.
+        /// </summary>
+        internal static string ArrayLength {
+            get {
+                return ResourceManager.GetString("ArrayLength", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to &lt;Click here on button  to preview&gt;.
+        /// </summary>
+        internal static string ClickHereForPreview {
+            get {
+                return ResourceManager.GetString("ClickHereForPreview", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Confirmation.
+        /// </summary>
+        internal static string Confirmation {
+            get {
+                return ResourceManager.GetString("Confirmation", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Error.
+        /// </summary>
+        internal static string Error {
+            get {
+                return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to {0} files (*{1})|*{1}.
         /// </summary>
         internal static string OneImageFileFilter {
             get {
                 return ResourceManager.GetString("OneImageFileFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Warning.
+        /// </summary>
+        internal static string Warning {
+            get {
+                return ResourceManager.GetString("Warning", resourceCulture);
             }
         }
         

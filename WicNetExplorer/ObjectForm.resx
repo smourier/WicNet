@@ -65,14 +65,50 @@
   <data name="panelButtons.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Top, Bottom, Left, Right</value>
   </data>
+  <data name="buttonCopyToClipboard.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
+    <value>Left</value>
+  </data>
+  <data name="buttonCopyToClipboard.AutoSize" type="System.Boolean, mscorlib">
+    <value>True</value>
+  </data>
+  <data name="buttonCopyToClipboard.ImeMode" type="System.Windows.Forms.ImeMode, System.Windows.Forms">
+    <value>NoControl</value>
+  </data>
+  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+  <data name="buttonCopyToClipboard.Location" type="System.Drawing.Point, System.Drawing">
+    <value>4, 5</value>
+  </data>
+  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="buttonCopyToClipboard.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
+    <value>4, 3, 4, 3</value>
+  </data>
+  <data name="buttonCopyToClipboard.Size" type="System.Drawing.Size, System.Drawing">
+    <value>114, 27</value>
+  </data>
+  <data name="buttonCopyToClipboard.TabIndex" type="System.Int32, mscorlib">
+    <value>2</value>
+  </data>
+  <data name="buttonCopyToClipboard.Text" xml:space="preserve">
+    <value>Co&amp;py to Clipboard</value>
+  </data>
+  <data name="&gt;&gt;buttonCopyToClipboard.Name" xml:space="preserve">
+    <value>buttonCopyToClipboard</value>
+  </data>
+  <data name="&gt;&gt;buttonCopyToClipboard.Type" xml:space="preserve">
+    <value>System.Windows.Forms.Button, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;buttonCopyToClipboard.Parent" xml:space="preserve">
+    <value>panelButtons</value>
+  </data>
+  <data name="&gt;&gt;buttonCopyToClipboard.ZOrder" xml:space="preserve">
+    <value>0</value>
+  </data>
   <data name="buttonOk.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Right</value>
   </data>
-  <assembly alias="System.Drawing" name="System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
   <data name="buttonOk.Location" type="System.Drawing.Point, System.Drawing">
     <value>317, 5</value>
   </data>
-  <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="buttonOk.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
   </data>
@@ -95,7 +131,7 @@
     <value>panelButtons</value>
   </data>
   <data name="&gt;&gt;buttonOk.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="buttonCancel.Anchor" type="System.Windows.Forms.AnchorStyles, System.Windows.Forms">
     <value>Right</value>
@@ -125,10 +161,10 @@
     <value>panelButtons</value>
   </data>
   <data name="&gt;&gt;buttonCancel.ZOrder" xml:space="preserve">
-    <value>1</value>
+    <value>2</value>
   </data>
   <data name="panelButtons.Location" type="System.Drawing.Point, System.Drawing">
-    <value>0, 658</value>
+    <value>0, 493</value>
   </data>
   <data name="panelButtons.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>0, 0, 0, 0</value>
@@ -164,7 +200,7 @@
     <value>4, 3, 4, 3</value>
   </data>
   <data name="propertyGridObject.Size" type="System.Drawing.Size, System.Drawing">
-    <value>495, 652</value>
+    <value>495, 487</value>
   </data>
   <data name="propertyGridObject.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -194,7 +230,7 @@
     <value>2</value>
   </data>
   <data name="tableLayoutPanelMain.Size" type="System.Drawing.Size, System.Drawing">
-    <value>503, 693</value>
+    <value>503, 528</value>
   </data>
   <data name="tableLayoutPanelMain.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
@@ -224,7 +260,7 @@
     <value>7, 15</value>
   </data>
   <data name="$this.ClientSize" type="System.Drawing.Size, System.Drawing">
-    <value>503, 693</value>
+    <value>503, 528</value>
   </data>
   <data name="$this.Margin" type="System.Windows.Forms.Padding, System.Windows.Forms">
     <value>4, 3, 4, 3</value>
@@ -233,7 +269,7 @@
     <value>CenterParent</value>
   </data>
   <data name="$this.Text" xml:space="preserve">
-    <value>Settings</value>
+    <value>Information</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>ObjectForm</value>

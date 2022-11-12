@@ -37,7 +37,7 @@ namespace DirectN
             if (frame == null)
                 throw new ArgumentNullException(nameof(frame));
 
-            frame.GetColorContexts(0, null, out var count).ThrowOnError();
+            frame.GetColorContexts(0, null, out var count);
             if (count == 0)
                 return Array.Empty<IComObject<IWICColorContext>>();
 

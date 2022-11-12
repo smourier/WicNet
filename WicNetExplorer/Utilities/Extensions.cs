@@ -1,9 +1,18 @@
 ﻿using System;
+using System.ComponentModel;
+using System.Drawing;
+using System.Reflection;
+using WicNet;
 
 namespace WicNetExplorer.Utilities
 {
     public static class Extensions
     {
+        public static Size ToSize(this WicIntSize size) => new((int)size.Width, (int)size.Height);
+        public static SizeF ToSizeF(this WicIntSize size) => new(size.Width, size.Height);
+        public static Size ToSize(this WicSize size) => new((int)size.Width, (int)size.Height);
+        public static SizeF ToSizeF(this WicSize size) => new((float)size.Width, (float)size.Height);
+
         public static bool EqualsIgnoreCase(this string? thisString, string? text, bool trim = false)
         {
             if (trim)
@@ -43,8 +52,16 @@ namespace WicNetExplorer.Utilities
             if (!type.IsEnum)
                 throw new ArgumentException(null, nameof(value));
 
-            prefix ??= type.Name;
             var name = value.ToString()!;
+            var field = type.GetField(name, BindingFlags.Public | BindingFlags.Static);
+            if (field != null)
+            {
+                var desc = field.GetCustomAttribute<DescriptionAttribute>();
+                if (desc != null)
+                    return desc.Description;
+            }
+
+            prefix ??= type.Name;
             if (name.StartsWith(prefix))
                 return name.Substring(prefix.Length);
 

@@ -6,11 +6,12 @@ using WicNetExplorer.Utilities;
 namespace WicNetExplorer.Model
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class PixelFormatModel
+    public class PixelFormatModel : ImagingComponentModel
     {
         private readonly WicPixelFormat _format;
 
         public PixelFormatModel(WicPixelFormat format)
+            : base(format)
         {
             ArgumentNullException.ThrowIfNull(format);
             _format = format;
@@ -37,9 +38,6 @@ namespace WicNetExplorer.Model
 
         [DisplayName("Supports Transparency")]
         public bool SupportsTransparency => _format.SupportsTransparency;
-
-        [DisplayName("Name")]
-        public string ClsidName => _format.ClsidName;
 
         public override string ToString() => _format.ToString();
     }

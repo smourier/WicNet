@@ -123,8 +123,26 @@
   <data name="AllImagesFilesFilter" xml:space="preserve">
     <value>|All image files|{0}</value>
   </data>
+  <data name="AppName" xml:space="preserve">
+    <value>WicNetExplorer</value>
+  </data>
+  <data name="ArrayLength" xml:space="preserve">
+    <value>Length: {0}</value>
+  </data>
+  <data name="ClickHereForPreview" xml:space="preserve">
+    <value>&lt;Click here on button  to preview&gt;</value>
+  </data>
+  <data name="Confirmation" xml:space="preserve">
+    <value>Confirmation</value>
+  </data>
+  <data name="Error" xml:space="preserve">
+    <value>Error</value>
+  </data>
   <data name="OneImageFileFilter" xml:space="preserve">
     <value>{0} files (*{1})|*{1}</value>
+  </data>
+  <data name="Warning" xml:space="preserve">
+    <value>Warning</value>
   </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="WicNetIcon" type="System.Resources.ResXFileRef, System.Windows.Forms">

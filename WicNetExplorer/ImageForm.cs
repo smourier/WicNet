@@ -20,7 +20,6 @@ namespace WicNetExplorer
         public ImageForm()
         {
             InitializeComponent();
-            //BackColor = Color.Red;
             Icon = Resources.WicNetIcon;
 
             _d2d.Draw += (s, e) =>
@@ -60,7 +59,7 @@ namespace WicNetExplorer
             WindowState = FormWindowState.Minimized;
         }
 
-        public static void OpenFile(Form parent, string? fileName = null)
+        public static ImageForm? OpenFile(Form parent, string? fileName = null)
         {
             ArgumentNullException.ThrowIfNull(parent);
             if (fileName == null)
@@ -77,20 +76,28 @@ namespace WicNetExplorer
                     FilterIndex = filter.Item2, // select all images by default
                 };
                 if (fd.ShowDialog(parent) != DialogResult.OK)
-                    return;
+                    return null;
 
                 fileName = fd.FileName;
             }
             if (!IOUtilities.PathIsFile(fileName))
-                return;
+                return null;
 
-            var imageForm = new ImageForm();
-            imageForm.MdiParent = parent;
-            imageForm.LoadFile(fileName);
+            var imageForm = new ImageForm
+            {
+                MdiParent = parent
+            };
+            if (!imageForm.LoadFile(fileName))
+            {
+                imageForm.Close();
+                return null;
+            }
+
             imageForm.Show();
 
             Settings.Current.AddRecentFile(fileName);
             Settings.Current.SerializeToConfiguration();
+            return imageForm;
         }
 
         private static Tuple<string, int> BuildFilters(IEnumerable<string> extensions)
@@ -118,7 +125,7 @@ namespace WicNetExplorer
             base.OnClosing(e);
         }
 
-        public void LoadFile(string fileName)
+        public bool LoadFile(string fileName)
         {
             ArgumentNullException.ThrowIfNull(fileName);
 
@@ -126,7 +133,16 @@ namespace WicNetExplorer
             _bitmap = null;
             _bitmapSource?.Dispose();
 
-            _bitmapSource = WicBitmapSource.Load(fileName);
+            try
+            {
+                _bitmapSource = WicBitmapSource.Load(fileName);
+            }
+            catch (Exception e)
+            {
+                this.ShowError(e.GetAllMessages());
+                return false;
+            }
+
             _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
             _d2d.Invalidate();
 
@@ -147,6 +163,7 @@ namespace WicNetExplorer
                 }
                 MdiResizeClient(newSize);
             }
+            return true;
         }
 
         public void SaveFile() => SaveFile(false);

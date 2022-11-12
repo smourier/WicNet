@@ -35,7 +35,9 @@ namespace WicNetExplorer.Model
         [DisplayName("Color Count")]
         public int ColorCount { get; }
 
+        [TypeConverter(typeof(ArrayCountConverter))]
         public WicColor[] Colors { get; }
+
         public string Type { get; }
         
         public override string ToString() => Type;

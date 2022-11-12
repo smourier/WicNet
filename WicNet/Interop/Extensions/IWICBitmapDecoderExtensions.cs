@@ -122,7 +122,7 @@ namespace DirectN
             if (decoder == null)
                 throw new ArgumentNullException(nameof(decoder));
 
-            decoder.GetColorContexts(0, null, out var count).ThrowOnError();
+            decoder.GetColorContexts(0, null, out var count);
             if (count == 0)
                 return Array.Empty<IComObject<IWICColorContext>>();
 

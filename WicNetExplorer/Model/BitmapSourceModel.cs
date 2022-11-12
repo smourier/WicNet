@@ -2,12 +2,15 @@
 using System.ComponentModel;
 using System.Linq;
 using WicNet;
+using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class BitmapSourceModel
+    public class BitmapSourceModel : IDisposable
     {
+        private bool _disposedValue;
+
         public BitmapSourceModel(WicBitmapSource source)
         {
             ArgumentNullException.ThrowIfNull(source);
@@ -24,10 +27,10 @@ namespace WicNetExplorer.Model
 
             MemorySize = Stride * source.Height;
             ColorContexts = source.GetColorContexts().Select(cc => new ColorContextModel(cc)).ToArray();
-            using var th = source.GetThumbnail();
+            var th = source.GetThumbnail(); // no using here
             if (th != null)
             {
-                Thumbnail = new BitmapSourceModel(th);
+                Thumbnail = new PreviewBitmapSourceModel(th);
             }
         }
 
@@ -37,6 +40,7 @@ namespace WicNetExplorer.Model
         public BitmapSourceModel? Thumbnail { get; }
 
         [DisplayName("Color Contexts")]
+        [TypeConverter(typeof(ArrayCountConverter))]
         public ColorContextModel[] ColorContexts { get; } = Array.Empty<ColorContextModel>();
 
         [DisplayName("Dpi X")]
@@ -52,5 +56,21 @@ namespace WicNetExplorer.Model
         public long MemorySize { get; }
 
         public override string ToString() => Size.ToString();
+
+        protected virtual void Dispose(bool disposing)
+        {
+            if (!_disposedValue)
+            {
+                if (disposing)
+                {
+                    Thumbnail?.Dispose();
+                }
+
+                _disposedValue = true;
+            }
+        }
+
+        ~BitmapSourceModel() { Dispose(disposing: false); }
+        public void Dispose() { Dispose(disposing: true); GC.SuppressFinalize(this); }
     }
 }

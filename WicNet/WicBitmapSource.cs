@@ -99,6 +99,8 @@ namespace WicNet
 
         public int Stride => WicPixelFormat.BitsPerPixel * Width / 8;
 
+        public override string ToString() => Size.ToString();
+
         public WicBitmapSource GetThumbnail()
         {
             var bmp = _comObject.As<IWICBitmapFrameDecode>(false)?.GetThumbnail();
@@ -180,8 +182,11 @@ namespace WicNet
             _comObject = clip;
         }
 
-        public void ConvertTo(Guid pixelFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
+        public bool ConvertTo(Guid pixelFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
         {
+            if (pixelFormat == PixelFormat)
+                return false;
+
             if (WicPixelFormat == null)
                 throw new InvalidOperationException();
 
@@ -192,6 +197,7 @@ namespace WicNet
             var converter = cvt.Convert(this, pixelFormat, ditherType, palette, alphaThresholdPercent, paletteTranslate);
             _comObject?.Dispose();
             _comObject = converter;
+            return true;
         }
 
         public void CopyPixels(int bufferSize, IntPtr buffer, int? stride = null)

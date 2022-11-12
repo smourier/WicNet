@@ -1,5 +1,5 @@
 using System;
-using System.Drawing;
+using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WicNetExplorer.Model;
@@ -22,8 +22,29 @@ namespace WicNetExplorer
 
         private void OpenFile(string? fileName = null)
         {
-            ImageForm.OpenFile(this, fileName);
+            var form = ImageForm.OpenFile(this, fileName);
+            if (form == null)
+                return;
+
             imageToolStripMenuItem.Visible = true;
+            if (MdiChildren.Length == 1)
+            {
+                form.Left = form.Padding.Top;
+                form.Top = form.Left;
+            }
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            base.OnKeyDown(e);
+            if (e.KeyCode == Keys.T && e.Shift && e.Control)
+            {
+                var lastRecent = Settings.Current.RecentFilesPaths?.FirstOrDefault();
+                if (lastRecent != null)
+                {
+                    OpenFile(lastRecent.FilePath);
+                }
+            }
         }
 
         private void CascadeToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.Cascade);
@@ -67,9 +88,8 @@ namespace WicNetExplorer
             if (fileName == null)
                 return;
 
-            var model = FileBitmapSourceModel.Load(fileName);
+            using var model = FileBitmapSourceModel.Load(fileName);
             var dlg = new ObjectForm(model);
-            dlg.Size = new Size(dlg.Width, Height);
             dlg.ShowDialog(this);
         }
 

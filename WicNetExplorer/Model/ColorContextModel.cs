@@ -15,14 +15,14 @@ namespace WicNetExplorer.Model
         public ColorContextModel(WicColorContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
-            ExifColorSpace = context.ExifColorSpace;
+            ExifColorSpace = ((ExifColorSpace)context.ExifColorSpace.GetValueOrDefault()).GetEnumName();
             Type = context.Type.GetEnumName("WICColorContext").Decamelize();
             Profile = context.Profile;
             _profileBytes = context.ProfileBytes;
         }
 
         [DisplayName("Exif Color Space")]
-        public uint? ExifColorSpace { get; }
+        public string ExifColorSpace { get; }
 
         public ColorProfile? Profile { get; }
         public string? Type { get; }
