@@ -115,6 +115,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Information was copied to the clipboard..
+        /// </summary>
+        internal static string CopiedToClipboard {
+            get {
+                return ResourceManager.GetString("CopiedToClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Error.
         /// </summary>
         internal static string Error {

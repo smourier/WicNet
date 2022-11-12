@@ -1,6 +1,4 @@
-﻿using DirectN;
-
-namespace WicNet
+﻿namespace WicNet
 {
     public sealed class WicMetadataWriter : WicMetadataHandler
     {

@@ -1,4 +1,5 @@
-﻿using System.Windows.Forms;
+﻿using System;
+using System.Windows.Forms;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer
@@ -12,10 +13,13 @@ namespace WicNetExplorer
             propertyGridObject.SelectedObject = obj;
         }
 
-        private void ButtonCopyToClipboard_Click(object sender, System.EventArgs e)
+        private void ExpandAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.ExpandAllGridItems();
+        private void CollapseAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.CollapseAllGridItems();
+        private void ButtonCopyToClipboard_Click(object sender, EventArgs e)
         {
-            var text = ToStringVisitor.Visit(propertyGridObject.SelectedObject, " ");
-            this.ShowMessage(text);
+            var text = ToStringVisitor.Visit(propertyGridObject.SelectedObject, "  ");
+            Clipboard.SetText(text);
+            this.ShowMessage(Resources.CopiedToClipboard);
         }
     }
 }

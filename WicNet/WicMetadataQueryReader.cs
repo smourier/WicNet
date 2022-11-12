@@ -18,6 +18,9 @@ namespace WicNet
 
         public IComObject<IWICMetadataQueryReader> ComObject => _comObject;
 
+        public string HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(ContainerFormat);
+        public string ContainerFormatName => GetFormatName(ContainerFormat);
+
         public string Location
         {
             get
@@ -41,8 +44,6 @@ namespace WicNet
             }
         }
 
-        public string ContainerFormatName => GetFormatName(ContainerFormat);
-
         public IReadOnlyList<string> Strings
         {
             get
@@ -64,7 +65,7 @@ namespace WicNet
             }
         }
 
-        public override string ToString() => ContainerFormatName + " " + Location;
+        public override string ToString() => ContainerFormatName + Location;
 
         public T GetMetadataByName<T>(string name, T defaultValue = default) => GetMetadataByName<T>(name, out _, defaultValue);
         public T GetMetadataByName<T>(string name, out PropertyType type, T defaultValue = default)

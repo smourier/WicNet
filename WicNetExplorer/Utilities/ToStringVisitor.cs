@@ -12,6 +12,8 @@ namespace WicNetExplorer.Utilities
 {
     public partial class ToStringVisitor
     {
+        private int? _indent = -1;
+
         public ToStringVisitor(TextWriter writer, string? tabString = null)
         {
             ArgumentNullException.ThrowIfNull(writer);
@@ -51,35 +53,34 @@ namespace WicNetExplorer.Utilities
             if (enumerable != null)
             {
                 var i = 0;
+                Indent++;
                 foreach (var item in enumerable)
                 {
                     if (IsValue(context, item))
                     {
-                        Writer.Indent++;
                         var svalue = GetValueDisplayString(item);
                         Writer.WriteLine("[" + i + "]: " + svalue);
                     }
                     else
                     {
                         Writer.WriteLine("[" + i + "]:");
-                        Writer.Indent++;
                         Visit(context, item, value);
                     }
-                    Writer.Indent--;
                     i++;
                 }
+                Indent--;
                 return;
             }
 
-            foreach (var member in GetMembers(context, value.GetType()))
-            {
-                if (!CanGetValue(context, member))
-                    continue;
+            Indent++;
 
+            var anyMember = false;
+            foreach (var member in GetMembers(context, value))
+            {
                 object? memberValue;
                 try
                 {
-                    memberValue = GetValue(context, member, value);
+                    memberValue = member.GetValue(value);
                 }
                 catch
                 {
@@ -89,7 +90,7 @@ namespace WicNetExplorer.Utilities
                     continue;
                 }
 
-                var name = GetMemberDisplayName(member);
+                var name = member.DisplayName;
                 if (IsValue(context, memberValue))
                 {
                     var svalue = GetValueDisplayString(memberValue);
@@ -97,11 +98,41 @@ namespace WicNetExplorer.Utilities
                 }
                 else
                 {
-                    Writer.Indent++;
                     Writer.WriteLine(name + ":");
                     Visit(context, memberValue, value);
-                    Writer.Indent--;
                 }
+                anyMember = true;
+            }
+
+            if (!anyMember)
+            {
+                var svalue = GetValueDisplayString(value);
+                Writer.WriteLine(svalue);
+            }
+            Indent--;
+        }
+
+        // we need this because
+        // 1) IndentedTextWriter doesn't handle negative (start) indent values
+        // 2) IndentedTextWriter has a bug where it doesn't output the tab of the first line (as no writeline was ever called before)
+        private int Indent
+        {
+            get
+            {
+                if (_indent.HasValue)
+                    return _indent.Value;
+
+                return Writer.Indent;
+            }
+            set
+            {
+                if (value < 0)
+                {
+                    _indent = value;
+                    return;
+                }
+                _indent = null;
+                Writer.Indent = value;
             }
         }
 
@@ -115,17 +146,11 @@ namespace WicNetExplorer.Utilities
                 var max = 32;
                 if (bytes.Length > max)
                     return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
-                
+
                 return bytes.ToHexa();
             }
 
             return value.ToString()!;
-        }
-
-        protected virtual string GetMemberDisplayName(MemberInfo member)
-        {
-            ArgumentNullException.ThrowIfNull(member);
-            return member.Name.Decamelize();
         }
 
         protected virtual bool IsValue(ToStringVisitorContext context, object? value)
@@ -150,10 +175,37 @@ namespace WicNetExplorer.Utilities
             if (value is DateTimeOffset)
                 return true;
 
+            var enumerable = value as IEnumerable;
+            if (enumerable == null && !HasAnyMember(context, value))
+                return true;
+
             return false;
         }
 
-        protected virtual IEnumerable<MemberInfo> GetMembers(ToStringVisitorContext context, Type type) => type.GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(m => m.Name);
+        private bool HasAnyMember(ToStringVisitorContext context, object value) => GetMembers(context, value).Any();
+        protected virtual IEnumerable<Member> GetMembers(ToStringVisitorContext context, object value)
+        {
+            if (value == null)
+                yield break;
+
+            if (value is ICustomTypeDescriptor)
+            {
+                foreach (var desc in TypeDescriptor.GetProperties(value).OfType<PropertyDescriptor>())
+                {
+                    yield return new PropertyDescriptorMember(desc);
+                }
+                yield break;
+            }
+
+            foreach (var memberInfo in value.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(m => m.Name))
+            {
+                if (!CanGetValue(context, memberInfo))
+                    continue;
+
+                yield return new MemberInfoMember(memberInfo);
+            }
+        }
+
         protected virtual bool CanGetValue(ToStringVisitorContext context, MemberInfo info)
         {
             ArgumentNullException.ThrowIfNull(context);
@@ -168,17 +220,6 @@ namespace WicNetExplorer.Utilities
             return true;
         }
 
-        protected virtual object? GetValue(ToStringVisitorContext context, MemberInfo info, object value)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            ArgumentNullException.ThrowIfNull(info);
-            ArgumentNullException.ThrowIfNull(value);
-            if (info is PropertyInfo prop)
-                return prop.GetValue(value);
-
-            return true;
-        }
-
         protected virtual IEnumerable? GetEnumerable(ToStringVisitorContext context, object value)
         {
             ArgumentNullException.ThrowIfNull(context);
@@ -186,6 +227,89 @@ namespace WicNetExplorer.Utilities
                 return null;
 
             return value as IEnumerable;
+        }
+
+        protected class PropertyDescriptorMember : Member
+        {
+            public PropertyDescriptorMember(PropertyDescriptor prop)
+            {
+                ArgumentNullException.ThrowIfNull(prop);
+                PropertyDescriptor = prop;
+            }
+
+            public PropertyDescriptor PropertyDescriptor { get; }
+            public override string Name => PropertyDescriptor.Name;
+            public override string DisplayName
+            {
+                get
+                {
+                    var dn = PropertyDescriptor.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
+                    if (dn != null && !string.IsNullOrWhiteSpace(dn.DisplayName))
+                        return dn.DisplayName;
+
+                    return DisplayName;
+                }
+            }
+
+            public override object? GetValue(object? instance) => PropertyDescriptor.GetValue(instance);
+        }
+
+        protected class MemberInfoMember : Member
+        {
+            public MemberInfoMember(MemberInfo info)
+            {
+                ArgumentNullException.ThrowIfNull(info);
+                MemberInfo = info;
+            }
+
+            public MemberInfo MemberInfo { get; }
+            public override string Name => MemberInfo.Name;
+            public override string DisplayName
+            {
+                get
+                {
+                    var dn = MemberInfo.GetCustomAttribute<DisplayNameAttribute>();
+                    if (dn != null && !string.IsNullOrWhiteSpace(dn.DisplayName))
+                        return dn.DisplayName;
+
+                    if (MemberInfo is FieldInfo)
+                    {
+                        // DisplayNameAttribute is not usable for fields so we use DescriptionAttribute
+                        var da = MemberInfo.GetCustomAttribute<DescriptionAttribute>();
+                        if (da != null && !string.IsNullOrWhiteSpace(da.Description))
+                            return da.Description;
+                    }
+
+                    return base.DisplayName;
+                }
+            }
+
+            public override object? GetValue(object? instance)
+            {
+                if (MemberInfo is PropertyInfo pi)
+                {
+                    ArgumentNullException.ThrowIfNull(instance);
+                    return pi.GetValue(instance);
+                }
+
+                if (MemberInfo is FieldInfo fi)
+                {
+                    ArgumentNullException.ThrowIfNull(instance);
+                    return fi.GetValue(instance);
+                }
+
+                throw new NotImplementedException();
+            }
+        }
+
+        protected abstract class Member
+        {
+            public abstract string Name { get; }
+            public virtual string DisplayName => Name.Decamelize();
+
+            public abstract object? GetValue(object? instance);
+
+            public override string ToString() => Name;
         }
     }
 }

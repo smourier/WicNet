@@ -187,6 +187,30 @@
   <data name="&gt;&gt;panelButtons.ZOrder" xml:space="preserve">
     <value>0</value>
   </data>
+  <metadata name="contextMenuStripGrid.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>17, 17</value>
+  </metadata>
+  <data name="expandAllItemsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="expandAllItemsToolStripMenuItem.Text" xml:space="preserve">
+    <value>Expand All Items</value>
+  </data>
+  <data name="collapseAllItemsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="collapseAllItemsToolStripMenuItem.Text" xml:space="preserve">
+    <value>Collapse All Items</value>
+  </data>
+  <data name="contextMenuStripGrid.Size" type="System.Drawing.Size, System.Drawing">
+    <value>181, 70</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStripGrid.Name" xml:space="preserve">
+    <value>contextMenuStripGrid</value>
+  </data>
+  <data name="&gt;&gt;contextMenuStripGrid.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ContextMenuStrip, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="propertyGridObject.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
   </data>
@@ -245,7 +269,7 @@
     <value>$this</value>
   </data>
   <data name="&gt;&gt;tableLayoutPanelMain.ZOrder" xml:space="preserve">
-    <value>0</value>
+    <value>1</value>
   </data>
   <data name="tableLayoutPanelMain.LayoutSettings" type="System.Windows.Forms.TableLayoutSettings, System.Windows.Forms">
     <value>&lt;?xml version="1.0" encoding="utf-16"?&gt;&lt;TableLayoutSettings&gt;&lt;Controls&gt;&lt;Control Name="panelButtons" Row="1" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;Control Name="propertyGridObject" Row="0" RowSpan="1" Column="0" ColumnSpan="1" /&gt;&lt;/Controls&gt;&lt;Columns Styles="Percent,100" /&gt;&lt;Rows Styles="Percent,100,Absolute,35" /&gt;&lt;/TableLayoutSettings&gt;</value>
@@ -270,6 +294,18 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Information</value>
+  </data>
+  <data name="&gt;&gt;expandAllItemsToolStripMenuItem.Name" xml:space="preserve">
+    <value>expandAllItemsToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;expandAllItemsToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;collapseAllItemsToolStripMenuItem.Name" xml:space="preserve">
+    <value>collapseAllItemsToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;collapseAllItemsToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>ObjectForm</value>

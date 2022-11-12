@@ -140,6 +140,15 @@
   <data name="infoToolStripMenuItem.Text" xml:space="preserve">
     <value>Info...</value>
   </data>
+  <data name="metadataToolStripMenuItem.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
+    <value>Ctrl+M</value>
+  </data>
+  <data name="metadataToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="metadataToolStripMenuItem.Text" xml:space="preserve">
+    <value>Metadata...</value>
+  </data>
   <data name="imageToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>52, 20</value>
   </data>
@@ -340,6 +349,12 @@
     <value>tileVerticallyToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;tileVerticallyToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;metadataToolStripMenuItem.Name" xml:space="preserve">
+    <value>metadataToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;metadataToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">

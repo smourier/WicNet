@@ -28,6 +28,7 @@
         /// </summary>
         private void InitializeComponent()
         {
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ObjectForm));
             this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
             this.panelButtons = new System.Windows.Forms.Panel();
@@ -35,8 +36,12 @@
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.propertyGridObject = new System.Windows.Forms.PropertyGrid();
+            this.contextMenuStripGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.expandAllItemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.collapseAllItemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanelMain.SuspendLayout();
             this.panelButtons.SuspendLayout();
+            this.contextMenuStripGrid.SuspendLayout();
             this.SuspendLayout();
             // 
             // tableLayoutPanelMain
@@ -78,10 +83,31 @@
             // 
             // propertyGridObject
             // 
+            this.propertyGridObject.ContextMenuStrip = this.contextMenuStripGrid;
             resources.ApplyResources(this.propertyGridObject, "propertyGridObject");
             this.propertyGridObject.Name = "propertyGridObject";
             this.propertyGridObject.PropertySort = System.Windows.Forms.PropertySort.Alphabetical;
             this.propertyGridObject.ToolbarVisible = false;
+            // 
+            // contextMenuStripGrid
+            // 
+            this.contextMenuStripGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.expandAllItemsToolStripMenuItem,
+            this.collapseAllItemsToolStripMenuItem});
+            this.contextMenuStripGrid.Name = "contextMenuStripGrid";
+            resources.ApplyResources(this.contextMenuStripGrid, "contextMenuStripGrid");
+            // 
+            // expandAllItemsToolStripMenuItem
+            // 
+            this.expandAllItemsToolStripMenuItem.Name = "expandAllItemsToolStripMenuItem";
+            resources.ApplyResources(this.expandAllItemsToolStripMenuItem, "expandAllItemsToolStripMenuItem");
+            this.expandAllItemsToolStripMenuItem.Click += new System.EventHandler(this.ExpandAllItemsToolStripMenuItem_Click);
+            // 
+            // collapseAllItemsToolStripMenuItem
+            // 
+            this.collapseAllItemsToolStripMenuItem.Name = "collapseAllItemsToolStripMenuItem";
+            resources.ApplyResources(this.collapseAllItemsToolStripMenuItem, "collapseAllItemsToolStripMenuItem");
+            this.collapseAllItemsToolStripMenuItem.Click += new System.EventHandler(this.CollapseAllItemsToolStripMenuItem_Click);
             // 
             // ObjectForm
             // 
@@ -96,6 +122,7 @@
             this.tableLayoutPanelMain.ResumeLayout(false);
             this.panelButtons.ResumeLayout(false);
             this.panelButtons.PerformLayout();
+            this.contextMenuStripGrid.ResumeLayout(false);
             this.ResumeLayout(false);
 
         }
@@ -108,5 +135,8 @@
         private System.Windows.Forms.Button buttonOk;
         private System.Windows.Forms.PropertyGrid propertyGridObject;
         private System.Windows.Forms.Button buttonCopyToClipboard;
+        private System.Windows.Forms.ContextMenuStrip contextMenuStripGrid;
+        private System.Windows.Forms.ToolStripMenuItem expandAllItemsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem collapseAllItemsToolStripMenuItem;
     }
 }

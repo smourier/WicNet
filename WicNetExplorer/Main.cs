@@ -1,7 +1,9 @@
 using System;
 using System.Linq;
+using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using WicNet;
 using WicNetExplorer.Model;
 using WicNetExplorer.Utilities;
 
@@ -96,6 +98,24 @@ namespace WicNetExplorer
         protected override void OnMdiChildActivate(EventArgs e)
         {
             imageToolStripMenuItem.Visible = ActiveImageForm != null;
+        }
+
+        private void MetadataToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var fileName = ActiveImageForm?.FileName;
+            if (fileName == null)
+                return;
+
+            using var source = WicBitmapSource.Load(fileName);
+            {
+                using var reader = source?.GetMetadataReader();
+                if (reader != null)
+                {
+                    var model = new WindowsMetadataModel(reader);
+                    var dlg = new ObjectForm(model);
+                    dlg.ShowDialog(this);
+                }
+            }
         }
     }
 }
