@@ -37,6 +37,9 @@
             this.buttonCancel = new System.Windows.Forms.Button();
             this.propertyGridObject = new System.Windows.Forms.PropertyGrid();
             this.contextMenuStripGrid = new System.Windows.Forms.ContextMenuStrip(this.components);
+            this.expandChildrenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.collapseChildrenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator1 = new System.Windows.Forms.ToolStripSeparator();
             this.expandAllItemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.collapseAllItemsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tableLayoutPanelMain.SuspendLayout();
@@ -92,10 +95,31 @@
             // contextMenuStripGrid
             // 
             this.contextMenuStripGrid.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.expandChildrenToolStripMenuItem,
+            this.collapseChildrenToolStripMenuItem,
+            this.toolStripSeparator1,
             this.expandAllItemsToolStripMenuItem,
             this.collapseAllItemsToolStripMenuItem});
             this.contextMenuStripGrid.Name = "contextMenuStripGrid";
             resources.ApplyResources(this.contextMenuStripGrid, "contextMenuStripGrid");
+            this.contextMenuStripGrid.Opening += new System.ComponentModel.CancelEventHandler(this.ContextMenuStripGrid_Opening);
+            // 
+            // expandChildrenToolStripMenuItem
+            // 
+            this.expandChildrenToolStripMenuItem.Name = "expandChildrenToolStripMenuItem";
+            resources.ApplyResources(this.expandChildrenToolStripMenuItem, "expandChildrenToolStripMenuItem");
+            this.expandChildrenToolStripMenuItem.Click += new System.EventHandler(this.ExpandChildrenToolStripMenuItem_Click);
+            // 
+            // collapseChildrenToolStripMenuItem
+            // 
+            this.collapseChildrenToolStripMenuItem.Name = "collapseChildrenToolStripMenuItem";
+            resources.ApplyResources(this.collapseChildrenToolStripMenuItem, "collapseChildrenToolStripMenuItem");
+            this.collapseChildrenToolStripMenuItem.Click += new System.EventHandler(this.CollapseChildrenToolStripMenuItem_Click);
+            // 
+            // toolStripSeparator1
+            // 
+            this.toolStripSeparator1.Name = "toolStripSeparator1";
+            resources.ApplyResources(this.toolStripSeparator1, "toolStripSeparator1");
             // 
             // expandAllItemsToolStripMenuItem
             // 
@@ -138,5 +162,8 @@
         private System.Windows.Forms.ContextMenuStrip contextMenuStripGrid;
         private System.Windows.Forms.ToolStripMenuItem expandAllItemsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem collapseAllItemsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem expandChildrenToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem collapseChildrenToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
     }
 }

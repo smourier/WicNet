@@ -36,15 +36,20 @@ namespace WicNetExplorer.Model
 
                     if (kv.Value is byte[])
                     {
-                        atts.Add(new TypeConverterAttribute(typeof(ByteArrayConverter)));
+                        atts.Add(new TypeConverterAttribute(typeof(ByteArrayExpandableConverter)));
                         atts.Add(new EditorAttribute(typeof(ByteArrayEditor), typeof(UITypeEditor)));
+                    }
+                    else if (kv.Value is Array array && array.Rank == 1)
+                    {
+                        atts.Add(new TypeConverterAttribute(typeof(ArrayDisplayExpandableConverter)));
+                        atts.Add(new EditorAttribute(typeof(ArrayDisplayEditor), typeof(UITypeEditor)));
                     }
                     else
                     {
                         atts.Add(new ReadOnlyAttribute(true));
                     }
 
-                    Values.AddProperty("prop" + i++, kv.Value, null, atts.ToArray());
+                    Values.AddProperty("prop" + i++, new MetadataKeyValueModel(kv), null, atts.ToArray());
                 }
             }
             Children = children.ToArray();
@@ -62,7 +67,7 @@ namespace WicNetExplorer.Model
 
         public DynamicObject Values { get; }
 
-        [TypeConverter(typeof(StringFormatterConverter))]
+        [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]
         public MetadataModel[] Children { get; }
         public override string ToString() => Name;

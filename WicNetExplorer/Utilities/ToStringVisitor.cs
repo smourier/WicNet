@@ -12,6 +12,8 @@ namespace WicNetExplorer.Utilities
 {
     public partial class ToStringVisitor
     {
+        public const int ArrayMaxDumpSize = 32;
+
         private int? _indent = -1;
 
         public ToStringVisitor(TextWriter writer, string? tabString = null)
@@ -141,16 +143,44 @@ namespace WicNetExplorer.Utilities
             if (value == null)
                 return string.Empty;
 
+            if (value is IValueProvider valueProvider)
+            {
+                value = valueProvider.Value;
+            }
+
             if (value is byte[] bytes)
             {
-                var max = 32;
+                var max = ArrayMaxDumpSize;
                 if (bytes.Length > max)
                     return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
 
                 return bytes.ToHexa();
             }
 
+            var enumerable = getEnumerable();
+            if (enumerable != null)
+            {
+                var s = string.Join(", ", enumerable.OfType<object>().Take(32).Select(o => o?.ToString()));
+                if (value is Array array && array.Rank == 1)
+                {
+                    var max = ArrayMaxDumpSize;
+                    if (array.Length > max)
+                    {
+                        s += "... (size: " + array.Length + ")";
+                    }
+                }
+                return s;
+            }
+
             return value.ToString()!;
+
+            IEnumerable? getEnumerable()
+            {
+                if (value is string || value is char[])
+                    return null;
+
+                return value as IEnumerable;
+            }
         }
 
         protected virtual bool IsValue(ToStringVisitorContext context, object? value)
@@ -178,6 +208,13 @@ namespace WicNetExplorer.Utilities
             var enumerable = value as IEnumerable;
             if (enumerable == null && !HasAnyMember(context, value))
                 return true;
+
+            var sva = value.GetType().GetCustomAttribute<ToStringVisitorAttribute>();
+            if (sva != null)
+            {
+                if (sva.ForceIsValue)
+                    return true;
+            }
 
             return false;
         }
@@ -212,6 +249,10 @@ namespace WicNetExplorer.Utilities
             ArgumentNullException.ThrowIfNull(info);
             var att = info.GetCustomAttribute<BrowsableAttribute>();
             if (att != null && !att.Browsable)
+                return false;
+
+            var tsa = info.GetCustomAttribute<ToStringVisitorAttribute>();
+            if (tsa != null && tsa.Ignore)
                 return false;
 
             if (info is PropertyInfo prop)

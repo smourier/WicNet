@@ -190,6 +190,21 @@
   <metadata name="contextMenuStripGrid.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
     <value>17, 17</value>
   </metadata>
+  <data name="expandChildrenToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="expandChildrenToolStripMenuItem.Text" xml:space="preserve">
+    <value>Expand Children</value>
+  </data>
+  <data name="collapseChildrenToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="collapseChildrenToolStripMenuItem.Text" xml:space="preserve">
+    <value>Collapse Children</value>
+  </data>
+  <data name="toolStripSeparator1.Size" type="System.Drawing.Size, System.Drawing">
+    <value>177, 6</value>
+  </data>
   <data name="expandAllItemsToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>180, 22</value>
   </data>
@@ -203,7 +218,7 @@
     <value>Collapse All Items</value>
   </data>
   <data name="contextMenuStripGrid.Size" type="System.Drawing.Size, System.Drawing">
-    <value>181, 70</value>
+    <value>181, 120</value>
   </data>
   <data name="&gt;&gt;contextMenuStripGrid.Name" xml:space="preserve">
     <value>contextMenuStripGrid</value>
@@ -294,6 +309,24 @@
   </data>
   <data name="$this.Text" xml:space="preserve">
     <value>Information</value>
+  </data>
+  <data name="&gt;&gt;expandChildrenToolStripMenuItem.Name" xml:space="preserve">
+    <value>expandChildrenToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;expandChildrenToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;collapseChildrenToolStripMenuItem.Name" xml:space="preserve">
+    <value>collapseChildrenToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;collapseChildrenToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator1.Name" xml:space="preserve">
+    <value>toolStripSeparator1</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator1.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;expandAllItemsToolStripMenuItem.Name" xml:space="preserve">
     <value>expandAllItemsToolStripMenuItem</value>

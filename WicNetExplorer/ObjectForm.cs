@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Linq;
 using System.Windows.Forms;
 using WicNetExplorer.Utilities;
 
@@ -13,6 +14,8 @@ namespace WicNetExplorer
             propertyGridObject.SelectedObject = obj;
         }
 
+        private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem.ExpandAllItems();
+        private void CollapseChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem.CollapseAllItems();
         private void ExpandAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.ExpandAllGridItems();
         private void CollapseAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.CollapseAllGridItems();
         private void ButtonCopyToClipboard_Click(object sender, EventArgs e)
@@ -20,6 +23,12 @@ namespace WicNetExplorer
             var text = ToStringVisitor.Visit(propertyGridObject.SelectedObject, "  ");
             Clipboard.SetText(text);
             this.ShowMessage(Resources.CopiedToClipboard);
+        }
+
+        private void ContextMenuStripGrid_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        {
+            expandChildrenToolStripMenuItem.Enabled = propertyGridObject.SelectedGridItem != null;
+            collapseAllItemsToolStripMenuItem.Enabled = expandChildrenToolStripMenuItem.Enabled;
         }
     }
 }

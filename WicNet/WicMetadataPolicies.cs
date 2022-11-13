@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 
 namespace WicNet
 {
@@ -17,6 +18,39 @@ namespace WicNet
 
         [Browsable(false)]
         public WicMetadataQueryReader Reader { get; }
+
+        [Browsable(false)]
+        public int FilledValues
+        {
+            get
+            {
+                var count = 0;
+                foreach (var prop in GetType().GetProperties())
+                {
+                    var dna = prop.CustomAttributes.Where(a => a.AttributeType.FullName == typeof(DisplayNameAttribute).FullName).FirstOrDefault();
+                    if (dna == null)
+                        continue;
+
+                    var dn = dna.ConstructorArguments.FirstOrDefault().Value as string;
+                    if (dn == null || dn.IndexOf('.') < 0)
+                        continue;
+                    
+                    try
+                    {
+                        var value = prop.GetValue(this);
+                        if (value == null)
+                            continue;
+
+                        count++;
+                    }
+                    catch
+                    {
+                        // continue;
+                    }
+                }
+                return count;
+            }
+        }
 
         [DisplayName("System.Image.ImageID")] public string ImageId => Reader.GetMetadataByName<string>("System.Image.ImageID");
         [DisplayName("System.Image.Dimensions")] public string ImageDimensions => Reader.GetMetadataByName<string>("System.Image.Dimensions");

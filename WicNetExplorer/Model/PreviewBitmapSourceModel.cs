@@ -11,13 +11,12 @@ namespace WicNetExplorer.Model
         public PreviewBitmapSourceModel(WicBitmapSource bitmap)
             : base(bitmap)
         {
-            //Preview = "<Click here on the button to preview>";
             Preview = bitmap;
         }
 
-        [Browsable(false)]
+        [ToStringVisitor(Ignore = true)]
         [Editor(typeof(BitmapSourceModelEditor), typeof(UITypeEditor))]
-        [TypeConverter(typeof(StringFormatterConverter))]
+        [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("ClickHereForPreview", ResourcesType = typeof(Resources))]
         public WicBitmapSource Preview { get; }
 

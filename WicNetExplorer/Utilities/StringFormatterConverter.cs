@@ -7,10 +7,9 @@ using System.Resources;
 
 namespace WicNetExplorer.Utilities
 {
-    public class StringFormatterConverter : ArrayConverter
+    public class StringFormatterConverter : TypeConverter
     {
-        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        public static object? ConvertTo(TypeConverter? typeConverter, ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
             if (destinationType == typeof(string) && value != null && context != null && context.PropertyDescriptor != null)
             {
@@ -32,7 +31,10 @@ namespace WicNetExplorer.Utilities
                 }
             }
 
-            return base.ConvertTo(context, culture, value, destinationType);
+            return string.Empty;
         }
+
+        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
+        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => ConvertTo(this, context, culture, value, destinationType);
     }
 }

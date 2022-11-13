@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using WicNet;
+using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model
 {
@@ -13,6 +14,8 @@ namespace WicNetExplorer.Model
         }
 
         [DisplayName("Windows Policies")]
+        [TypeConverter(typeof(StringFormatterExpandableConverter))]
+        [StringFormatter("{FilledValues}")]
         public WicMetadataPolicies Policies { get; }
     }
 }

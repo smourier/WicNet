@@ -109,12 +109,15 @@ namespace WicNetExplorer
             using var source = WicBitmapSource.Load(fileName);
             {
                 using var reader = source?.GetMetadataReader();
-                if (reader != null)
+                if (reader == null)
                 {
-                    var model = new WindowsMetadataModel(reader);
-                    var dlg = new ObjectForm(model);
-                    dlg.ShowDialog(this);
+                    this.ShowMessage(Resources.NoMetadata);
+                    return;
                 }
+
+                var model = new WindowsMetadataModel(reader);
+                var dlg = new ObjectForm(model);
+                dlg.ShowDialog(this);
             }
         }
     }

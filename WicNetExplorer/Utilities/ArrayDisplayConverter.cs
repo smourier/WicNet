@@ -1,11 +1,12 @@
 ﻿using System;
+using System.Collections;
 using System.ComponentModel;
 using System.Globalization;
-using WicNet.Utilities;
+using System.Linq;
 
 namespace WicNetExplorer.Utilities
 {
-    public class ByteArrayConverter : ArrayConverter
+    public class ArrayDisplayConverter : ArrayConverter
     {
         public static object? ConvertTo(TypeConverter? converter, ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
         {
@@ -14,13 +15,18 @@ namespace WicNetExplorer.Utilities
                 value = valueProvider.Value;
             }
 
-            if (value is byte[] bytes)
+            if (value is IEnumerable enumerable)
             {
-                var max = ToStringVisitor.ArrayMaxDumpSize;
-                if (bytes.Length > max)
-                    return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
-
-                return bytes.ToHexa();
+                var s = string.Join(", ", enumerable.OfType<object>().Take(32).Select(o => o?.ToString()));
+                if (value is Array array && array.Rank == 1)
+                {
+                    var max = ToStringVisitor.ArrayMaxDumpSize;
+                    if (array.Length > max)
+                    {
+                        s += "... (size: " + array.Length + ")";
+                    }
+                }
+                return s;
             }
 
             return string.Empty;

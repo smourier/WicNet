@@ -40,7 +40,8 @@ namespace WicNetExplorer.Model
         public BitmapSourceModel? Thumbnail { get; }
 
         [DisplayName("Color Contexts")]
-        [TypeConverter(typeof(ArrayCountConverter))]
+        [TypeConverter(typeof(StringFormatterArrayConverter))]
+        [StringFormatter("{Length}")]
         public ColorContextModel[] ColorContexts { get; } = Array.Empty<ColorContextModel>();
 
         [DisplayName("Dpi X")]

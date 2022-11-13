@@ -97,6 +97,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Array of {0}.
+        /// </summary>
+        internal static string ArrayOf {
+            get {
+                return ResourceManager.GetString("ArrayOf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to &lt;Click here on button  to preview&gt;.
         /// </summary>
         internal static string ClickHereForPreview {
@@ -129,6 +138,15 @@ namespace WicNetExplorer {
         internal static string Error {
             get {
                 return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to The file has no metadata..
+        /// </summary>
+        internal static string NoMetadata {
+            get {
+                return ResourceManager.GetString("NoMetadata", resourceCulture);
             }
         }
         
