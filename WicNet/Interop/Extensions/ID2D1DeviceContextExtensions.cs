@@ -90,6 +90,19 @@ namespace DirectN
             return effect != null ? new ComObject<ID2D1Effect>(effect) : null;
         }
 
+        public static IComObject<ID2D1ColorContext> CreateColorContextFromWicColorContext(this IComObject<ID2D1DeviceContext> context, IComObject<IWICColorContext> colorContext) => CreateColorContextFromWicColorContext(context?.Object, colorContext?.Object);
+        public static IComObject<ID2D1ColorContext> CreateColorContextFromWicColorContext(this ID2D1DeviceContext context, IWICColorContext colorContext)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if (colorContext == null)
+                throw new ArgumentNullException(nameof(colorContext));
+
+            context.CreateColorContextFromWicColorContext(colorContext, out var d2dColorContext).ThrowOnError();
+            return new ComObject<ID2D1ColorContext>(d2dColorContext);
+        }
+
         public static void DrawBitmap(this IComObject<ID2D1DeviceContext> context,
             IComObject<ID2D1Bitmap1> bitmap,
             float opacity = 1,

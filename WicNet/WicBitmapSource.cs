@@ -174,7 +174,7 @@ namespace WicNet
             _comObject = clip;
         }
 
-        public void Rotate(WICBitmapTransformOptions options)
+        public void FlipRotate(WICBitmapTransformOptions options)
         {
             var clip = WICImagingFactory.CreateBitmapFlipRotator();
             clip.Object.Initialize(_comObject.Object, options).ThrowOnError();

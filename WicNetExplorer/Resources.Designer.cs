@@ -97,11 +97,20 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Array of {0}.
+        ///   Looks up a localized string similar to (Array of {0}).
         /// </summary>
         internal static string ArrayOf {
             get {
                 return ResourceManager.GetString("ArrayOf", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to (Array of {0} {1}).
+        /// </summary>
+        internal static string ArrayOfCount {
+            get {
+                return ResourceManager.GetString("ArrayOfCount", resourceCulture);
             }
         }
         
@@ -124,7 +133,7 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
-        ///   Looks up a localized string similar to Information was copied to the clipboard..
+        ///   Looks up a localized string similar to {0} line(s) were copied to the clipboard..
         /// </summary>
         internal static string CopiedToClipboard {
             get {
@@ -156,6 +165,15 @@ namespace WicNetExplorer {
         internal static string OneImageFileFilter {
             get {
                 return ResourceManager.GetString("OneImageFileFilter", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Preferences.
+        /// </summary>
+        internal static string Preferences {
+            get {
+                return ResourceManager.GetString("Preferences", resourceCulture);
             }
         }
         

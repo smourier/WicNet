@@ -3,6 +3,7 @@ using System.Collections;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Globalization;
+using System.IO;
 using System.Runtime.InteropServices;
 using System.Security;
 using System.Text;
@@ -254,14 +255,7 @@ namespace WicNet.Utilities
             return ToHexaDump(encoding.GetBytes(text));
         }
 
-        public static string ToHexaDump(this byte[] bytes, string prefix = null)
-        {
-            if (bytes == null)
-                throw new ArgumentNullException(nameof(bytes));
-
-            return ToHexaDump(bytes, 0, bytes.Length, prefix, true);
-        }
-
+        public static string ToHexaDump(this byte[] bytes, string prefix = null) => ToHexaDump(bytes, 0, bytes.Length, prefix, true);
         public static string ToHexaDump(this IntPtr ptr, int count) => ToHexaDump(ptr, 0, count, null, true);
         public static string ToHexaDump(this IntPtr ptr, int offset, int count, string prefix = null, bool addHeader = true)
         {
@@ -276,8 +270,46 @@ namespace WicNet.Utilities
         public static string ToHexaDump(this byte[] bytes, int count) => ToHexaDump(bytes, 0, count, null, true);
         public static string ToHexaDump(this byte[] bytes, int offset, int count, string prefix = null, bool addHeader = true)
         {
+            using (var sw = new StringWriter())
+            {
+                WriteHexaDump(bytes, sw, offset, count, prefix, addHeader);
+                return sw.ToString();
+            }
+        }
+
+        public static void WriteHexaDump(string text, TextWriter writer, Encoding encoding = null)
+        {
+            if (text == null)
+                return;
+
+            if (encoding == null)
+            {
+                encoding = Encoding.Unicode;
+            }
+
+            WriteHexaDump(encoding.GetBytes(text), writer);
+        }
+
+        public static void WriteHexaDump(this byte[] bytes, TextWriter writer, string prefix = null) => WriteHexaDump(bytes, writer, 0, bytes.Length, prefix, true);
+        public static void WriteHexaDump(this IntPtr ptr, TextWriter writer, int count) => WriteHexaDump(ptr, writer, 0, count, null, true);
+        public static void WriteHexaDump(this IntPtr ptr, TextWriter writer, int offset, int count, string prefix = null, bool addHeader = true)
+        {
+            if (ptr == IntPtr.Zero)
+                throw new ArgumentNullException(nameof(ptr));
+
+            var bytes = new byte[count];
+            Marshal.Copy(ptr, bytes, offset, count);
+            WriteHexaDump(bytes, writer, 0, count, prefix, addHeader);
+        }
+
+        public static void WriteHexaDump(this byte[] bytes, TextWriter writer, int count) => WriteHexaDump(bytes, writer, 0, count, null, true);
+        public static void WriteHexaDump(this byte[] bytes, TextWriter writer, int offset, int count, string prefix = null, bool addHeader = true)
+        {
             if (bytes == null)
                 throw new ArgumentNullException(nameof(bytes));
+
+            if (writer == null)
+                throw new ArgumentNullException(nameof(writer));
 
             if (offset < 0)
             {
@@ -294,48 +326,46 @@ namespace WicNet.Utilities
                 count = bytes.Length - offset;
             }
 
-            var sb = new StringBuilder();
             if (addHeader)
             {
-                sb.Append(prefix);
+                writer.Write(prefix);
                 //             0         1         2         3         4         5         6         7
                 //             01234567890123456789012345678901234567890123456789012345678901234567890123456789
-                sb.AppendLine("Offset    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF");
-                sb.AppendLine("--------  -----------------------------------------------  ----------------");
+                writer.WriteLine("Offset    00 01 02 03 04 05 06 07 08 09 0A 0B 0C 0D 0E 0F  0123456789ABCDEF");
+                writer.WriteLine("--------  -----------------------------------------------  ----------------");
             }
 
             for (var i = 0; i < count; i += 16)
             {
-                sb.Append(prefix);
-                sb.AppendFormat("{0:X8}  ", i + offset);
+                writer.Write(prefix);
+                writer.Write(string.Format("{0:X8}  ", i + offset));
 
                 int j;
                 for (j = 0; (j < 16) && ((i + j) < count); j++)
                 {
-                    sb.AppendFormat("{0:X2} ", bytes[i + j + offset]);
+                    writer.Write(string.Format("{0:X2} ", bytes[i + j + offset]));
                 }
 
-                sb.Append(' ');
+                writer.Write(' ');
                 if (j < 16)
                 {
-                    sb.Append(new string(' ', 3 * (16 - j)));
+                    writer.Write(new string(' ', 3 * (16 - j)));
                 }
                 for (j = 0; j < 16 && (i + j) < count; j++)
                 {
                     var b = bytes[i + j + offset];
                     if (b > 31 && b < 128)
                     {
-                        sb.Append((char)b);
+                        writer.Write((char)b);
                     }
                     else
                     {
-                        sb.Append('.');
+                        writer.Write('.');
                     }
                 }
 
-                sb.AppendLine();
+                writer.WriteLine();
             }
-            return sb.ToString();
         }
 
         public static IReadOnlyList<T> SplitToList<T>(string text, params char[] separators) => SplitToList<T>(text, null, separators);

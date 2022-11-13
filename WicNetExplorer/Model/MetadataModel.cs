@@ -65,10 +65,12 @@ namespace WicNetExplorer.Model
         [DisplayName("Container Format Name")]
         public string ContainerFormatName => _reader.ContainerFormatName;
 
+        [ToStringVisitor(DontWriteIfEmpty = true)]
         public DynamicObject Values { get; }
 
         [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]
+        [ToStringVisitor(DontWriteIfEmpty = true)]
         public MetadataModel[] Children { get; }
         public override string ToString() => Name;
     }

@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Linq;
 using System.Windows.Forms;
 using WicNetExplorer.Utilities;
 
@@ -22,7 +21,7 @@ namespace WicNetExplorer
         {
             var text = ToStringVisitor.Visit(propertyGridObject.SelectedObject, "  ");
             Clipboard.SetText(text);
-            this.ShowMessage(Resources.CopiedToClipboard);
+            this.ShowMessage(string.Format(Resources.CopiedToClipboard, text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length));
         }
 
         private void ContextMenuStripGrid_Opening(object sender, System.ComponentModel.CancelEventArgs e)

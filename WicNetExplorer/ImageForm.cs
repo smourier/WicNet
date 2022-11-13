@@ -4,6 +4,7 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DirectN;
 using WicNet;
@@ -15,6 +16,7 @@ namespace WicNetExplorer
     {
         private IComObject<ID2D1Bitmap1>? _bitmap;
         private WicBitmapSource? _bitmapSource;
+        private WicColorContext? _colorContext;
         private readonly D2DControl _d2d = new();
 
         public ImageForm()
@@ -28,10 +30,36 @@ namespace WicNetExplorer
                 {
                     if (_bitmap == null)
                     {
+                        IComObject<ID2D1ColorContext>? ctx = null;
                         using var dc = e.Target.AsComObject<ID2D1DeviceContext>();
-                        _bitmap = dc.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
-                        _bitmapSource.Dispose();
-                        _bitmapSource = null;
+
+                        D2D1_BITMAP_PROPERTIES1? properties = null;
+                        if (_colorContext != null)
+                        {
+                            ctx = dc.CreateColorContextFromWicColorContext(_colorContext.ComObject);
+                            var props = new D2D1_BITMAP_PROPERTIES1
+                            {
+                                colorContext = ctx.GetInterfacePointer<ID2D1ColorContext>(),
+                            };
+                            properties = props;
+                        }
+
+                        try
+                        {
+                            _bitmap = dc.CreateBitmapFromWicBitmap(_bitmapSource.ComObject, properties);
+                            _bitmapSource.Dispose();
+                            _bitmapSource = null;
+                            _colorContext?.Dispose();
+                            _colorContext = null;
+                        }
+                        finally
+                        {
+                            ctx?.Dispose();
+                            if (properties.HasValue && properties.Value.colorContext != IntPtr.Zero)
+                            {
+                                Marshal.Release(properties.Value.colorContext);
+                            }
+                        }
                     }
                 }
 
@@ -113,6 +141,7 @@ namespace WicNetExplorer
             {
                 _bitmap?.Dispose();
                 _bitmapSource?.Dispose();
+                _colorContext?.Dispose();
                 components?.Dispose();
                 _d2d?.Dispose();
             }
@@ -132,6 +161,8 @@ namespace WicNetExplorer
             _bitmap?.Dispose();
             _bitmap = null;
             _bitmapSource?.Dispose();
+            _colorContext?.Dispose();
+            _colorContext = null;
 
             try
             {
@@ -143,7 +174,51 @@ namespace WicNetExplorer
                 return false;
             }
 
+            if (Settings.Current.HonorColorContexts)
+            {
+                _colorContext = _bitmapSource.GetBestColorContext();
+            }
+
+            var orientation = Settings.Current.HonorOrientation ? _bitmapSource.GetOrientation() : null;
+
             _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+
+            // rotate after conversion
+            if (orientation.HasValue)
+            {
+                // note: WIC is clockwise, while metadata is counter-clockwise...
+                switch (orientation.Value)
+                {
+                    case PHOTO_ORIENTATION.FLIPHORIZONTAL:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                        break;
+
+                    case PHOTO_ORIENTATION.ROTATE180:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate180);
+                        break;
+
+                    case PHOTO_ORIENTATION.FLIPVERTICAL:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformFlipVertical);
+                        break;
+
+                    case PHOTO_ORIENTATION.TRANSPOSE:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                        break;
+
+                    case PHOTO_ORIENTATION.ROTATE270:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
+                        break;
+
+                    case PHOTO_ORIENTATION.TRANSVERSE:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                        break;
+
+                    case PHOTO_ORIENTATION.ROTATE90:
+                        _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270);
+                        break;
+                }
+            }
+
             _d2d.Invalidate();
 
             Text = fileName;
@@ -217,6 +292,8 @@ namespace WicNetExplorer
             _bitmap = null;
             _bitmapSource?.Dispose();
             _bitmapSource = null;
+            _colorContext?.Dispose();
+            _colorContext = null;
             _d2d.Invalidate();
         }
     }

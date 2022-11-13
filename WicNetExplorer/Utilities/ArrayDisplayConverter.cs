@@ -20,7 +20,7 @@ namespace WicNetExplorer.Utilities
                 var s = string.Join(", ", enumerable.OfType<object>().Take(32).Select(o => o?.ToString()));
                 if (value is Array array && array.Rank == 1)
                 {
-                    var max = ToStringVisitor.ArrayMaxDumpSize;
+                    var max = Settings.Current.MaxArrayElementDisplayed;
                     if (array.Length > max)
                     {
                         s += "... (size: " + array.Length + ")";

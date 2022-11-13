@@ -1,13 +1,60 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing;
+using System.Linq;
 using System.Reflection;
+using DirectN;
 using WicNet;
 
 namespace WicNetExplorer.Utilities
 {
     public static class Extensions
     {
+        public static PHOTO_ORIENTATION? GetOrientation(this WicBitmapSource source)
+        {
+            if (source == null)
+                return null;
+
+            using var reader = source.GetMetadataReader();
+            if (reader == null)
+                return null;
+
+            var orientation = new WicMetadataPolicies(reader).PhotoOrientation;
+            if (!orientation.HasValue)
+                return null;
+
+            return (PHOTO_ORIENTATION)orientation.Value;
+        }
+
+        public static WicColorContext? GetBestColorContext(this WicBitmapSource source)
+        {
+            if (source == null)
+                return null;
+
+            var contexts = source.GetColorContexts();
+            if (contexts.Count == 0)
+                return null;
+
+            if (contexts.Count == 1)
+                return contexts[0];
+
+            // https://stackoverflow.com/a/70215280/403671
+            // get last not uncalibrated color context
+            WicColorContext? best = null;
+            foreach (var ctx in contexts.Reverse())
+            {
+                if (ctx.ExifColorSpace.HasValue && ctx.ExifColorSpace.Value == 0xFFFF)
+                    continue;
+
+                best = ctx;
+            }
+
+            // last resort
+            best ??= contexts[contexts.Count - 1];
+            contexts.Dispose(new[] { best });
+            return best;
+        }
+
         public static Size ToSize(this WicIntSize size) => new((int)size.Width, (int)size.Height);
         public static SizeF ToSizeF(this WicIntSize size) => new(size.Width, size.Height);
         public static Size ToSize(this WicSize size) => new((int)size.Width, (int)size.Height);

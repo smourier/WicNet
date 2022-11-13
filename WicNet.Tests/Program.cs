@@ -349,7 +349,7 @@ namespace WicNet.Tests
         {
             using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
             {
-                bmp.Rotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
+                bmp.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
                 bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
                 using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
                 using (var rt = newBmp.CreateDeviceContext())

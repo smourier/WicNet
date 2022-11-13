@@ -73,6 +73,20 @@ namespace DirectN
             return (T)obj;
         }
 
+        public IntPtr GetInterfacePointer<T>(bool throwOnError = false)
+        {
+            try
+            {
+                return Marshal.GetComInterfaceForObject(Object, typeof(T));
+            }
+            catch
+            {
+                if (throwOnError)
+                    throw;
+            }
+            return IntPtr.Zero;
+        }
+
         public T As<T>(bool throwOnError = false) where T : class
         {
             if (throwOnError)
@@ -280,6 +294,7 @@ namespace DirectN
         bool IsDisposed { get; }
         object Object { get; }
         I As<I>(bool throwOnError = false) where I : class;
+        IntPtr GetInterfacePointer<T>(bool throwOnError = false);
         IComObject<I> AsComObject<I>(bool throwOnError = false) where I : class;
     }
 

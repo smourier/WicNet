@@ -145,13 +145,17 @@ namespace DirectN
             return !next;
         }
 
-        public static void Dispose<T>(this IReadOnlyCollection<T> disposables, bool throwOnError = false) where T : IDisposable
+        public static void Dispose<T>(this IReadOnlyCollection<T> disposables, IEnumerable<T> excluded = null, bool throwOnError = false) where T : IDisposable
         {
             if (disposables == null)
                 return;
 
+            var hash = new HashSet<T>(excluded);
             foreach (var disposable in disposables)
             {
+                if (hash.Contains(disposable))
+                    continue;
+
                 try
                 {
                     disposable.Dispose();

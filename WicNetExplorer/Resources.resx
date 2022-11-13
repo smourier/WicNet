@@ -130,7 +130,10 @@
     <value>Length: {0}</value>
   </data>
   <data name="ArrayOf" xml:space="preserve">
-    <value>Array of {0}</value>
+    <value>(Array of {0})</value>
+  </data>
+  <data name="ArrayOfCount" xml:space="preserve">
+    <value>(Array of {0} {1})</value>
   </data>
   <data name="ClickHereForPreview" xml:space="preserve">
     <value>&lt;Click here on button  to preview&gt;</value>
@@ -139,7 +142,7 @@
     <value>Confirmation</value>
   </data>
   <data name="CopiedToClipboard" xml:space="preserve">
-    <value>Information was copied to the clipboard.</value>
+    <value>{0} line(s) were copied to the clipboard.</value>
   </data>
   <data name="Error" xml:space="preserve">
     <value>Error</value>
@@ -149,6 +152,9 @@
   </data>
   <data name="OneImageFileFilter" xml:space="preserve">
     <value>{0} files (*{1})|*{1}</value>
+  </data>
+  <data name="Preferences" xml:space="preserve">
+    <value>Preferences</value>
   </data>
   <data name="Warning" xml:space="preserve">
     <value>Warning</value>

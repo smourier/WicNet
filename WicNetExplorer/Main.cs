@@ -1,6 +1,5 @@
 using System;
 using System.Linq;
-using System.Reflection;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using WicNet;
@@ -119,6 +118,37 @@ namespace WicNetExplorer
                 var dlg = new ObjectForm(model);
                 dlg.ShowDialog(this);
             }
+        }
+
+        private void PreferencesToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg = new ObjectForm(Settings.Current)
+            {
+                Text = Resources.Preferences
+            };
+            dlg.CopyToClipboard.Visible = false;
+            if (dlg.ShowDialog() != DialogResult.OK)
+                return;
+
+            Settings.Current.SerializeToConfiguration();
+        }
+
+        private void OptionsToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            honorOrientationToolStripMenuItem.Checked = Settings.Current.HonorOrientation;
+            honorColorContextsToolStripMenuItem.Checked = Settings.Current.HonorColorContexts;
+        }
+
+        private void HonorOrientationToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.Current.HonorOrientation = honorOrientationToolStripMenuItem.Checked;
+            Settings.Current.SerializeToConfiguration();
+        }
+
+        private void HonorColorContextsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.Current.HonorColorContexts = honorColorContextsToolStripMenuItem.Checked;
+            Settings.Current.SerializeToConfiguration();
         }
     }
 }

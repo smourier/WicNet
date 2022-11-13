@@ -32,7 +32,7 @@
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(ObjectForm));
             this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
             this.panelButtons = new System.Windows.Forms.Panel();
-            this.buttonCopyToClipboard = new System.Windows.Forms.Button();
+            this.CopyToClipboard = new System.Windows.Forms.Button();
             this.buttonOk = new System.Windows.Forms.Button();
             this.buttonCancel = new System.Windows.Forms.Button();
             this.propertyGridObject = new System.Windows.Forms.PropertyGrid();
@@ -57,17 +57,17 @@
             // panelButtons
             // 
             resources.ApplyResources(this.panelButtons, "panelButtons");
-            this.panelButtons.Controls.Add(this.buttonCopyToClipboard);
+            this.panelButtons.Controls.Add(this.CopyToClipboard);
             this.panelButtons.Controls.Add(this.buttonOk);
             this.panelButtons.Controls.Add(this.buttonCancel);
             this.panelButtons.Name = "panelButtons";
             // 
-            // buttonCopyToClipboard
+            // CopyToClipboard
             // 
-            resources.ApplyResources(this.buttonCopyToClipboard, "buttonCopyToClipboard");
-            this.buttonCopyToClipboard.Name = "buttonCopyToClipboard";
-            this.buttonCopyToClipboard.UseVisualStyleBackColor = true;
-            this.buttonCopyToClipboard.Click += new System.EventHandler(this.ButtonCopyToClipboard_Click);
+            resources.ApplyResources(this.CopyToClipboard, "CopyToClipboard");
+            this.CopyToClipboard.Name = "CopyToClipboard";
+            this.CopyToClipboard.UseVisualStyleBackColor = true;
+            this.CopyToClipboard.Click += new System.EventHandler(this.ButtonCopyToClipboard_Click);
             // 
             // buttonOk
             // 
@@ -158,12 +158,12 @@
         private System.Windows.Forms.Button buttonCancel;
         private System.Windows.Forms.Button buttonOk;
         private System.Windows.Forms.PropertyGrid propertyGridObject;
-        private System.Windows.Forms.Button buttonCopyToClipboard;
         private System.Windows.Forms.ContextMenuStrip contextMenuStripGrid;
         private System.Windows.Forms.ToolStripMenuItem expandAllItemsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem collapseAllItemsToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem expandChildrenToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem collapseChildrenToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator1;
+        public System.Windows.Forms.Button CopyToClipboard;
     }
 }

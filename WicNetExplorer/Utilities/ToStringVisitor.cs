@@ -12,8 +12,6 @@ namespace WicNetExplorer.Utilities
 {
     public partial class ToStringVisitor
     {
-        public const int ArrayMaxDumpSize = 32;
-
         private int? _indent = -1;
 
         public ToStringVisitor(TextWriter writer, string? tabString = null)
@@ -46,8 +44,7 @@ namespace WicNetExplorer.Utilities
 
             if (IsValue(context, value))
             {
-                var svalue = GetValueDisplayString(value);
-                Writer.WriteLine(svalue);
+                WriteValueAsString(value);
                 return;
             }
 
@@ -60,8 +57,8 @@ namespace WicNetExplorer.Utilities
                 {
                     if (IsValue(context, item))
                     {
-                        var svalue = GetValueDisplayString(item);
-                        Writer.WriteLine("[" + i + "]: " + svalue);
+                        Writer.Write("[" + i + "]: ");
+                        WriteValueAsString(value);
                     }
                     else
                     {
@@ -92,11 +89,14 @@ namespace WicNetExplorer.Utilities
                     continue;
                 }
 
+                if ((!member.WriteIfEmpty || !Settings.Current.CopyEmptyElementsToClipboard) && isValueEmpty())
+                    continue;
+
                 var name = member.DisplayName;
                 if (IsValue(context, memberValue))
                 {
-                    var svalue = GetValueDisplayString(memberValue);
-                    Writer.WriteLine(name + ": " + svalue);
+                    Writer.Write(name + ": ");
+                    WriteValueAsString(memberValue);
                 }
                 else
                 {
@@ -104,12 +104,25 @@ namespace WicNetExplorer.Utilities
                     Visit(context, memberValue, value);
                 }
                 anyMember = true;
+
+                bool isValueEmpty()
+                {
+                    if (memberValue == null)
+                        return true;
+
+                    if (memberValue is IEnumerable enumerable && !enumerable.Cast<object>().Any())
+                        return true;
+
+                    if (memberValue is ICustomTypeDescriptor desc && desc.GetProperties().Count == 0)
+                        return true;
+
+                    return false;
+                }
             }
 
             if (!anyMember)
             {
-                var svalue = GetValueDisplayString(value);
-                Writer.WriteLine(svalue);
+                WriteValueAsString(value);
             }
             Indent--;
         }
@@ -138,41 +151,95 @@ namespace WicNetExplorer.Utilities
             }
         }
 
-        protected virtual string GetValueDisplayString(object? value)
+        protected virtual void WriteValueAsString(object? value)
         {
-            if (value == null)
-                return string.Empty;
-
             if (value is IValueProvider valueProvider)
             {
                 value = valueProvider.Value;
             }
 
+            if (value == null)
+            {
+                Writer.WriteLine();
+                return;
+            }
+
             if (value is byte[] bytes)
             {
-                var max = ArrayMaxDumpSize;
-                if (bytes.Length > max)
-                    return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
+                var max = Math.Max(0, Settings.Current.MaxArrayElementToCopyToClipboard);
+                Writer.WriteLine(string.Format(Resources.ArrayOfCount, bytes.Length, typeof(byte).Name + "(s)"));
+                Writer.Indent++;
+                bytes.WriteHexaDump(Writer, max);
 
-                return bytes.ToHexa();
+                if (max < bytes.Length)
+                {
+                    Writer.Write("...");
+                }
+
+                Writer.Indent--;
+                Writer.WriteLine();
+                return;
             }
 
             var enumerable = getEnumerable();
             if (enumerable != null)
             {
-                var s = string.Join(", ", enumerable.OfType<object>().Take(32).Select(o => o?.ToString()));
-                if (value is Array array && array.Rank == 1)
+                var max = Math.Max(0, Settings.Current.MaxArrayElementToCopyToClipboard);
+                var i = 0;
+                int? count = null;
+                if (enumerable is Array array && array.Rank == 1)
                 {
-                    var max = ArrayMaxDumpSize;
-                    if (array.Length > max)
-                    {
-                        s += "... (size: " + array.Length + ")";
-                    }
+                    count = array.Length;
                 }
-                return s;
+
+                var written = 0;
+                const int chunkSize = 16;
+                foreach (var chunk in enumerable.OfType<object>().Chunk(chunkSize))
+                {
+                    if (chunk.Length == 0)
+                        break;
+
+                    if (i == 0)
+                    {
+                        if (count.HasValue)
+                        {
+                            Writer.WriteLine(string.Format(Resources.ArrayOfCount, count.Value, chunk.First().GetType().Name + "(s)"));
+                        }
+                        else
+                        {
+                            Writer.WriteLine(string.Format(Resources.ArrayOf, chunk.First().GetType().Name));
+                        }
+                        Writer.Indent++;
+                        if (max == 0)
+                            break;
+                    }
+
+                    var take = chunkSize;
+                    if (max > 0)
+                    {
+                        var left = max - written;
+                        if (left < take)
+                        {
+                            take = left;
+                        }
+                    }
+
+                    var s = string.Join(", ", chunk.Take(take));
+                    Writer.WriteLine(s);
+                    written += chunk.Length;
+                    i++;
+                }
+
+                if (i == 0)
+                {
+                    Writer.WriteLine();
+                }
+                Writer.Indent--;
+                return;
             }
 
-            return value.ToString()!;
+            var svalue = GetValueDisplayString(value);
+            Writer.WriteLine(svalue);
 
             IEnumerable? getEnumerable()
             {
@@ -181,6 +248,18 @@ namespace WicNetExplorer.Utilities
 
                 return value as IEnumerable;
             }
+        }
+
+        protected virtual string GetValueDisplayString(object? value)
+        {
+            if (value is IValueProvider valueProvider)
+            {
+                value = valueProvider.Value;
+            }
+            if (value == null)
+                return string.Empty;
+
+            return value.ToString()!;
         }
 
         protected virtual bool IsValue(ToStringVisitorContext context, object? value)
@@ -284,11 +363,27 @@ namespace WicNetExplorer.Utilities
             {
                 get
                 {
+                    var tsa = PropertyDescriptor.Attributes.OfType<ToStringVisitorAttribute>().FirstOrDefault();
+                    if (tsa != null && tsa.DisplayName != null)
+                        return tsa.DisplayName;
+
                     var dn = PropertyDescriptor.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
-                    if (dn != null && !string.IsNullOrWhiteSpace(dn.DisplayName))
+                    if (dn != null && dn.DisplayName != null)
                         return dn.DisplayName;
 
                     return DisplayName;
+                }
+            }
+
+            public override bool WriteIfEmpty
+            {
+                get
+                {
+                    var tsa = PropertyDescriptor.Attributes.OfType<ToStringVisitorAttribute>().FirstOrDefault();
+                    if (tsa != null)
+                        return !tsa.DontWriteIfEmpty;
+
+                    return base.WriteIfEmpty;
                 }
             }
 
@@ -309,19 +404,35 @@ namespace WicNetExplorer.Utilities
             {
                 get
                 {
+                    var tsa = MemberInfo.GetCustomAttribute<ToStringVisitorAttribute>();
+                    if (tsa != null && tsa.DisplayName != null)
+                        return tsa.DisplayName;
+
                     var dn = MemberInfo.GetCustomAttribute<DisplayNameAttribute>();
-                    if (dn != null && !string.IsNullOrWhiteSpace(dn.DisplayName))
+                    if (dn != null && dn.DisplayName != null)
                         return dn.DisplayName;
 
                     if (MemberInfo is FieldInfo)
                     {
                         // DisplayNameAttribute is not usable for fields so we use DescriptionAttribute
                         var da = MemberInfo.GetCustomAttribute<DescriptionAttribute>();
-                        if (da != null && !string.IsNullOrWhiteSpace(da.Description))
+                        if (da != null && da.Description != null)
                             return da.Description;
                     }
 
                     return base.DisplayName;
+                }
+            }
+
+            public override bool WriteIfEmpty
+            {
+                get
+                {
+                    var tsa = MemberInfo.GetCustomAttribute<ToStringVisitorAttribute>();
+                    if (tsa != null)
+                        return !tsa.DontWriteIfEmpty;
+
+                    return base.WriteIfEmpty;
                 }
             }
 
@@ -348,6 +459,7 @@ namespace WicNetExplorer.Utilities
             public abstract string Name { get; }
             public virtual string DisplayName => Name.Decamelize();
 
+            public virtual bool WriteIfEmpty => true;
             public abstract object? GetValue(object? instance);
 
             public override string ToString() => Name;

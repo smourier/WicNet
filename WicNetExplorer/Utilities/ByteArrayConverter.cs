@@ -16,7 +16,7 @@ namespace WicNetExplorer.Utilities
 
             if (value is byte[] bytes)
             {
-                var max = ToStringVisitor.ArrayMaxDumpSize;
+                var max = Settings.Current.MaxArrayElementDisplayed;
                 if (bytes.Length > max)
                     return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
 
