@@ -57,6 +57,19 @@
   <resheader name="writer">
     <value>System.Resources.ResXResourceWriter, System.Windows.Forms, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </resheader>
+  <data name="columnIndex.Text" xml:space="preserve">
+    <value>Index</value>
+  </data>
+  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
+  <data name="columnIndex.Width" type="System.Int32, mscorlib">
+    <value>50</value>
+  </data>
+  <data name="columnValue.Text" xml:space="preserve">
+    <value>Value</value>
+  </data>
+  <data name="columnValue.Width" type="System.Int32, mscorlib">
+    <value>180</value>
+  </data>
   <assembly alias="System.Windows.Forms" name="System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="listViewArray.Dock" type="System.Windows.Forms.DockStyle, System.Windows.Forms">
     <value>Fill</value>
@@ -68,7 +81,6 @@
   <data name="listViewArray.Size" type="System.Drawing.Size, System.Drawing">
     <value>236, 413</value>
   </data>
-  <assembly alias="mscorlib" name="mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" />
   <data name="listViewArray.TabIndex" type="System.Int32, mscorlib">
     <value>0</value>
   </data>
@@ -83,18 +95,6 @@
   </data>
   <data name="&gt;&gt;listViewArray.ZOrder" xml:space="preserve">
     <value>0</value>
-  </data>
-  <data name="columnIndex.Text" xml:space="preserve">
-    <value>Index</value>
-  </data>
-  <data name="columnIndex.Width" type="System.Int32, mscorlib">
-    <value>50</value>
-  </data>
-  <data name="columnValue.Text" xml:space="preserve">
-    <value>Value</value>
-  </data>
-  <data name="columnValue.Width" type="System.Int32, mscorlib">
-    <value>180</value>
   </data>
   <metadata name="$this.Localizable" type="System.Boolean, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
     <value>True</value>

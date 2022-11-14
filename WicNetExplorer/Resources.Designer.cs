@@ -124,6 +124,24 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Close.
+        /// </summary>
+        internal static string Close {
+            get {
+                return ResourceManager.GetString("Close", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wic Components.
+        /// </summary>
+        internal static string Components {
+            get {
+                return ResourceManager.GetString("Components", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Confirmation.
         /// </summary>
         internal static string Confirmation {
@@ -138,6 +156,24 @@ namespace WicNetExplorer {
         internal static string CopiedToClipboard {
             get {
                 return ResourceManager.GetString("CopiedToClipboard", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wic Decodable Extensions.
+        /// </summary>
+        internal static string DecodableExtensions {
+            get {
+                return ResourceManager.GetString("DecodableExtensions", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Wic Encodable Extensions.
+        /// </summary>
+        internal static string EncodableExtensions {
+            get {
+                return ResourceManager.GetString("EncodableExtensions", resourceCulture);
             }
         }
         

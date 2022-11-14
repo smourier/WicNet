@@ -1,4 +1,4 @@
-﻿namespace WicNetExplorer
+﻿namespace WicNetExplorer.Utilities
 {
     partial class ObjectForm
     {

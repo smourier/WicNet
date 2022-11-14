@@ -33,11 +33,15 @@
             this.toolStripSeparator5 = new System.Windows.Forms.ToolStripSeparator();
             this.preferencesToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showWicComponentsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparatorDebug = new System.Windows.Forms.ToolStripSeparator();
             this.gCCollectToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.windowToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tileHorizontallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.tileVerticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showEncodableFileExtensionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.showDecodableFileExtensionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -196,9 +200,24 @@
             // toolsToolStripMenuItem
             // 
             this.toolsToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.showDecodableFileExtensionsToolStripMenuItem,
+            this.showEncodableFileExtensionsToolStripMenuItem,
+            this.showWicComponentsToolStripMenuItem,
+            this.toolStripSeparatorDebug,
             this.gCCollectToolStripMenuItem});
             this.toolsToolStripMenuItem.Name = "toolsToolStripMenuItem";
             resources.ApplyResources(this.toolsToolStripMenuItem, "toolsToolStripMenuItem");
+            // 
+            // showWicComponentsToolStripMenuItem
+            // 
+            this.showWicComponentsToolStripMenuItem.Name = "showWicComponentsToolStripMenuItem";
+            resources.ApplyResources(this.showWicComponentsToolStripMenuItem, "showWicComponentsToolStripMenuItem");
+            this.showWicComponentsToolStripMenuItem.Click += new System.EventHandler(this.ShowWicComponentsToolStripMenuItem_Click);
+            // 
+            // toolStripSeparatorDebug
+            // 
+            this.toolStripSeparatorDebug.Name = "toolStripSeparatorDebug";
+            resources.ApplyResources(this.toolStripSeparatorDebug, "toolStripSeparatorDebug");
             // 
             // gCCollectToolStripMenuItem
             // 
@@ -232,6 +251,18 @@
             this.tileVerticallyToolStripMenuItem.Name = "tileVerticallyToolStripMenuItem";
             resources.ApplyResources(this.tileVerticallyToolStripMenuItem, "tileVerticallyToolStripMenuItem");
             this.tileVerticallyToolStripMenuItem.Click += new System.EventHandler(this.TileVerticallyToolStripMenuItem_Click);
+            // 
+            // showEncodableFileExtensionsToolStripMenuItem
+            // 
+            this.showEncodableFileExtensionsToolStripMenuItem.Name = "showEncodableFileExtensionsToolStripMenuItem";
+            resources.ApplyResources(this.showEncodableFileExtensionsToolStripMenuItem, "showEncodableFileExtensionsToolStripMenuItem");
+            this.showEncodableFileExtensionsToolStripMenuItem.Click += new System.EventHandler(this.ShowEncodableFileExtensionsToolStripMenuItem_Click);
+            // 
+            // showDecodableFileExtensionsToolStripMenuItem
+            // 
+            this.showDecodableFileExtensionsToolStripMenuItem.Name = "showDecodableFileExtensionsToolStripMenuItem";
+            resources.ApplyResources(this.showDecodableFileExtensionsToolStripMenuItem, "showDecodableFileExtensionsToolStripMenuItem");
+            this.showDecodableFileExtensionsToolStripMenuItem.Click += new System.EventHandler(this.ShowDecodableFileExtensionsToolStripMenuItem_Click);
             // 
             // Main
             // 
@@ -278,5 +309,9 @@
         private System.Windows.Forms.ToolStripMenuItem honorColorContextsToolStripMenuItem;
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator5;
         private System.Windows.Forms.ToolStripMenuItem preferencesToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showWicComponentsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparatorDebug;
+        private System.Windows.Forms.ToolStripMenuItem showDecodableFileExtensionsToolStripMenuItem;
+        private System.Windows.Forms.ToolStripMenuItem showEncodableFileExtensionsToolStripMenuItem;
     }
 }

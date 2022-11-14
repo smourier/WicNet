@@ -40,6 +40,7 @@
             this.columnIndex,
             this.columnValue});
             resources.ApplyResources(this.listViewArray, "listViewArray");
+            this.listViewArray.FullRowSelect = true;
             this.listViewArray.Name = "listViewArray";
             this.listViewArray.UseCompatibleStateImageBehavior = false;
             this.listViewArray.View = System.Windows.Forms.View.Details;

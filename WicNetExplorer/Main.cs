@@ -16,6 +16,12 @@ namespace WicNetExplorer
             Icon = Resources.WicNetIcon;
 
             imageToolStripMenuItem.Visible = false;
+
+#if !DEBUG
+            toolStripSeparatorDebug.Visible = false;
+            gCCollectToolStripMenuItem.Visible = false;
+#endif
+
             Task.Run(() => Settings.Current.CleanRecentFiles());
         }
 
@@ -149,6 +155,33 @@ namespace WicNetExplorer
         {
             Settings.Current.HonorColorContexts = honorColorContextsToolStripMenuItem.Checked;
             Settings.Current.SerializeToConfiguration();
+        }
+
+        private void ShowWicComponentsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg = new CollectionForm(WicImagingComponent.AllComponents.Select(c => ImagingComponentModel.From(c)).OrderBy(e => e.GetType().Name).ThenBy(e => e.FriendlyName));
+            dlg.Text = Resources.Components;
+            ((Control)dlg.AcceptButton).Visible = false;
+            ((Control)dlg.CancelButton).Text = Resources.Close;
+            dlg.ShowDialog(this);
+        }
+
+        private void ShowDecodableFileExtensionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg = new CollectionForm(WicImagingComponent.DecoderFileExtensions.Select(e => new DecoderFileExtensionModel(e)).OrderBy(e => e.Extension));
+            dlg.Text = Resources.DecodableExtensions;
+            ((Control)dlg.AcceptButton).Visible = false;
+            ((Control)dlg.CancelButton).Text = Resources.Close;
+            dlg.ShowDialog(this);
+        }
+
+        private void ShowEncodableFileExtensionsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            var dlg = new CollectionForm(WicImagingComponent.EncoderFileExtensions.Select(e => new EncoderFileExtensionModel(e)).OrderBy(e => e.Extension));
+            dlg.Text = Resources.EncodableExtensions;
+            ((Control)dlg.AcceptButton).Visible = false;
+            ((Control)dlg.CancelButton).Text = Resources.Close;
+            dlg.ShowDialog(this);
         }
     }
 }

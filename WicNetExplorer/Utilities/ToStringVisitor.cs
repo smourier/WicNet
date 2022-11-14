@@ -58,7 +58,7 @@ namespace WicNetExplorer.Utilities
                     if (IsValue(context, item))
                     {
                         Writer.Write("[" + i + "]: ");
-                        WriteValueAsString(value);
+                        WriteValueAsString(item);
                     }
                     else
                     {

@@ -6,7 +6,7 @@ using WicNetExplorer.Utilities;
 namespace WicNetExplorer.Model
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class ImagingComponentModel
+    public class ImagingComponentModel : ICollectionFormItem
     {
         private readonly WicImagingComponent _component;
 
@@ -32,6 +32,45 @@ namespace WicNetExplorer.Model
         [DisplayName("Name")]
         public string ClsidName => _component.ClsidName;
 
-        public override string ToString() => _component.ToString();
+        string ICollectionFormItem.TypeName
+        {
+            get
+            {
+                var name = GetType().Name;
+                if (name.EndsWith("Model"))
+                    return name.Substring(0, name.Length - 5).Decamelize();
+
+                return name.Decamelize();
+            }
+        }
+
+        string ICollectionFormItem.Name => FriendlyName;
+        object ICollectionFormItem.Value => this;
+
+        public override string ToString() => FriendlyName;
+
+        public static ImagingComponentModel From(WicImagingComponent component)
+        {
+            ArgumentNullException.ThrowIfNull(component);
+            if (component is WicPixelFormat format)
+                return new PixelFormatModel(format);
+
+            if (component is WicPixelFormatConverter converter)
+                return new PixelFormatConverter(converter);
+
+            if (component is WicEncoder encoder)
+                return new EncoderModel(encoder);
+
+            if (component is WicDecoder decoder)
+                return new DecoderModel(decoder);
+
+            if (component is WicMetadataReader reader)
+                return new MetadataReaderModel(reader);
+
+            if (component is WicMetadataWriter writer)
+                return new MetadataWriterModel(writer);
+
+            throw new NotSupportedException();
+        }
     }
 }

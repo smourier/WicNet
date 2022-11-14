@@ -2,7 +2,7 @@
 using System.Windows.Forms;
 using WicNetExplorer.Utilities;
 
-namespace WicNetExplorer
+namespace WicNetExplorer.Utilities
 {
     public partial class ObjectForm : Form
     {

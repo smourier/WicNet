@@ -58,9 +58,6 @@ namespace WicNet
                     }
 
                     dic.Add(ic.Clsid, ic);
-
-                    //WicEncoder.CreateBuiltIn();
-                    //WicDecoder.CreateBuiltIn();
                     component.Dispose();
                 }
             });
