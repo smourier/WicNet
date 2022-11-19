@@ -1,5 +1,7 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.ComponentModel;
+using System.Linq;
 using WicNet;
 using WicNetExplorer.Utilities;
 
@@ -9,6 +11,8 @@ namespace WicNetExplorer.Model
     public class PixelFormatModel : ImagingComponentModel
     {
         private readonly WicPixelFormat _format;
+        private readonly Lazy<PixelFormatModel[]> _targetConversions;
+        private readonly Lazy<PixelFormatModel[]> _sourceConversions;
 
         public PixelFormatModel(WicPixelFormat format)
             : base(format)
@@ -20,6 +24,41 @@ namespace WicNetExplorer.Model
             {
                 ColorContext = new ColorContextModel(ctx);
             }
+
+            _targetConversions = new Lazy<PixelFormatModel[]>(GetTargetConversions);
+            _sourceConversions = new Lazy<PixelFormatModel[]>(GetSourceConversions);
+        }
+
+        private PixelFormatModel[] GetTargetConversions()
+        {
+            var list = new HashSet<PixelFormatModel>();
+            foreach (var kv in PixelFormatConverter._allConversions.Value)
+            {
+                foreach (var cv in kv.Value)
+                {
+                    if (cv.From.Guid == Guid)
+                    {
+                        list.Add(cv.To);
+                    }
+                }
+            }
+            return list.ToArray();
+        }
+
+        private PixelFormatModel[] GetSourceConversions()
+        {
+            var list = new HashSet<PixelFormatModel>();
+            foreach (var kv in PixelFormatConverter._allConversions.Value)
+            {
+                foreach (var cv in kv.Value)
+                {
+                    if (cv.To.Guid == Guid)
+                    {
+                        list.Add(cv.From);
+                    }
+                }
+            }
+            return list.ToArray();
         }
 
         public Guid Guid => _format.Guid;
@@ -39,6 +78,16 @@ namespace WicNetExplorer.Model
         [DisplayName("Supports Transparency")]
         public bool SupportsTransparency => _format.SupportsTransparency;
 
-        public override string ToString() => _format.ToString();
+        [DisplayName("Supported Target Formats")]
+        [TypeConverter(typeof(StringFormatterArrayConverter))]
+        [StringFormatter("{Length}")]
+        public PixelFormatModel[] TargetConversions => _targetConversions.Value;
+
+        [DisplayName("Supported Source Formats")]
+        [TypeConverter(typeof(StringFormatterArrayConverter))]
+        [StringFormatter("{Length}")]
+        public PixelFormatModel[] SourceConversions => _sourceConversions.Value;
+
+        public override string ToString() => FriendlyName + " - " + NumericRepresentation;
     }
 }

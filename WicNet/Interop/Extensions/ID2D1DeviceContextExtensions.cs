@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
 
 namespace DirectN
 {
@@ -100,6 +101,26 @@ namespace DirectN
                 throw new ArgumentNullException(nameof(colorContext));
 
             context.CreateColorContextFromWicColorContext(colorContext, out var d2dColorContext).ThrowOnError();
+            return new ComObject<ID2D1ColorContext>(d2dColorContext);
+        }
+
+        public static IComObject<ID2D1ColorContext> CreateColorContext(this IComObject<ID2D1DeviceContext> context, D2D1_COLOR_SPACE space, byte[] profile = null) => CreateColorContext(context?.Object, space, profile);
+        public static IComObject<ID2D1ColorContext> CreateColorContext(this ID2D1DeviceContext context, D2D1_COLOR_SPACE space, byte[] profile = null)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            context.CreateColorContext(space, profile, (profile?.Length).GetValueOrDefault(), out var d2dColorContext).ThrowOnError();
+            return new ComObject<ID2D1ColorContext>(d2dColorContext);
+        }
+
+        public static IComObject<ID2D1ColorContext> CreateColorContextFromFilename(this IComObject<ID2D1DeviceContext> context, string filePath) => CreateColorContextFromFilename(context?.Object, filePath);
+        public static IComObject<ID2D1ColorContext> CreateColorContextFromFilename(this ID2D1DeviceContext context, string filePath)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            context.CreateColorContextFromFilename(filePath, out var d2dColorContext).ThrowOnError();
             return new ComObject<ID2D1ColorContext>(d2dColorContext);
         }
 

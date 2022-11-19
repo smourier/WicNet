@@ -4,6 +4,35 @@ namespace DirectN
 {
     public static class ID2D1BitmapExtensions
     {
+        public static IComObject<ID2D1ColorContext> GetColorContext(this IComObject<ID2D1Bitmap1> bitmap) => GetColorContext(bitmap?.Object);
+        public static IComObject<ID2D1ColorContext> GetColorContext(this ID2D1Bitmap1 bitmap)
+        {
+            if (bitmap == null)
+                throw new ArgumentNullException(nameof(bitmap));
+
+            bitmap.GetColorContext(out var value);
+            return value == null ? null : new ComObject<ID2D1ColorContext>(value);
+        }
+
+        public static D2D1_MAPPED_RECT Map(this IComObject<ID2D1Bitmap1> bitmap, D2D1_MAP_OPTIONS options = D2D1_MAP_OPTIONS.D2D1_MAP_OPTIONS_NONE) => Map(bitmap?.Object, options);
+        public static D2D1_MAPPED_RECT Map(this ID2D1Bitmap1 bitmap, D2D1_MAP_OPTIONS options = D2D1_MAP_OPTIONS.D2D1_MAP_OPTIONS_NONE)
+        {
+            if (bitmap == null)
+                throw new ArgumentNullException(nameof(bitmap));
+
+            bitmap.Map(options, out var rc).ThrowOnError();
+            return rc;
+        }
+
+        public static void Unmap(this IComObject<ID2D1Bitmap1> bitmap) => Unmap(bitmap?.Object);
+        public static void Unmap(this ID2D1Bitmap1 bitmap)
+        {
+            if (bitmap == null)
+                throw new ArgumentNullException(nameof(bitmap));
+
+            bitmap.Unmap().ThrowOnError();
+        }
+
         public static D2D_SIZE_F GetDpi(this IComObject<ID2D1Bitmap> bitmap) => GetDpi(bitmap?.Object);
         public static D2D_SIZE_F GetDpi(this ID2D1Bitmap bitmap)
         {

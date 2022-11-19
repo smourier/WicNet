@@ -32,7 +32,7 @@ namespace WicNetExplorer.Model
         [DisplayName("Name")]
         public string ClsidName => _component.ClsidName;
 
-        string ICollectionFormItem.TypeName
+        string? ICollectionFormItem.TypeName
         {
             get
             {
@@ -44,7 +44,7 @@ namespace WicNetExplorer.Model
             }
         }
 
-        string ICollectionFormItem.Name => FriendlyName;
+        string ICollectionFormItem.Name => ToString();
         object ICollectionFormItem.Value => this;
 
         public override string ToString() => FriendlyName;

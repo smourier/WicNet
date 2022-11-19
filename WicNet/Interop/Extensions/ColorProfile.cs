@@ -8,7 +8,6 @@ using System.Text;
 
 namespace DirectN
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
     public sealed class ColorProfile
     {
         private static readonly Lazy<IReadOnlyList<ColorProfile>> _localProfiles = new Lazy<IReadOnlyList<ColorProfile>>(() => GetColorProfiles(null), true);
@@ -25,14 +24,14 @@ namespace DirectN
 
             Size = header.phSize;
             CmmType = header.phCMMType;
-            Version = header.phVersion;
+            VersionMajor = header.phVersion[3];
+            VersionMinor = header.phVersion[2];
             Class = header.phClass;
             DataColorSpace = header.phDataColorSpace;
             ConnectionSpace = header.phConnectionSpace;
             Signature = header.phSignature;
             Platform = header.phPlatform;
-            IsEmbeddedProfile = (header.phProfileFlags & FLAG_EMBEDDEDPROFILE) != 0;
-            IsDependentOnData = (header.phProfileFlags & FLAG_DEPENDENTONDATA) != 0;
+            Flags = header.phProfileFlags;
             Manufacturer = header.phManufacturer;
             Model = header.phModel;
             Attributes = header.phAttributes;
@@ -52,6 +51,7 @@ namespace DirectN
             if (!GetColorProfileFromHandle(handle, Profile, ref size))
                 throw new Win32Exception(Marshal.GetLastWin32Error());
 
+            var elements = new List<ColorProfileElement>();
             var localizedStrings = new Dictionary<string, List<string>>(StringComparer.OrdinalIgnoreCase);
             GetCountColorProfileElements(handle, out var count);
             for (var i = 0; i < count; i++)
@@ -65,8 +65,10 @@ namespace DirectN
                         var bytes = new byte[size];
                         if (GetColorProfileElement(handle, tag, 0, ref size, bytes, out _))
                         {
+                            elements.Add(new ColorProfileElement(tag, bytes));
+
                             int offset;
-                            // https://www.color.org/specification/ICC.2-2019.pdf
+                            // https://www.color.org/specification/ICC.1-2022-05.pdf
                             var type = Get4BytesString(BitConverter.ToInt32(bytes, 0));
                             switch (type)
                             {
@@ -74,38 +76,38 @@ namespace DirectN
                                     offset = 8;
                                     switch (tag)
                                     {
-                                        case 0x63707274:
+                                        case 0x63707274: // cprt
                                             Copyright = getAscii(bytes.Length - 8);
                                             break;
 
-                                        case 0x74617267:
+                                        case 0x74617267: // targ
                                             RegisteredCharacterization = getAscii(bytes.Length - 8);
                                             break;
-
-                                        //default:
-                                        //    var s = getAscii(bytes.Length - 8);
-                                        //    Console.WriteLine(tag.ToString("x8") + " => " + s);
-                                        //    break;
                                     }
                                     break;
 
                                 case "desc":
+                                    // search old ICC doc for "textDescriptionType" https://www.color.org/icc32.pdf 
                                     offset = 8;
                                     var n = getInt32();
                                     if (n > 0)
                                     {
                                         switch (tag)
                                         {
-                                            case 0x64657363:
+                                            case 0x64657363: // desc
                                                 Description = getAscii(n);
                                                 break;
 
-                                            case 0x646d6e64:
+                                            case 0x646d6e64: // dmnd
                                                 ManufacturerDescription = getAscii(n);
                                                 break;
 
-                                            case 0x646d6464:
+                                            case 0x646d6464: // dmdd
                                                 ModelDescription = getAscii(n);
+                                                break;
+
+                                            case 0x76756564: // vued
+                                                ViewingCondition = getAscii(n);
                                                 break;
                                         }
                                     }
@@ -116,12 +118,20 @@ namespace DirectN
                                     {
                                         switch (tag)
                                         {
-                                            case 0x64657363:
+                                            case 0x64657363: // desc
                                                 Description = getUnicode(n);
                                                 break;
 
-                                            case 0x646d6464:
+                                            case 0x646d6e64: // dmnd
+                                                ManufacturerDescription = getUnicode(n);
+                                                break;
+
+                                            case 0x646d6464: // dmdd
                                                 ModelDescription = getUnicode(n);
+                                                break;
+
+                                            case 0x76756564: // vued
+                                                ViewingCondition = getUnicode(n);
                                                 break;
                                         }
                                     }
@@ -152,7 +162,37 @@ namespace DirectN
                                         }
 
                                         list.Add(s);
+
+                                        switch (tag)
+                                        {
+                                            case 0x63707274: // cprt
+                                                Copyright = s;
+                                                break;
+
+                                            case 0x74617267: // targ
+                                                RegisteredCharacterization = s;
+                                                break;
+
+                                            case 0x64657363: // desc
+                                                Description = s;
+                                                break;
+
+                                            case 0x646d6e64: // dmnd
+                                                ManufacturerDescription = s;
+                                                break;
+
+                                            case 0x646d6464: // dmdd
+                                                ModelDescription = s;
+                                                break;
+
+                                            case 0x76756564: // vued
+                                                ViewingCondition = s;
+                                                break;
+                                        }
                                     }
+                                    break;
+
+                                default:
                                     break;
                             }
 
@@ -177,7 +217,7 @@ namespace DirectN
                                 if (bom == -2)
                                 {
                                     offset += 3;
-                                    len -= 2;
+                                    //len -= 1;
                                 }
 
                                 var s = TrimTerminatingZeros(Encoding.Unicode.GetString(bytes, offset, len * 2));
@@ -189,6 +229,7 @@ namespace DirectN
                 }
             }
 
+            Elements = elements.AsReadOnly();
             LocalizedStrings = localizedStrings.ToDictionary(kv => kv.Key, kv => (IReadOnlyList<string>)kv.Value.AsReadOnly());
         }
 
@@ -199,10 +240,10 @@ namespace DirectN
         }
 
         public string FilePath { get; } // null if loaded from memory
-        [Browsable(false)] // avoid to display in property grid
         public byte[] Profile { get; }
         public int Size { get; }
-        public int Version { get; }
+        public int VersionMajor { get; }
+        public int VersionMinor { get; }
         public int CmmType { get; }
         public int Class { get; }
         public int DataColorSpace { get; }
@@ -212,28 +253,30 @@ namespace DirectN
         public int Manufacturer { get; }
         public int Model { get; }
         public int Creator { get; }
-        public int[] Attributes { get; }
+        public ColorProfileAttribute[] Attributes { get; }
         public int RenderingIntent { get; }
         public CIEXYZ Illuminant { get; }
-        public bool IsEmbeddedProfile { get; }
-        public bool IsDependentOnData { get; }
-        public string CmmTypeString => Get4BytesString(CmmType);
-        public string ClassString => Get4BytesString(Class);
-        public string DataColorSpaceString => Get4BytesString(DataColorSpace);
-        public string ConnectionSpaceString => Get4BytesString(ConnectionSpace);
-        public string SignatureString => Get4BytesString(Signature);
-        public string PlatformString => Get4BytesString(Platform);
-        public string ManufacturerString => Get4BytesString(Manufacturer);
-        public string ModelString => Get4BytesString(Model);
-        public string CreatorString => Get4BytesString(Creator);
+        public ColorProfileFlags Flags { get; }
+        public string CmmTypeString => Get4BytesStringBE(CmmType);
+        public string ClassString => Get4BytesStringBE(Class);
+        public string DataColorSpaceString => Get4BytesStringBE(DataColorSpace);
+        public string ConnectionSpaceString => Get4BytesStringBE(ConnectionSpace);
+        public string SignatureString => Get4BytesStringBE(Signature);
+        public string PlatformString => Get4BytesStringBE(Platform);
+        public string ManufacturerString => Get4BytesStringBE(Manufacturer);
+        public string ModelString => Get4BytesStringBE(Model);
+        public string CreatorString => Get4BytesStringBE(Creator);
 
         public int UnicodeLanguageCode { get; }
         public string Description { get; }
         public string ManufacturerDescription { get; }
         public string ModelDescription { get; }
-        public IReadOnlyDictionary<string, IReadOnlyList<string>> LocalizedStrings { get; }
+        public string ViewingCondition { get; }
         public string Copyright { get; }
         public string RegisteredCharacterization { get; }
+
+        public IReadOnlyList<ColorProfileElement> Elements { get; }
+        public IReadOnlyDictionary<string, IReadOnlyList<string>> LocalizedStrings { get; }
 
         public override string ToString() => Description;
 
@@ -254,7 +297,7 @@ namespace DirectN
             return str.Substring(0, i + 1);
         }
 
-        private static string Get4BytesString(int value)
+        public static string Get4BytesString(int value)
         {
             try
             {
@@ -266,11 +309,36 @@ namespace DirectN
             }
         }
 
-        private static string Get2BytesString(short value)
+        public static string Get4BytesStringBE(int value)
+        {
+            try
+            {
+                return TrimTerminatingZeros(Encoding.ASCII.GetString(BitConverter.GetBytes(value).Reverse().ToArray()));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+
+        public static string Get2BytesString(short value)
         {
             try
             {
                 return TrimTerminatingZeros(Encoding.ASCII.GetString(BitConverter.GetBytes(value)));
+            }
+            catch
+            {
+                return null;
+            }
+        }
+
+        public static string Get2BytesStringBE(short value)
+        {
+            try
+            {
+                return TrimTerminatingZeros(Encoding.ASCII.GetString(BitConverter.GetBytes(value).Reverse().ToArray()));
             }
             catch
             {
@@ -468,7 +536,8 @@ namespace DirectN
         {
             public int phSize;
             public int phCMMType;
-            public int phVersion;
+            [MarshalAs(UnmanagedType.ByValArray, SizeConst = 4)]
+            public byte[] phVersion;
             public int phClass;
             public int phDataColorSpace;
             public int phConnectionSpace;
@@ -476,11 +545,11 @@ namespace DirectN
             public int[] phDateTime;
             public int phSignature;
             public int phPlatform;
-            public int phProfileFlags;
+            public ColorProfileFlags phProfileFlags;
             public int phManufacturer;
             public int phModel;
             [MarshalAs(UnmanagedType.ByValArray, SizeConst = 2)]
-            public int[] phAttributes;
+            public ColorProfileAttribute[] phAttributes;
             public int phRenderingIntent;
             public CIEXYZ phIlluminant;
             public int phCreator;
@@ -496,8 +565,6 @@ namespace DirectN
         private const int FILE_SHARE_READ = 1;
         private const int OPEN_EXISTING = 3;
         //private const int PROFILE_READWRITE = 2;
-        private const int FLAG_EMBEDDEDPROFILE = 0x00000001;
-        private const int FLAG_DEPENDENTONDATA = 0x00000002;
 
         [DllImport("mscms", SetLastError = true, CharSet = CharSet.Unicode)]
         private static extern bool EnumColorProfiles(string pMachineName, ref ENUMTYPE pEnumRecord, IntPtr pEnumerationBuffer, ref int pdwSizeOfEnumerationBuffer, out int pnProfiles);

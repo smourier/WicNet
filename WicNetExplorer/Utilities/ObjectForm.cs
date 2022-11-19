@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Windows.Forms;
-using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Utilities
 {
@@ -11,6 +10,15 @@ namespace WicNetExplorer.Utilities
             InitializeComponent();
             Icon = Resources.WicNetIcon;
             propertyGridObject.SelectedObject = obj;
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Close();
+            }
+            base.OnKeyDown(e);
         }
 
         private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem.ExpandAllItems();

@@ -1,7 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Drawing.Design;
-using DirectN;
 using WicNet;
 using WicNetExplorer.Utilities;
 
@@ -17,14 +16,14 @@ namespace WicNetExplorer.Model
             ArgumentNullException.ThrowIfNull(context);
             ExifColorSpace = ((ExifColorSpace)context.ExifColorSpace.GetValueOrDefault()).GetEnumName();
             Type = context.Type.GetEnumName("WICColorContext").Decamelize();
-            Profile = context.Profile;
+            Profile = context.Profile != null ? new ColorProfileModel(context.Profile) : null;
             _profileBytes = context.ProfileBytes;
         }
 
         [DisplayName("Exif Color Space")]
         public string ExifColorSpace { get; }
 
-        public ColorProfile? Profile { get; }
+        public ColorProfileModel? Profile { get; }
         public string? Type { get; }
 
         [DisplayName("Profile Bytes")]
@@ -32,12 +31,6 @@ namespace WicNetExplorer.Model
         [TypeConverter(typeof(ByteArrayConverter))]
         public byte[] ProfileBytes { get => _profileBytes; set => throw new NotSupportedException(); } // set for property grid support
 
-        public override string ToString()
-        {
-            if (Profile == null)
-                return string.Empty;
-
-            return Profile.ToString();
-        }
+        public override string ToString() => Profile?.ToString() ?? string.Empty;
     }
 }

@@ -4,7 +4,6 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DirectN;
 using WicNet;
@@ -17,6 +16,7 @@ namespace WicNetExplorer
         private IComObject<ID2D1Bitmap1>? _bitmap;
         private WicBitmapSource? _bitmapSource;
         private WicColorContext? _colorContext;
+        private IComObject<ID2D1Effect>? _colorManagementEffect;
         private readonly D2DControl _d2d = new();
 
         public ImageForm()
@@ -26,40 +26,30 @@ namespace WicNetExplorer
 
             _d2d.Draw += (s, e) =>
             {
+                IComObject<ID2D1DeviceContext>? dc = null;
+                IComObject<ID2D1ColorContext>? ctx = null;
                 if (_bitmapSource != null)
                 {
                     if (_bitmap == null)
                     {
-                        IComObject<ID2D1ColorContext>? ctx = null;
-                        using var dc = e.Target.AsComObject<ID2D1DeviceContext>();
+                        dc = e.Target.AsComObject<ID2D1DeviceContext>(true);
 
-                        D2D1_BITMAP_PROPERTIES1? properties = null;
                         if (_colorContext != null)
                         {
                             ctx = dc.CreateColorContextFromWicColorContext(_colorContext.ComObject);
-                            var props = new D2D1_BITMAP_PROPERTIES1
-                            {
-                                colorContext = ctx.GetInterfacePointer<ID2D1ColorContext>(),
-                            };
-                            properties = props;
+                            _colorManagementEffect = dc.CreateEffect(Direct2DEffects.CLSID_D2D1ColorManagement);
+
+                            //_colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_QUALITY, D2D1_COLORMANAGEMENT_QUALITY.D2D1_COLORMANAGEMENT_QUALITY_BEST);
+                            _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_SOURCE_COLOR_CONTEXT, ctx);
                         }
 
-                        try
-                        {
-                            _bitmap = dc.CreateBitmapFromWicBitmap(_bitmapSource.ComObject, properties);
-                            _bitmapSource.Dispose();
-                            _bitmapSource = null;
-                            _colorContext?.Dispose();
-                            _colorContext = null;
-                        }
-                        finally
-                        {
-                            ctx?.Dispose();
-                            if (properties.HasValue && properties.Value.colorContext != IntPtr.Zero)
-                            {
-                                Marshal.Release(properties.Value.colorContext);
-                            }
-                        }
+                        //var p = new D2D1_BITMAP_PROPERTIES1();
+                        //p.pixelFormat.format = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_UNORM;
+                        _bitmap = dc.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
+                        _bitmapSource.Dispose();
+                        _bitmapSource = null;
+                        _colorContext?.Dispose();
+                        _colorContext = null;
                     }
                 }
 
@@ -71,9 +61,20 @@ namespace WicNetExplorer
                     var size = _bitmap.GetSize();
                     var factor = size.GetScaleFactor(_d2d.Width, _d2d.Height);
                     var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
-                    e.Target.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
+
+                    if (_colorManagementEffect != null)
+                    {
+                        _colorManagementEffect.SetInput(0, _bitmap);
+                        dc.DrawImage(_colorManagementEffect);
+                    }
+                    else
+                    {
+                        e.Target.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
+                    }
                     e.Handled = true;
                 }
+                dc?.Dispose();
+                ctx?.Dispose();
             };
             _d2d.Dock = DockStyle.Fill;
             _d2d.BackColor = Color.AliceBlue;
@@ -139,9 +140,7 @@ namespace WicNetExplorer
         {
             if (disposing)
             {
-                _bitmap?.Dispose();
-                _bitmapSource?.Dispose();
-                _colorContext?.Dispose();
+                DisposeResources();
                 components?.Dispose();
                 _d2d?.Dispose();
             }
@@ -158,12 +157,7 @@ namespace WicNetExplorer
         {
             ArgumentNullException.ThrowIfNull(fileName);
 
-            _bitmap?.Dispose();
-            _bitmap = null;
-            _bitmapSource?.Dispose();
-            _colorContext?.Dispose();
-            _colorContext = null;
-
+            DisposeResources();
             try
             {
                 _bitmapSource = WicBitmapSource.Load(fileName);
@@ -181,7 +175,14 @@ namespace WicNetExplorer
 
             var orientation = Settings.Current.HonorOrientation ? _bitmapSource.GetOrientation() : null;
 
-            _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            if (_bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
+            {
+                //_bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat64bppPRGBA);
+            }
+            else
+            {
+                _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            }
 
             // rotate after conversion
             if (orientation.HasValue)
@@ -288,13 +289,20 @@ namespace WicNetExplorer
         private void CloseFile()
         {
             FileName = null;
+            DisposeResources();
+            _d2d.Invalidate();
+        }
+
+        private void DisposeResources()
+        {
             _bitmap?.Dispose();
             _bitmap = null;
+            _colorManagementEffect?.Dispose();
+            _colorManagementEffect = null;
             _bitmapSource?.Dispose();
             _bitmapSource = null;
             _colorContext?.Dispose();
             _colorContext = null;
-            _d2d.Invalidate();
         }
     }
 }

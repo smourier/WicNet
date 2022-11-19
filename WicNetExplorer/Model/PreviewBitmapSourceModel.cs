@@ -14,6 +14,8 @@ namespace WicNetExplorer.Model
             Preview = bitmap;
         }
 
+        protected override bool EnableThumbnail => false;
+
         [ToStringVisitor(Ignore = true)]
         [Editor(typeof(BitmapSourceModelEditor), typeof(UITypeEditor))]
         [TypeConverter(typeof(StringFormatterArrayConverter))]

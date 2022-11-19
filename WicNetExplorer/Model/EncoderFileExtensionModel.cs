@@ -17,7 +17,7 @@ namespace WicNetExplorer.Model
         public string Extension { get; }
         public EncoderModel Encoder { get; }
 
-        string ICollectionFormItem.TypeName => Extension;
+        string? ICollectionFormItem.TypeName => Extension;
         string ICollectionFormItem.Name => Encoder.ToString();
         object ICollectionFormItem.Value => Encoder;
 

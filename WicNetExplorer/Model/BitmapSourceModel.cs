@@ -27,12 +27,18 @@ namespace WicNetExplorer.Model
 
             MemorySize = Stride * source.Height;
             ColorContexts = source.GetColorContexts().Select(cc => new ColorContextModel(cc)).ToArray();
-            var th = source.GetThumbnail(); // no using here
-            if (th != null)
+
+            if (EnableThumbnail)
             {
-                Thumbnail = new PreviewBitmapSourceModel(th);
+                var th = source.GetThumbnail(); // no using here
+                if (th != null)
+                {
+                    Thumbnail = new PreviewBitmapSourceModel(th);
+                }
             }
         }
+
+        protected virtual bool EnableThumbnail => true;
 
         public WicIntSize Size { get; }
         public int Stride { get; }

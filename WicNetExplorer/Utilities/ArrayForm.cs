@@ -11,6 +11,15 @@ namespace WicNetExplorer.Utilities
             Icon = Resources.WicNetIcon;
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Close();
+            }
+            base.OnKeyDown(e);
+        }
+
         public void SetArray(IEnumerable enumerable)
         {
             if (enumerable == null)

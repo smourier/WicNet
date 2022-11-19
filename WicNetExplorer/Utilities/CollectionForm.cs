@@ -8,13 +8,14 @@ namespace WicNetExplorer.Utilities
     {
         private readonly IEnumerable _enumerable;
 
-        public CollectionForm(IEnumerable enumerable)
+        public CollectionForm(IEnumerable enumerable, bool hideTypeColumn = false)
         {
             ArgumentNullException.ThrowIfNull(enumerable);
             _enumerable = enumerable;
             InitializeComponent();
             Icon = Resources.WicNetIcon;
 
+            listViewMain.SuspendLayout();
             foreach (var instance in enumerable)
             {
                 if (instance == null)
@@ -34,10 +35,35 @@ namespace WicNetExplorer.Utilities
                 name ??= instance.ToString() ?? string.Empty;
                 value ??= instance;
 
-                var item = listViewMain.Items.Add(type);
+                ListViewItem item;
+                if (hideTypeColumn)
+                {
+                    item = listViewMain.Items.Add(name);
+                }
+                else
+                {
+                    item = listViewMain.Items.Add(type);
+                }
+
                 item.Tag = value;
                 item.SubItems.Add(name);
             }
+
+            if (hideTypeColumn)
+            {
+                listViewMain.Columns.Remove(columnHeaderType);
+            }
+
+            listViewMain.ResumeLayout();
+        }
+
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Close();
+            }
+            base.OnKeyDown(e);
         }
 
         private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem.ExpandAllItems();

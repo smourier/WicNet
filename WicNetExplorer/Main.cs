@@ -122,6 +122,7 @@ namespace WicNetExplorer
 
                 var model = new WindowsMetadataModel(reader);
                 var dlg = new ObjectForm(model);
+                dlg.Text = Resources.Metadata;
                 dlg.ShowDialog(this);
             }
         }

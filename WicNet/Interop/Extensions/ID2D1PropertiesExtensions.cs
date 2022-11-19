@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Runtime.InteropServices;
 using System.Text;
-using WicNet;
 using WicNet.Utilities;
 
 namespace DirectN
@@ -476,11 +474,21 @@ namespace DirectN
                         return true;
                     }
 
+                    if (value is IComObject co)
+                    {
+                        var unk = Marshal.GetComInterfaceForObject(co.Object, co.InterfaceType);
+                        type = D2D1_PROPERTY_TYPE.D2D1_PROPERTY_TYPE_IUNKNOWN;
+                        data = unk.IntPtrToBytes();
+                        Marshal.Release(unk);
+                        return true;
+                    }
+
                     try
                     {
                         var unk = Marshal.GetIUnknownForObject(value);
                         type = D2D1_PROPERTY_TYPE.D2D1_PROPERTY_TYPE_IUNKNOWN;
                         data = unk.IntPtrToBytes();
+                        Marshal.Release(unk);
                         return true;
                     }
                     catch

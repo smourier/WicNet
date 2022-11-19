@@ -7,7 +7,7 @@ using WicNet.Utilities;
 
 namespace DirectN
 {
-    public class ComObject : IComObject
+    public abstract class ComObject : IComObject
     {
         private object _object;
         private readonly bool _dispose;
@@ -31,6 +31,7 @@ namespace DirectN
 #endif
         }
 
+        public abstract Type InterfaceType { get; }
         public bool IsDisposed => _object == null;
         public object Object
         {
@@ -283,6 +284,7 @@ namespace DirectN
         }
 
         public new T Object => (T)base.Object;
+        public override Type InterfaceType => typeof(T);
 
 #if DEBUG
         protected override string ObjectTypeName => typeof(T).Name;
@@ -293,6 +295,7 @@ namespace DirectN
     {
         bool IsDisposed { get; }
         object Object { get; }
+        Type InterfaceType { get; }
         I As<I>(bool throwOnError = false) where I : class;
         IntPtr GetInterfacePointer<T>(bool throwOnError = false);
         IComObject<I> AsComObject<I>(bool throwOnError = false) where I : class;

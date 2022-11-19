@@ -16,6 +16,15 @@ namespace WicNetExplorer.Utilities
             Controls.Add(_byteViewer);
         }
 
+        protected override void OnKeyDown(KeyEventArgs e)
+        {
+            if (e.KeyCode == Keys.Escape)
+            {
+                Close();
+            }
+            base.OnKeyDown(e);
+        }
+
         public void SetBytes(byte[] bytes)
         {
             _byteViewer.SetBytes(bytes);

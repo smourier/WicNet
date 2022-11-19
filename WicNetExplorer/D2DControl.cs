@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using DirectN;
@@ -18,6 +19,28 @@ namespace WicNetExplorer
 
         protected virtual bool IsValidRenderTarget => _target != null && !_target.IsDisposed;
         public IComObject<ID2D1HwndRenderTarget>? Target => _target;
+        public IReadOnlyList<DXGI_FORMAT> SupportedDxgiFormats
+        {
+            get
+            {
+                var target = Target;
+                if (target == null)
+                    return Array.Empty<DXGI_FORMAT>();
+
+                using (var dc = target.AsComObject<ID2D1DeviceContext>())
+                {
+                    var list = new List<DXGI_FORMAT>();
+                    foreach (DXGI_FORMAT format in Enum.GetValues(typeof(DXGI_FORMAT)))
+                    {
+                        if (dc.Object.IsDxgiFormatSupported(format))
+                        {
+                            list.Add(format);
+                        }
+                    }
+                    return list.AsReadOnly();
+                }
+            }
+        }
 
         protected virtual void ReleaseRenderTarget()
         {
@@ -38,6 +61,7 @@ namespace WicNetExplorer
             var level = D2D1_DEBUG_LEVEL.D2D1_DEBUG_LEVEL_NONE;
 #endif
             using var fac = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, new D2D1_FACTORY_OPTIONS { debugLevel = level });
+
             _target = fac.CreateHwndRenderTarget(new D2D1_HWND_RENDER_TARGET_PROPERTIES { hwnd = Handle, pixelSize = new D2D_SIZE_U(Width, Height) });
         }
 
