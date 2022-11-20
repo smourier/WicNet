@@ -171,6 +171,9 @@
   <data name="Preferences" xml:space="preserve">
     <value>Preferences</value>
   </data>
+  <data name="SysInfo" xml:space="preserve">
+    <value>System Information</value>
+  </data>
   <data name="Warning" xml:space="preserve">
     <value>Warning</value>
   </data>

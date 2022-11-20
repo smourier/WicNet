@@ -10,6 +10,9 @@ namespace WicNetExplorer.Utilities
 {
     public static class Extensions
     {
+        public static _D3DCOLORVALUE FromColor(this Windows.UI.Color color) => _D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
+        public static Windows.UI.Color ToColor(this _D3DCOLORVALUE color) => Windows.UI.Color.FromArgb(color.BA, color.BR, color.BG, color.BB);
+
         public static PHOTO_ORIENTATION? GetOrientation(this WicBitmapSource source)
         {
             if (source == null)

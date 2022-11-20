@@ -6,6 +6,16 @@ namespace DirectN
 {
     public static class ID2D1FactoryExtensions
     {
+        public static IComObject<ID2D1Device> CreateDevice(this IComObject<ID2D1Factory1> factory, IComObject<IDXGIDevice> dxgiDevice) => CreateDevice(factory?.Object, dxgiDevice?.Object);
+        public static IComObject<ID2D1Device> CreateDevice(this ID2D1Factory1 factory, IDXGIDevice dxgiDevice)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            factory.CreateDevice(dxgiDevice, out var device).ThrowOnError();
+            return new ComObject<ID2D1Device>(device);
+        }
+
         public static IComObject<ID2D1RenderTarget> CreateWicBitmapRenderTarget(this IComObject<ID2D1Factory> factory, IComObject<IWICBitmap> target, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateWicBitmapRenderTarget<ID2D1RenderTarget>(factory?.Object, target?.Object, renderTargetProperties);
         public static IComObject<T> CreateWicBitmapRenderTarget<T>(this IComObject<ID2D1Factory> factory, IComObject<IWICBitmap> target, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget => CreateWicBitmapRenderTarget<T>(factory?.Object, target?.Object, renderTargetProperties);
         public static IComObject<T> CreateWicBitmapRenderTarget<T>(this ID2D1Factory factory, IWICBitmap target, D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget

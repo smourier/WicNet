@@ -1,8 +1,5 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.ComTypes;
 
 namespace DirectN
 {
@@ -59,14 +56,15 @@ namespace DirectN
             }
         }
 
-        public static IComObject<ID2D1Device> GetDevice(this IComObject<ID2D1DeviceContext> context) => GetDevice(context?.Object);
-        public static IComObject<ID2D1Device> GetDevice(this ID2D1DeviceContext context)
+        public static IComObject<ID2D1Device> GetDevice(this IComObject<ID2D1DeviceContext> context) => GetDevice<ID2D1Device>(context?.Object);
+        public static IComObject<T> GetDevice<T>(this IComObject<ID2D1DeviceContext> context) where T : ID2D1Device => GetDevice<T>(context?.Object);
+        public static IComObject<T> GetDevice<T>(this ID2D1DeviceContext context) where T : ID2D1Device
         {
             if (context == null)
                 throw new ArgumentNullException(nameof(context));
 
             context.GetDevice(out var device);
-            return device != null ? new ComObject<ID2D1Device>(device) : null;
+            return device != null ? new ComObject<T>((T)device) : null;
         }
 
         public static void SetTarget(this IComObject<ID2D1DeviceContext> context, IComObject<ID2D1Image> target) => SetTarget(context?.Object, target?.Object);

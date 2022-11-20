@@ -7,7 +7,7 @@ using DirectN;
 
 namespace WicNet.Utilities
 {
-    public class Monitor
+    public sealed class Monitor
     {
         private Monitor(IntPtr handle)
         {
@@ -27,6 +27,7 @@ namespace WicNet.Utilities
         public bool IsPrimary { get; }
         public tagRECT WorkingArea { get; }
         public tagRECT Bounds { get; }
+        [Browsable(false)]
         public string DeviceName { get; }
         public int EffectiveDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI);
         public int RawDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_RAW_DPI);
@@ -41,6 +42,7 @@ namespace WicNet.Utilities
             }
         }
 
+        [Browsable(false)]
         public DISPLAY_DEVICE? DISPLAY_DEVICE
         {
             get

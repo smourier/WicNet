@@ -17,13 +17,23 @@ namespace WicNetExplorer
         private WicBitmapSource? _bitmapSource;
         private WicColorContext? _colorContext;
         private IComObject<ID2D1Effect>? _colorManagementEffect;
-        private readonly D2DControl _d2d = new();
+        private readonly ID2Control _d2d;
 
         public ImageForm()
         {
             InitializeComponent();
             Icon = Resources.WicNetIcon;
 
+            //if (!Program.ForceWindows7Mode && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
+            //{
+            //    _d2d = new D2DCompositionControl();
+            //}
+            //else
+            {
+                _d2d = new D2DControl();
+            }
+
+            var ctl = (Control)_d2d;
             _d2d.Draw += (s, e) =>
             {
                 IComObject<ID2D1DeviceContext>? dc = null;
@@ -55,11 +65,11 @@ namespace WicNetExplorer
 
                 if (_bitmap != null)
                 {
-                    e.Target.Clear(_D3DCOLORVALUE.FromColor(_d2d.BackColor));
+                    e.Target.Clear(_D3DCOLORVALUE.FromColor(ctl.BackColor));
 
                     // keep proportions
                     var size = _bitmap.GetSize();
-                    var factor = size.GetScaleFactor(_d2d.Width, _d2d.Height);
+                    var factor = size.GetScaleFactor(ctl.Width, ctl.Height);
                     var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
 
                     if (_colorManagementEffect != null)
@@ -76,9 +86,10 @@ namespace WicNetExplorer
                 dc?.Dispose();
                 ctx?.Dispose();
             };
-            _d2d.Dock = DockStyle.Fill;
-            _d2d.BackColor = Color.AliceBlue;
-            Controls.Add(_d2d);
+
+            ctl.Dock = DockStyle.Fill;
+            ctl.BackColor = Color.AliceBlue;
+            Controls.Add(ctl);
         }
 
         public string? FileName { get; private set; }
@@ -246,7 +257,7 @@ namespace WicNetExplorer
         public void SaveFileAs() => SaveFile(true);
         private void SaveFile(bool choose)
         {
-            if (_bitmap == null || _d2d.Target == null)
+            if (_bitmap == null || _d2d.DeviceContext == null)
                 return;
 
             var fileName = FileName;
@@ -271,7 +282,7 @@ namespace WicNetExplorer
                 throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
 
             IOUtilities.FileDelete(fileName, true, false);
-            using (var device = _d2d.Target.As<ID2D1DeviceContext>(true).GetDevice())
+            using (var device = _d2d.DeviceContext.GetDevice())
             {
                 using var image = _bitmap.AsComObject<ID2D1Image>(true);
                 using var stream = File.OpenWrite(fileName);

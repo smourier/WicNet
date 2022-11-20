@@ -6,9 +6,10 @@ using DirectN;
 
 namespace WicNetExplorer
 {
-    public class D2DControl : Control
+    public class D2DControl : Control, ID2Control
     {
         private IComObject<ID2D1HwndRenderTarget>? _target;
+        private IComObject<ID2D1DeviceContext>? _dc;
 
         public event EventHandler<D2DDrawEventArgs>? Draw;
         public event EventHandler<D2DReleaseEventArgs>? Releasing;
@@ -17,13 +18,13 @@ namespace WicNetExplorer
         {
         }
 
-        protected virtual bool IsValidRenderTarget => _target != null && !_target.IsDisposed;
-        public IComObject<ID2D1HwndRenderTarget>? Target => _target;
+        protected virtual bool IsValidTarget => _target != null && !_target.IsDisposed;
+        public IComObject<ID2D1DeviceContext>? DeviceContext => _dc;
         public IReadOnlyList<DXGI_FORMAT> SupportedDxgiFormats
         {
             get
             {
-                var target = Target;
+                var target = DeviceContext;
                 if (target == null)
                     return Array.Empty<DXGI_FORMAT>();
 
@@ -42,18 +43,19 @@ namespace WicNetExplorer
             }
         }
 
-        protected virtual void ReleaseRenderTarget()
+        protected virtual void ReleaseTarget()
         {
-            if (_target != null)
+            if (_dc != null)
             {
-                OnReleasing(this, new D2DReleaseEventArgs(_target));
+                OnReleasing(this, new D2DReleaseEventArgs(_dc));
             }
+            Interlocked.Exchange(ref _dc, null)?.Dispose();
             Interlocked.Exchange(ref _target, null)?.Dispose();
         }
 
-        protected virtual void CreateRenderTarget()
+        protected virtual void CreateTarget()
         {
-            ReleaseRenderTarget();
+            ReleaseTarget();
 
 #if DEBUG
             var level = D2D1_DEBUG_LEVEL.D2D1_DEBUG_LEVEL_INFORMATION;
@@ -63,25 +65,26 @@ namespace WicNetExplorer
             using var fac = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, new D2D1_FACTORY_OPTIONS { debugLevel = level });
 
             _target = fac.CreateHwndRenderTarget(new D2D1_HWND_RENDER_TARGET_PROPERTIES { hwnd = Handle, pixelSize = new D2D_SIZE_U(Width, Height) });
+            _dc = _target.AsComObject<ID2D1DeviceContext>(true);
         }
 
-        protected virtual void EnsureRenderTarget()
+        protected virtual void EnsureTarget()
         {
-            if (!IsValidRenderTarget)
+            if (!IsValidTarget)
             {
-                CreateRenderTarget();
+                CreateTarget();
             }
         }
 
-        protected virtual void ResizeRenderTarget()
+        protected virtual void ResizeTarget()
         {
-            if (IsValidRenderTarget)
+            if (IsValidTarget)
             {
                 var d2dsize = new D2D_SIZE_U(Width, Height);
                 var hr = _target!.Object.Resize(ref d2dsize);
                 if (hr.IsError)
                 {
-                    ReleaseRenderTarget();
+                    ReleaseTarget();
                 }
             }
             Invalidate();
@@ -102,13 +105,13 @@ namespace WicNetExplorer
         protected sealed override void OnPaint(PaintEventArgs e)
         {
             base.OnPaint(e);
-            EnsureRenderTarget();
+            EnsureTarget();
             if (_target != null && !_target.IsDisposed && !_target.CheckWindowState().HasFlag(D2D1_WINDOW_STATE.D2D1_WINDOW_STATE_OCCLUDED))
             {
                 _target.BeginDraw();
                 try
                 {
-                    var ed = new D2DDrawEventArgs(_target);
+                    var ed = new D2DDrawEventArgs(_dc!);
                     OnDraw(this, ed);
                     if (ed.Handled)
                         return;
@@ -120,7 +123,7 @@ namespace WicNetExplorer
                     var hr = _target.Object.EndDraw(IntPtr.Zero, IntPtr.Zero);
                     if (hr == HRESULTS.D2DERR_RECREATE_TARGET)
                     {
-                        ReleaseRenderTarget();
+                        ReleaseTarget();
                         Invalidate();
                     }
                 }
@@ -130,7 +133,7 @@ namespace WicNetExplorer
         protected override void OnResize(EventArgs e)
         {
             base.OnResize(e);
-            ResizeRenderTarget();
+            ResizeTarget();
         }
 
         protected override void Dispose(bool disposing)
@@ -138,14 +141,14 @@ namespace WicNetExplorer
             base.Dispose(disposing);
             if (disposing)
             {
-                ReleaseRenderTarget();
+                ReleaseTarget();
             }
         }
 
         protected override void OnHandleDestroyed(EventArgs e)
         {
             base.OnHandleDestroyed(e);
-            ReleaseRenderTarget();
+            ReleaseTarget();
         }
     }
 }

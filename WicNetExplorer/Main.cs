@@ -54,6 +54,21 @@ namespace WicNetExplorer
             }
         }
 
+        private void About()
+        {
+            var dlg = new AboutForm();
+            dlg.ShowDialog(this);
+        }
+
+        private void SysInfo()
+        {
+            var dlg = new ObjectForm(new SystemInfoModel());
+            dlg.Text = Resources.SysInfo;
+            dlg.ShowDialog(this);
+        }
+
+        private void ShowSystemInformationToolStripMenuItem_Click(object sender, EventArgs e) => SysInfo();
+        private void AboutWicNetExplorerToolStripMenuItem_Click(object sender, EventArgs e) => About();
         private void CascadeToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.Cascade);
         private void TileHorizontallyToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.TileHorizontal);
         private void TileVerticallyToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.TileVertical);

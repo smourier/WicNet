@@ -223,6 +223,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to System Information.
+        /// </summary>
+        internal static string SysInfo {
+            get {
+                return ResourceManager.GetString("SysInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Warning.
         /// </summary>
         internal static string Warning {

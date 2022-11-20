@@ -8,7 +8,7 @@ using System.Runtime.Versioning;
 [assembly: AssemblyConfiguration("RELEASE")]
 #endif
 [assembly: AssemblyTitle("WicNetExplorer")]
-[assembly: AssemblyDescription("WIC Explorer")]
+[assembly: AssemblyDescription("WicNet Explorer")]
 [assembly: AssemblyCompany("Simon Mourier")]
 [assembly: AssemblyProduct("WicNet")]
 [assembly: AssemblyCopyright("Copyright (C) 2021-2022 Simon Mourier. All rights reserved.")]
