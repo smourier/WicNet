@@ -169,6 +169,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to DirectX Information.
+        /// </summary>
+        internal static string DirectXInfo {
+            get {
+                return ResourceManager.GetString("DirectXInfo", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wic Encodable Extensions.
         /// </summary>
         internal static string EncodableExtensions {

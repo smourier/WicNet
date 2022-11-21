@@ -477,7 +477,7 @@ namespace DirectN
                     if (value is IComObject co)
                     {
                         var unk = Marshal.GetComInterfaceForObject(co.Object, co.InterfaceType);
-                        type = D2D1_PROPERTY_TYPE.D2D1_PROPERTY_TYPE_IUNKNOWN;
+                        type = typeof(ID2D1ColorContext).IsAssignableFrom(co.InterfaceType) ? D2D1_PROPERTY_TYPE.D2D1_PROPERTY_TYPE_COLOR_CONTEXT : D2D1_PROPERTY_TYPE.D2D1_PROPERTY_TYPE_IUNKNOWN;
                         data = unk.IntPtrToBytes();
                         Marshal.Release(unk);
                         return true;

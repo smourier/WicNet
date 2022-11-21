@@ -7,6 +7,8 @@ namespace WicNet
 {
     public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparable<WicPixelFormat>
     {
+        private readonly Lazy<IReadOnlyList<WicPixelFormat>> _possibleTargetFormats;
+
         public WicPixelFormat(object comObject)
             : base(comObject)
         {
@@ -27,6 +29,7 @@ namespace WicNet
                 info.Object.SupportsTransparency(out bool b);
                 SupportsTransparency = b;
             }
+            _possibleTargetFormats = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPossibleTargetFormats);
         }
 
         public Guid Guid { get; }
@@ -35,6 +38,7 @@ namespace WicNet
         public int BitsPerPixel { get; }
         public bool SupportsTransparency { get; }
         public override string ClsidName => GetFormatName(Clsid);
+        public IReadOnlyList<WicPixelFormat> PossibleTargetFormats => _possibleTargetFormats.Value;
 
         public WicColorContext GetColorContext() => WICImagingFactory.WithFactory(factory =>
         {
@@ -62,6 +66,26 @@ namespace WicNet
                 return BitsPerPixel.CompareTo(other.BitsPerPixel);
 
             return ChannelCount.CompareTo(other.ChannelCount);
+        }
+
+        private IReadOnlyList<WicPixelFormat> GetPossibleTargetFormats()
+        {
+            var list = new List<WicPixelFormat>();
+            var formats = AllComponents.OfType<WicPixelFormat>().ToArray();
+            foreach (var converter in AllComponents.OfType<WicPixelFormatConverter>())
+            {
+                foreach (var to in formats)
+                {
+                    if (to.Guid == Guid)
+                        continue;
+
+                    if (converter.CanConvert(Guid, to.Guid))
+                    {
+                        list.Add(to);
+                    }
+                }
+            }
+            return list.AsReadOnly();
         }
 
         public static bool operator <(WicPixelFormat left, WicPixelFormat right) => left is null ? right is object : left.CompareTo(right) < 0;

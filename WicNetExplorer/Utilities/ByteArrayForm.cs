@@ -11,8 +11,10 @@ namespace WicNetExplorer.Utilities
         {
             InitializeComponent();
             Icon = Resources.WicNetIcon;
-            _byteViewer = new ByteViewer();
-            _byteViewer.Dock = DockStyle.Fill;
+            _byteViewer = new ByteViewer
+            {
+                Dock = DockStyle.Fill
+            };
             Controls.Add(_byteViewer);
         }
 

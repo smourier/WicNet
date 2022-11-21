@@ -1,54 +1,34 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Threading;
 using System.Windows.Forms;
 using DirectN;
 
 namespace WicNetExplorer
 {
-    public class D2DControl : Control, ID2Control
+    public class D2DControl : Control, ID2DControl
     {
         private IComObject<ID2D1HwndRenderTarget>? _target;
         private IComObject<ID2D1DeviceContext>? _dc;
 
         public event EventHandler<D2DDrawEventArgs>? Draw;
-        public event EventHandler<D2DReleaseEventArgs>? Releasing;
 
         public D2DControl()
         {
         }
 
         protected virtual bool IsValidTarget => _target != null && !_target.IsDisposed;
-        public IComObject<ID2D1DeviceContext>? DeviceContext => _dc;
-        public IReadOnlyList<DXGI_FORMAT> SupportedDxgiFormats
-        {
-            get
-            {
-                var target = DeviceContext;
-                if (target == null)
-                    return Array.Empty<DXGI_FORMAT>();
 
-                using (var dc = target.AsComObject<ID2D1DeviceContext>())
-                {
-                    var list = new List<DXGI_FORMAT>();
-                    foreach (DXGI_FORMAT format in Enum.GetValues(typeof(DXGI_FORMAT)))
-                    {
-                        if (dc.Object.IsDxgiFormatSupported(format))
-                        {
-                            list.Add(format);
-                        }
-                    }
-                    return list.AsReadOnly();
-                }
-            }
+        public virtual void WithDeviceContext(Action<IComObject<ID2D1DeviceContext>> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            if (_dc == null)
+                throw new NotSupportedException();
+
+            action(_dc);
         }
 
         protected virtual void ReleaseTarget()
         {
-            if (_dc != null)
-            {
-                OnReleasing(this, new D2DReleaseEventArgs(_dc));
-            }
             Interlocked.Exchange(ref _dc, null)?.Dispose();
             Interlocked.Exchange(ref _target, null)?.Dispose();
         }
@@ -90,12 +70,7 @@ namespace WicNetExplorer
             Invalidate();
         }
 
-        protected virtual void OnReleasing(object sender, D2DReleaseEventArgs e) => Releasing?.Invoke(sender, e);
         protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
-        protected virtual void OnDraw(IComObject<ID2D1HwndRenderTarget> target)
-        {
-            target.Clear(_D3DCOLORVALUE.FromColor(BackColor));
-        }
 
         protected sealed override void OnPaintBackground(PaintEventArgs pevent)
         {
@@ -113,10 +88,6 @@ namespace WicNetExplorer
                 {
                     var ed = new D2DDrawEventArgs(_dc!);
                     OnDraw(this, ed);
-                    if (ed.Handled)
-                        return;
-
-                    OnDraw(_target);
                 }
                 finally
                 {

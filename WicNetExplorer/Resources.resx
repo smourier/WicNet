@@ -153,6 +153,9 @@
   <data name="DecodableExtensions" xml:space="preserve">
     <value>Wic Decodable Extensions</value>
   </data>
+  <data name="DirectXInfo" xml:space="preserve">
+    <value>DirectX Information</value>
+  </data>
   <data name="EncodableExtensions" xml:space="preserve">
     <value>Wic Encodable Extensions</value>
   </data>

@@ -1,13 +1,10 @@
 using System;
 using System.Windows.Forms;
-using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer
 {
     public static class Program
     {
-        public static bool ForceWindows7Mode { get; } = CommandLine.GetArgument("w7", false);
-
         [STAThread]
         static void Main()
         {

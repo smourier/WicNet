@@ -33,7 +33,7 @@ namespace WicNetExplorer.Model
         [DisplayName("Requires Fixed Size")]
         public bool RequiresFixedSize => _handler.RequiresFixedSize;
 
-        [DisplayName("Requires Full Stream ")]
+        [DisplayName("Requires Full Stream")]
         public bool RequiresFullStream => _handler.RequiresFullStream;
     }
 }

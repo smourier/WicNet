@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.ComTypes;
+using System.Xml.Linq;
 
 namespace DirectN
 {
@@ -120,6 +122,16 @@ namespace DirectN
 
             context.CreateColorContextFromFilename(filePath, out var d2dColorContext).ThrowOnError();
             return new ComObject<ID2D1ColorContext>(d2dColorContext);
+        }
+
+        public static IComObject<ID2D1ColorContext1> CreateColorContextFromDxgiColorSpace(this IComObject<ID2D1DeviceContext5> context, DXGI_COLOR_SPACE_TYPE colorSpace) => CreateColorContextFromDxgiColorSpace(context?.Object, colorSpace);
+        public static IComObject<ID2D1ColorContext1> CreateColorContextFromDxgiColorSpace(this ID2D1DeviceContext5 context, DXGI_COLOR_SPACE_TYPE colorSpace)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            context.CreateColorContextFromDxgiColorSpace(colorSpace, out var d2dColorContext).ThrowOnError();
+            return new ComObject<ID2D1ColorContext1>(d2dColorContext);
         }
 
         public static void DrawBitmap(this IComObject<ID2D1DeviceContext> context,
@@ -244,6 +256,30 @@ namespace DirectN
                 throw new ArgumentNullException(nameof(context));
 
             context.PushLayer(ref parameters, null);
+        }
+
+        public static IComObject<ID2D1SvgDocument> CreateSvgDocument(this IComObject<ID2D1DeviceContext5> context, IStream stream, D2D_SIZE_F viewPortSize) => CreateSvgDocument(context?.Object, stream, viewPortSize);
+        public static IComObject<ID2D1SvgDocument> CreateSvgDocument(this ID2D1DeviceContext5 context, IStream stream, D2D_SIZE_F viewPortSize)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if (stream == null)
+                throw new ArgumentNullException(nameof(stream));
+
+            context.CreateSvgDocument(stream, viewPortSize, out var doc).ThrowOnError();
+            return new ComObject<ID2D1SvgDocument>(doc);
+        }
+
+        public static void DrawSvgDocument(this ID2D1DeviceContext5 context, ID2D1SvgDocument document)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            if (document == null)
+                throw new ArgumentNullException(nameof(document));
+
+            context.DrawSvgDocument(document);
         }
     }
 }

@@ -1,17 +1,16 @@
 ﻿using System;
-using System.ComponentModel;
 using DirectN;
 
 namespace WicNetExplorer
 {
-    public class D2DDrawEventArgs : HandledEventArgs
+    public class D2DDrawEventArgs : EventArgs
     {
-        public D2DDrawEventArgs(IComObject<ID2D1DeviceContext> target)
+        public D2DDrawEventArgs(IComObject<ID2D1DeviceContext> deviceContext)
         {
-            ArgumentNullException.ThrowIfNull(target);
-            Target = target;
+            ArgumentNullException.ThrowIfNull(deviceContext);
+            DeviceContext = deviceContext;
         }
 
-        public IComObject<ID2D1DeviceContext> Target { get; }
+        public IComObject<ID2D1DeviceContext> DeviceContext { get; }
     }
 }

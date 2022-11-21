@@ -7,6 +7,7 @@ using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model
 {
+    [TypeConverter(typeof(ExpandableObjectConverter))]
     public class SystemInfoModel
     {
         public SystemInfoModel()

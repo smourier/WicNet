@@ -135,7 +135,7 @@
     <value>Ctrl+I</value>
   </data>
   <data name="infoToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>178, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="infoToolStripMenuItem.Text" xml:space="preserve">
     <value>Info...</value>
@@ -144,10 +144,16 @@
     <value>Ctrl+M</value>
   </data>
   <data name="metadataToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>178, 22</value>
+    <value>180, 22</value>
   </data>
   <data name="metadataToolStripMenuItem.Text" xml:space="preserve">
     <value>Metadata...</value>
+  </data>
+  <data name="directXInfoToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>180, 22</value>
+  </data>
+  <data name="directXInfoToolStripMenuItem.Text" xml:space="preserve">
+    <value>DirectX Info...</value>
   </data>
   <data name="imageToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>52, 20</value>
@@ -444,6 +450,18 @@
   <data name="&gt;&gt;showWicComponentsToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
+  <data name="&gt;&gt;toolStripSeparator6.Name" xml:space="preserve">
+    <value>toolStripSeparator6</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator6.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;showSystemInformationToolStripMenuItem.Name" xml:space="preserve">
+    <value>showSystemInformationToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;showSystemInformationToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
   <data name="&gt;&gt;toolStripSeparatorDebug.Name" xml:space="preserve">
     <value>toolStripSeparatorDebug</value>
   </data>
@@ -492,17 +510,11 @@
   <data name="&gt;&gt;aboutWicNetExplorerToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
-  <data name="&gt;&gt;showSystemInformationToolStripMenuItem.Name" xml:space="preserve">
-    <value>showSystemInformationToolStripMenuItem</value>
+  <data name="&gt;&gt;directXInfoToolStripMenuItem.Name" xml:space="preserve">
+    <value>directXInfoToolStripMenuItem</value>
   </data>
-  <data name="&gt;&gt;showSystemInformationToolStripMenuItem.Type" xml:space="preserve">
+  <data name="&gt;&gt;directXInfoToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
-  </data>
-  <data name="&gt;&gt;toolStripSeparator6.Name" xml:space="preserve">
-    <value>toolStripSeparator6</value>
-  </data>
-  <data name="&gt;&gt;toolStripSeparator6.Type" xml:space="preserve">
-    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;$this.Name" xml:space="preserve">
     <value>Main</value>

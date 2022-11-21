@@ -25,9 +25,9 @@ namespace WicNetExplorer
             {
                 if (_bitmap == null)
                 {
-                    using var dc = e.Target.AsComObject<ID2D1DeviceContext>();
+                    using var dc = e.DeviceContext.AsComObject<ID2D1DeviceContext>();
                     _bitmap = dc.CreateBitmapFromWicBitmap(BitmapSource.ComObject);
-                    e.Target.Clear(_D3DCOLORVALUE.FromColor(_d2d.BackColor));
+                    e.DeviceContext.Clear(_D3DCOLORVALUE.FromColor(_d2d.BackColor));
                 }
 
                 if (_bitmap != null)
@@ -36,8 +36,7 @@ namespace WicNetExplorer
                     var size = _bitmap.GetSize();
                     var factor = size.GetScaleFactor(_d2d.Width, _d2d.Height);
                     var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
-                    e.Target.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
-                    e.Handled = true;
+                    e.DeviceContext.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
                 }
             };
             _d2d.Dock = DockStyle.Fill;

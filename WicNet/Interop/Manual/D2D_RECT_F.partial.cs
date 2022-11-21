@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Numerics;
 using System.Text;
@@ -128,14 +129,22 @@ namespace DirectN
         public D2D_POINT_2F RightTop => new D2D_POINT_2F(right, top);
         public D2D_POINT_2F RightBottom => new D2D_POINT_2F(right, bottom);
 
+        [Browsable(false)]
         public bool IsValid => !IsInvalid;
+        [Browsable(false)]
         public bool IsInvalid => double.IsNaN(left) || double.IsNaN(top) || double.IsNaN(right) || double.IsNaN(bottom);
+        [Browsable(false)]
         public bool IsAllInvalid => double.IsNaN(left) && double.IsNaN(top) && double.IsNaN(right) && double.IsNaN(bottom);
+        [Browsable(false)]
         public bool IsSizeZero => Width.Equals(0f) && Height.Equals(0f);
+        [Browsable(false)]
         public bool IsEmpty => Width.Equals(0f) || Height.Equals(0f);
+        [Browsable(false)]
         public bool IsZero => left.Equals(0f) && top.Equals(0f) && right.Equals(0f) && bottom.Equals(0f);
 
+        [Browsable(false)]
         public bool IsSet => left.IsSet() && top.IsSet() && Width.IsSet() && Height.IsSet();
+        [Browsable(false)]
         public bool IsNotSet => !IsSet;
 
         public tagRECT TotagRECT() => new tagRECT(left, top, right, bottom);

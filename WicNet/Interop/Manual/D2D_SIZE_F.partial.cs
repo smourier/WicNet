@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 using WicNet;
 
@@ -40,14 +41,31 @@ namespace DirectN
 
         public override string ToString() => "W: " + width + " H: " + height;
 
+        [Browsable(false)]
         public bool IsZero => width.Equals(0f) && height.Equals(0f);
+
+        [Browsable(false)]
         public bool IsEmpty => width.Equals(0f) || height.Equals(0f);
+
+        [Browsable(false)]
         public bool IsValid => !IsInvalid;
+
+        [Browsable(false)]
         public bool IsInvalid => width.IsInvalid() || height.IsInvalid();
+
+        [Browsable(false)]
         public bool IsAllInvalid => width.IsInvalid() && height.IsInvalid();
+
+        [Browsable(false)]
         public bool IsSet => width.IsSet() && height.IsSet();
+
+        [Browsable(false)]
         public bool IsNotSet => width.IsNotSet() || height.IsNotSet();
+
+        [Browsable(false)]
         public bool IsMax => width.IsMax() || height.IsMax();
+
+        [Browsable(false)]
         public bool IsMin => width.IsMin() || height.IsMin();
         public bool Equals(D2D_SIZE_F other) => width.Equals(other.width) && height.Equals(other.height);
         public override bool Equals(object obj) => (obj is D2D_SIZE_F sz && Equals(sz));

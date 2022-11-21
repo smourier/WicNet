@@ -23,13 +23,28 @@ namespace DirectN
             return effect.GetInputCount();
         }
 
-        public static void SetInput(this IComObject<ID2D1Effect> effect, int index, IComObject<ID2D1Bitmap> input = null, bool invalidate = false) => SetInput(effect?.Object, index, input?.Object, invalidate);
-        public static void SetInput(this ID2D1Effect effect, int index, ID2D1Bitmap input = null, bool invalidate = false)
+        public static void SetInput(this IComObject<ID2D1Effect> effect, int index, IComObject<ID2D1Image> input = null, bool invalidate = false) => SetInput(effect?.Object, index, input?.Object, invalidate);
+        public static void SetInput(this ID2D1Effect effect, int index, ID2D1Image input = null, bool invalidate = false)
         {
             if (effect == null)
                 throw new ArgumentNullException(nameof(effect));
 
             effect.SetInput(index, input, invalidate);
+        }
+
+        public static void SetInput(this IComObject<ID2D1Effect> effect, int index, IComObject<ID2D1Effect> input = null, bool invalidate = false) => SetInput(effect?.Object, index, input?.Object, invalidate);
+        public static void SetInput(this ID2D1Effect effect, int index, ID2D1Effect input = null, bool invalidate = false)
+        {
+            if (effect == null)
+                throw new ArgumentNullException(nameof(effect));
+
+            if (input == null)
+                throw new ArgumentNullException(nameof(input));
+
+            using (var output = input.GetOutput())
+            {
+                effect.SetInput(index, output.Object, invalidate);
+            }
         }
 
         public static void SetInputCount(this IComObject<ID2D1Effect> effect, int count) => SetInputCount(effect?.Object, count);

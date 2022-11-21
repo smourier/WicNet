@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics;
 
 namespace DirectN
@@ -42,7 +43,9 @@ namespace DirectN
 
         public override string ToString() => "W: " + width + " H: " + height;
 
+        [Browsable(false)]
         public bool IsZero => width == 0 && height == 0;
+        [Browsable(false)]
         public bool IsEmpty => width == 0 || height == 0;
         public bool Equals(D2D_SIZE_U other) => width == other.width && height == other.height;
         public override bool Equals(object obj) => obj is D2D_SIZE_U sz && Equals(sz);

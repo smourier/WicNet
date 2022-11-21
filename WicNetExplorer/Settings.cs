@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
+using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer
@@ -29,6 +30,39 @@ namespace WicNetExplorer
 
             // build settings
             Current = Deserialize(ConfigurationFilePath)!;
+
+            // force settings from cmdline
+            foreach (var arg in CommandLine.NamedArguments)
+            {
+                var pi = Current.GetType().GetProperty(arg.Key);
+                if (pi == null || !pi.CanWrite)
+                    continue;
+
+                if (pi.PropertyType == typeof(bool) && string.IsNullOrWhiteSpace(arg.Value))
+                {
+                    try
+                    {
+                        pi.SetValue(Current, true);
+                    }
+                    catch
+                    {
+                        // continue;
+                    }
+                    continue;
+                }
+
+                if (Conversions.TryChangeType(arg.Value, pi.PropertyType, out var value))
+                {
+                    try
+                    {
+                        pi.SetValue(Current, value);
+                    }
+                    catch
+                    {
+                        // continue
+                    }
+                }
+            }
         }
 
         public virtual void SerializeToConfiguration() => Serialize(ConfigurationFilePath);
@@ -37,6 +71,14 @@ namespace WicNetExplorer
         [DefaultValue(null)]
         [Browsable(false)]
         public virtual IList<RecentFile>? RecentFilesPaths { get => GetPropertyValue((IList<RecentFile>?)null); set { SetPropertyValue(value); } }
+
+        [DefaultValue(false)]
+        [DisplayName("Force Half Floating Point (16-bit) Surface")]
+        public bool ForceFP16 { get => GetPropertyValue(false); set { SetPropertyValue(value); } }
+
+        [DefaultValue(false)]
+        [DisplayName("Force Windows 7 Mode")]
+        public bool ForceW7 { get => GetPropertyValue(false); set { SetPropertyValue(value); } }
 
         [DefaultValue(_maxArrayElementDisplayedDefault)]
         [DisplayName("Maximum Array Element Displayed")]

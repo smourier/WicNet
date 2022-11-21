@@ -15,88 +15,167 @@ namespace WicNetExplorer
     {
         private IComObject<ID2D1Bitmap1>? _bitmap;
         private WicBitmapSource? _bitmapSource;
-        private WicColorContext? _colorContext;
+        private IComObject<IWICColorContext>? _colorContext;
         private IComObject<ID2D1Effect>? _colorManagementEffect;
-        private readonly ID2Control _d2d;
+        private IComObject<ID2D1Effect>? _scaleEffect;
+        private IComObject<ID2D1SvgDocument>? _svgDocument;
+        private ID2DControl? _d2d;
 
         public ImageForm()
         {
             InitializeComponent();
             Icon = Resources.WicNetIcon;
+        }
 
-            //if (!Program.ForceWindows7Mode && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134))
-            //{
-            //    _d2d = new D2DCompositionControl();
-            //}
-            //else
-            {
-                _d2d = new D2DControl();
-            }
+        public ID2DControl? D2DControl => _d2d;
+        public string? FileName { get; private set; }
 
+        private void EnsureD2DControl()
+        {
+            if (_d2d != null)
+                return;
+
+            _d2d = CreateD2DControl();
             var ctl = (Control)_d2d;
-            _d2d.Draw += (s, e) =>
-            {
-                IComObject<ID2D1DeviceContext>? dc = null;
-                IComObject<ID2D1ColorContext>? ctx = null;
-                if (_bitmapSource != null)
-                {
-                    if (_bitmap == null)
-                    {
-                        dc = e.Target.AsComObject<ID2D1DeviceContext>(true);
-
-                        if (_colorContext != null)
-                        {
-                            ctx = dc.CreateColorContextFromWicColorContext(_colorContext.ComObject);
-                            _colorManagementEffect = dc.CreateEffect(Direct2DEffects.CLSID_D2D1ColorManagement);
-
-                            //_colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_QUALITY, D2D1_COLORMANAGEMENT_QUALITY.D2D1_COLORMANAGEMENT_QUALITY_BEST);
-                            _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_SOURCE_COLOR_CONTEXT, ctx);
-                        }
-
-                        //var p = new D2D1_BITMAP_PROPERTIES1();
-                        //p.pixelFormat.format = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_UNORM;
-                        _bitmap = dc.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
-                        _bitmapSource.Dispose();
-                        _bitmapSource = null;
-                        _colorContext?.Dispose();
-                        _colorContext = null;
-                    }
-                }
-
-                if (_bitmap != null)
-                {
-                    e.Target.Clear(_D3DCOLORVALUE.FromColor(ctl.BackColor));
-
-                    // keep proportions
-                    var size = _bitmap.GetSize();
-                    var factor = size.GetScaleFactor(ctl.Width, ctl.Height);
-                    var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
-
-                    if (_colorManagementEffect != null)
-                    {
-                        _colorManagementEffect.SetInput(0, _bitmap);
-                        dc.DrawImage(_colorManagementEffect);
-                    }
-                    else
-                    {
-                        e.Target.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
-                    }
-                    e.Handled = true;
-                }
-                dc?.Dispose();
-                ctx?.Dispose();
-            };
-
+            _d2d.Draw += (s, e) => DoDraw(e.DeviceContext);
             ctl.Dock = DockStyle.Fill;
             ctl.BackColor = Color.AliceBlue;
             Controls.Add(ctl);
         }
 
-        public string? FileName { get; private set; }
+        public virtual void DoDraw(IComObject<ID2D1DeviceContext> deviceContext)
+        {
+            if (FileName == null)
+                return;
+
+            if (IsSvg(FileName))
+            {
+                DoDrawSvg(deviceContext);
+            }
+            else
+            {
+                DoDrawBitmap(deviceContext);
+            }
+        }
+
+        public virtual void DoDrawSvg(IComObject<ID2D1DeviceContext> deviceContext)
+        {
+            ArgumentNullException.ThrowIfNull(deviceContext);
+            if (_d2d == null)
+                throw new InvalidProgramException();
+
+            var ctl = (Control)_d2d;
+            deviceContext.Clear(_D3DCOLORVALUE.FromColor(ctl.BackColor));
+
+            var dc5 = deviceContext.As<ID2D1DeviceContext5>();
+            if (dc5 == null)
+                return;
+
+            if (_svgDocument == null)
+            {
+                using var stream = new WicNet.Utilities.UnmanagedMemoryStream(FileName);
+                _svgDocument = dc5.CreateSvgDocument(stream, new D2D_SIZE_F(Width, Height));
+            }
+
+            if (_svgDocument != null)
+            {
+                dc5.DrawSvgDocument(_svgDocument.Object);
+            }
+        }
+
+        public virtual void DoDrawBitmap(IComObject<ID2D1DeviceContext> deviceContext)
+        {
+            ArgumentNullException.ThrowIfNull(deviceContext);
+            if (_d2d == null)
+                throw new InvalidProgramException();
+
+            var ctl = (Control)_d2d;
+            IComObject<ID2D1ColorContext>? ctx = null;
+            if (_bitmapSource != null)
+            {
+                if (_bitmap == null)
+                {
+                    var pf = deviceContext.GetPixelFormat().format;
+                    if (_colorContext != null || pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
+                    {
+                        _colorManagementEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1ColorManagement);
+                        _scaleEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1Scale);
+                        _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_INTERPOLATION_MODE, D2D1_SCALE_INTERPOLATION_MODE.D2D1_SCALE_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC);
+
+                        if (pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
+                        {
+                            using var scRGB = deviceContext.As<ID2D1DeviceContext5>().CreateColorContextFromDxgiColorSpace(DXGI_COLOR_SPACE_TYPE.DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709);
+                            _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_DESTINATION_COLOR_CONTEXT, scRGB);
+                        }
+
+                        if (_colorContext == null)
+                        {
+                            var isFloat = _bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat;
+                            ctx = deviceContext.CreateColorContext(isFloat ? D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SCRGB : D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SRGB);
+                        }
+                        else
+                        {
+                            ctx = deviceContext.CreateColorContextFromWicColorContext(_colorContext);
+                        }
+
+                        _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_QUALITY, D2D1_COLORMANAGEMENT_QUALITY.D2D1_COLORMANAGEMENT_QUALITY_BEST);
+                        _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_SOURCE_COLOR_CONTEXT, ctx);
+                    }
+
+                    _bitmap = deviceContext.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
+                    _bitmapSource.Dispose();
+                    _bitmapSource = null;
+                    _colorContext?.Dispose();
+                    _colorContext = null;
+                }
+            }
+
+            if (_bitmap != null)
+            {
+                deviceContext.Clear(_D3DCOLORVALUE.FromColor(ctl.BackColor));
+
+                // keep proportions
+                var size = _bitmap.GetSize();
+                var factor = size.GetScaleFactor(ctl.Width, ctl.Height);
+                var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
+
+                if (_colorManagementEffect != null)
+                {
+                    _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_SCALE, factor.ToD2D_VECTOR_2F());
+                    _scaleEffect.SetInput(0, _bitmap);
+                    _colorManagementEffect.SetInput(0, _scaleEffect);
+                    deviceContext.DrawImage(_colorManagementEffect);
+                }
+                else
+                {
+                    deviceContext.DrawBitmap(_bitmap, 1, D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC, rc);
+                }
+            }
+            ctx?.Dispose();
+        }
 
         private void ButtonMinimize_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Minimized;
+        }
+
+        private ID2DControl CreateD2DControl()
+        {
+            if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134) || Settings.Current.ForceW7)
+                return new D2DControl();
+
+            var ctl = new D2DCompositionControl();
+
+            if (_bitmapSource?.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
+            {
+                ctl.PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT;
+            }
+
+            if (Settings.Current.ForceFP16)
+            {
+                ctl.PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT;
+            }
+            return ctl;
         }
 
         public static ImageForm? OpenFile(Form parent, string? fileName = null)
@@ -104,7 +183,12 @@ namespace WicNetExplorer
             ArgumentNullException.ThrowIfNull(parent);
             if (fileName == null)
             {
-                var filter = BuildFilters(WicImagingComponent.DecoderFileExtensions);
+                var exts = new List<string>(WicImagingComponent.DecoderFileExtensions)
+                {
+                    ".svg",
+                    ".svgz"
+                };
+                var filter = BuildFilters(exts);
                 var fd = new OpenFileDialog
                 {
                     RestoreDirectory = true,
@@ -147,6 +231,19 @@ namespace WicNetExplorer
             return new Tuple<string, int>(string.Join("|", allExts.Select(ext => string.Format(Resources.OneImageFileFilter, ext[1..].ToUpperInvariant(), ext))) + string.Format(Resources.AllImagesFilesFilter, imageExts) + Resources.AllFilesFilter, allExts.Length + 1);
         }
 
+        protected override void OnResize(EventArgs e)
+        {
+            base.OnResize(e);
+            if (_svgDocument != null)
+            {
+                _svgDocument.Object.SetViewportSize(new D2D_SIZE_F(Width, Height));
+                _d2d?.WithDeviceContext(dc =>
+                {
+                    DoDraw(dc);
+                });
+            }
+        }
+
         protected override void Dispose(bool disposing)
         {
             if (disposing)
@@ -164,7 +261,24 @@ namespace WicNetExplorer
             base.OnClosing(e);
         }
 
-        public bool LoadFile(string fileName)
+        public virtual bool LoadFile(string fileName)
+        {
+            ArgumentNullException.ThrowIfNull(fileName);
+            if (IsSvg(fileName))
+                return LoadSvgFile(fileName);
+
+            return LoadBitmapFile(fileName);
+        }
+
+        protected virtual bool LoadSvgFile(string fileName)
+        {
+            EnsureD2DControl();
+            Text = fileName;
+            FileName = fileName;
+            return true;
+        }
+
+        protected virtual bool LoadBitmapFile(string fileName)
         {
             ArgumentNullException.ThrowIfNull(fileName);
 
@@ -181,14 +295,15 @@ namespace WicNetExplorer
 
             if (Settings.Current.HonorColorContexts)
             {
-                _colorContext = _bitmapSource.GetBestColorContext();
+                _colorContext = _bitmapSource.GetBestColorContext()?.ComObject;
             }
 
             var orientation = Settings.Current.HonorOrientation ? _bitmapSource.GetOrientation() : null;
 
             if (_bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
             {
-                //_bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat64bppPRGBA);
+                _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat128bppRGBAFloat);
+                _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat64bppPRGBAHalf);
             }
             else
             {
@@ -231,7 +346,7 @@ namespace WicNetExplorer
                 }
             }
 
-            _d2d.Invalidate();
+            EnsureD2DControl();
 
             Text = fileName;
             FileName = fileName;
@@ -257,7 +372,7 @@ namespace WicNetExplorer
         public void SaveFileAs() => SaveFile(true);
         private void SaveFile(bool choose)
         {
-            if (_bitmap == null || _d2d.DeviceContext == null)
+            if (_bitmap == null || _d2d == null)
                 return;
 
             var fileName = FileName;
@@ -282,12 +397,14 @@ namespace WicNetExplorer
                 throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
 
             IOUtilities.FileDelete(fileName, true, false);
-            using (var device = _d2d.DeviceContext.GetDevice())
+            _d2d.WithDeviceContext(dc =>
             {
+                using var device = dc.GetDevice();
                 using var image = _bitmap.AsComObject<ID2D1Image>(true);
                 using var stream = File.OpenWrite(fileName);
                 image.Save(device, encoder.ContainerFormat, stream);
-            }
+                DoDraw(dc);
+            });
 
             if (new FileInfo(fileName).Length == 0)
             {
@@ -301,7 +418,7 @@ namespace WicNetExplorer
         {
             FileName = null;
             DisposeResources();
-            _d2d.Invalidate();
+            (_d2d as Control)?.Invalidate();
         }
 
         private void DisposeResources()
@@ -310,10 +427,20 @@ namespace WicNetExplorer
             _bitmap = null;
             _colorManagementEffect?.Dispose();
             _colorManagementEffect = null;
+            _scaleEffect?.Dispose();
+            _scaleEffect = null;
+            _svgDocument?.Dispose();
+            _svgDocument = null;
             _bitmapSource?.Dispose();
             _bitmapSource = null;
             _colorContext?.Dispose();
             _colorContext = null;
+        }
+
+        private static bool IsSvg(string fileName)
+        {
+            var ext = Path.GetExtension(fileName);
+            return ext.EqualsIgnoreCase(".svg") || ext.EqualsIgnoreCase(".svgz");
         }
     }
 }

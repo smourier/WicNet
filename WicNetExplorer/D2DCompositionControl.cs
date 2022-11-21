@@ -5,7 +5,6 @@ using System.Runtime.Versioning;
 using System.Threading;
 using System.Windows.Forms;
 using DirectN;
-using WicNetExplorer.Utilities;
 using Windows.Graphics;
 using Windows.Graphics.DirectX;
 using Windows.UI.Composition;
@@ -15,7 +14,7 @@ using WinRT;
 namespace WicNetExplorer
 {
     [SupportedOSPlatform("windows10.0.17134.0")]
-    public class D2DCompositionControl : Control, ID2Control
+    public class D2DCompositionControl : Control, ID2DControl
     {
         // device independent resources
         private static readonly Lazy<IDispatcherQueueController> _dispatcherQueueController = new(() => DispatcherQueueController.Create());
@@ -38,15 +37,38 @@ namespace WicNetExplorer
         private CompositionDrawingSurface? _surface;
 
         public event EventHandler<D2DDrawEventArgs>? Draw;
-        public event EventHandler<D2DReleaseEventArgs>? Releasing;
 
         public D2DCompositionControl()
         {
+            PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
         }
+
+        // possible formats are
+        //  DXGI_FORMAT_R16G16B16A16_FLOAT
+        //  DXGI_FORMAT_R8G8B8A8_UNORM
+        //  DXGI_FORMAT_A8_UNORM
+        //  DXGI_FORMAT_B8G8R8A8_UNORM
+        public virtual DXGI_FORMAT PixelFormat { get; set; }
 
         [MemberNotNullWhen(true, "_target")]
         protected virtual bool IsValidTarget => _target != null;
-        public IComObject<ID2D1DeviceContext> DeviceContext => throw new NotImplementedException();
+
+        public virtual void WithDeviceContext(Action<IComObject<ID2D1DeviceContext>> action)
+        {
+            ArgumentNullException.ThrowIfNull(action);
+            if (_surface == null)
+                throw new NotSupportedException();
+
+            var size = _surface.Size;
+            if (size._width < 0.5f || size._height < 0.5f)
+                return;
+
+            using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop>(_surface.As<ICompositionDrawingSurfaceInterop>());
+            using var dc = surfaceInterop.BeginDraw<ID2D1DeviceContext>();
+            action(dc);
+
+            surfaceInterop.EndDraw();
+        }
 
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -71,8 +93,8 @@ namespace WicNetExplorer
             if (IsValidTarget)
             {
                 _target.Root.Size = new Vector2(Width, Height);
+                OnResize();
             }
-            Invalidate();
         }
 
         protected virtual void EnsureTarget()
@@ -90,20 +112,28 @@ namespace WicNetExplorer
             var interop = _graphicsDevice.Value.Compositor.As<ICompositorDesktopInterop>();
             interop.CreateDesktopWindowTarget(Handle, true, out var ptr).ThrowOnError();
             _target = MarshalInterface<DesktopWindowTarget>.FromAbi(ptr);
-            
+
             var root = _graphicsDevice.Value.Compositor.CreateSpriteVisual();
             root.Size = new Vector2(Width, Height);
             _target.Root = root;
 
-            // we need this for D2D
-            _surface = _graphicsDevice.Value.CreateDrawingSurface2(new SizeInt32(Width, Height), DirectXPixelFormat.R16G16B16A16Float, DirectXAlphaMode.Premultiplied);
+            var pf = (DirectXPixelFormat)PixelFormat;
+            _surface = _graphicsDevice.Value.CreateDrawingSurface2(new SizeInt32(Width, Height), pf, DirectXAlphaMode.Premultiplied);
             root.Brush = _graphicsDevice.Value.Compositor.CreateSurfaceBrush(_surface);
-
-            using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop>(_surface.As<ICompositionDrawingSurfaceInterop>());
-            using var dc = surfaceInterop.BeginDraw();
-            //dc.Clear(_D3DCOLORVALUE.Pink);
-            surfaceInterop.EndDraw();
+            OnDraw();
         }
+
+        protected virtual void OnResize()
+        {
+            if (_surface == null)
+                return;
+
+            _surface.Resize(new SizeInt32(Width, Height));
+            OnDraw();
+        }
+
+        protected virtual void OnDraw() => WithDeviceContext(dc => OnDraw(this, new D2DDrawEventArgs(dc)));
+        protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
 
         protected virtual void ReleaseTarget()
         {

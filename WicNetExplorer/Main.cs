@@ -62,11 +62,34 @@ namespace WicNetExplorer
 
         private void SysInfo()
         {
-            var dlg = new ObjectForm(new SystemInfoModel());
-            dlg.Text = Resources.SysInfo;
+            var dlg = new ObjectForm(new SystemInfoModel())
+            {
+                Text = Resources.SysInfo
+            };
             dlg.ShowDialog(this);
         }
 
+        private void DxInfo()
+        {
+            if (ActiveImageForm == null)
+                return;
+
+            var d2d = ActiveImageForm.D2DControl;
+            if (d2d == null)
+                    return;
+
+            d2d.WithDeviceContext(dc =>
+            {
+                var dlg = new ObjectForm(new DirectXInfoModel(dc))
+                {
+                    Text = Resources.DirectXInfo
+                };
+                dlg.ShowDialog(this);
+                ActiveImageForm.DoDrawBitmap(dc);
+            });
+        }
+
+        private void DirectXInfoToolStripMenuItem_Click(object sender, EventArgs e) => DxInfo();
         private void ShowSystemInformationToolStripMenuItem_Click(object sender, EventArgs e) => SysInfo();
         private void AboutWicNetExplorerToolStripMenuItem_Click(object sender, EventArgs e) => About();
         private void CascadeToolStripMenuItem_Click(object sender, EventArgs e) => MdiForm.LayoutMdi(this, MdiLayout.Cascade);
@@ -136,8 +159,10 @@ namespace WicNetExplorer
                 }
 
                 var model = new WindowsMetadataModel(reader);
-                var dlg = new ObjectForm(model);
-                dlg.Text = Resources.Metadata;
+                var dlg = new ObjectForm(model)
+                {
+                    Text = Resources.Metadata
+                };
                 dlg.ShowDialog(this);
             }
         }
@@ -175,8 +200,10 @@ namespace WicNetExplorer
 
         private void ShowWicComponentsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var dlg = new CollectionForm(WicImagingComponent.AllComponents.Select(c => ImagingComponentModel.From(c)).OrderBy(e => e.GetType().Name).ThenBy(e => e.FriendlyName));
-            dlg.Text = Resources.Components;
+            var dlg = new CollectionForm(WicImagingComponent.AllComponents.Select(c => ImagingComponentModel.From(c)).OrderBy(e => e.GetType().Name).ThenBy(e => e.FriendlyName))
+            {
+                Text = Resources.Components
+            };
             ((Control)dlg.AcceptButton).Visible = false;
             ((Control)dlg.CancelButton).Text = Resources.Close;
             dlg.ShowDialog(this);
@@ -184,8 +211,10 @@ namespace WicNetExplorer
 
         private void ShowDecodableFileExtensionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var dlg = new CollectionForm(WicImagingComponent.DecoderFileExtensions.Select(e => new DecoderFileExtensionModel(e)).OrderBy(e => e.Extension));
-            dlg.Text = Resources.DecodableExtensions;
+            var dlg = new CollectionForm(WicImagingComponent.DecoderFileExtensions.Select(e => new DecoderFileExtensionModel(e)).OrderBy(e => e.Extension))
+            {
+                Text = Resources.DecodableExtensions
+            };
             ((Control)dlg.AcceptButton).Visible = false;
             ((Control)dlg.CancelButton).Text = Resources.Close;
             dlg.ShowDialog(this);
@@ -193,8 +222,10 @@ namespace WicNetExplorer
 
         private void ShowEncodableFileExtensionsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            var dlg = new CollectionForm(WicImagingComponent.EncoderFileExtensions.Select(e => new EncoderFileExtensionModel(e)).OrderBy(e => e.Extension));
-            dlg.Text = Resources.EncodableExtensions;
+            var dlg = new CollectionForm(WicImagingComponent.EncoderFileExtensions.Select(e => new EncoderFileExtensionModel(e)).OrderBy(e => e.Extension))
+            {
+                Text = Resources.EncodableExtensions
+            };
             ((Control)dlg.AcceptButton).Visible = false;
             ((Control)dlg.CancelButton).Text = Resources.Close;
             dlg.ShowDialog(this);
