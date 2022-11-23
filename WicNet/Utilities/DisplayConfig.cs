@@ -50,6 +50,26 @@ namespace WicNet.Utilities
             return info;
         }
 
+        public static string GetGdiDeviceName(int adapterIdHigh, uint adapterIdLow, uint sourceId, bool throwOnError = true)
+        {
+            var info = new DISPLAYCONFIG_SOURCE_DEVICE_NAME();
+            info.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
+            info.header.size = Marshal.SizeOf<DISPLAYCONFIG_SOURCE_DEVICE_NAME>();
+            info.header.adapterId.HighPart = adapterIdHigh;
+            info.header.adapterId.LowPart = adapterIdLow;
+            info.header.id = sourceId;
+            var err = DisplayConfigGetDeviceInfo(ref info);
+            if (err != 0)
+            {
+                if (throwOnError)
+                    throw new Win32Exception(err);
+
+                return null;
+            }
+
+            return info.viewGdiDeviceName;
+        }
+
         [DllImport("user32")]
         private static extern int GetDisplayConfigBufferSizes(QDC flags, out int numPathArrayElements, out int numModeInfoArrayElements);
 

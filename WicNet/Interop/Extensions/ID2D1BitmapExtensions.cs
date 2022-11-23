@@ -73,6 +73,15 @@ namespace DirectN
             return size;
         }
 
+        public static D2D1_BITMAP_OPTIONS GetOptions(this IComObject<ID2D1Bitmap1> bitmap) => GetOptions(bitmap?.Object);
+        public static D2D1_BITMAP_OPTIONS GetOptions(this ID2D1Bitmap1 bitmap)
+        {
+            if (bitmap == null)
+                throw new ArgumentNullException(nameof(bitmap));
+
+            return bitmap.GetOptions();
+        }
+
         public static void CopyFromBitmap(this IComObject<ID2D1Bitmap> bitmap, IComObject<ID2D1Bitmap> source, D2D_POINT_2U? destinationPoint = null, D2D_RECT_U? sourceRect = null) => CopyFromBitmap(bitmap?.Object, source?.Object, destinationPoint, sourceRect);
         public static void CopyFromBitmap(this ID2D1Bitmap bitmap, ID2D1Bitmap source, D2D_POINT_2U? destinationPoint = null, D2D_RECT_U? sourceRect = null)
         {

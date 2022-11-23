@@ -62,7 +62,17 @@ namespace WicNetExplorer
 
         private void SysInfo()
         {
-            var dlg = new ObjectForm(new SystemInfoModel())
+            SystemInfoModel model;
+            if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763))
+            {
+                model = new SystemInfoModel2();
+            }
+            else
+            {
+                model = new SystemInfoModel();
+            }
+
+            var dlg = new ObjectForm(model, true)
             {
                 Text = Resources.SysInfo
             };
@@ -76,19 +86,28 @@ namespace WicNetExplorer
 
             var d2d = ActiveImageForm.D2DControl;
             if (d2d == null)
-                    return;
+                return;
 
             d2d.WithDeviceContext(dc =>
             {
-                var dlg = new ObjectForm(new DirectXInfoModel(dc))
+                var dlg = new ObjectForm(new DirectXInfoModel(d2d, dc, ActiveImageForm.Bitmap), true)
                 {
                     Text = Resources.DirectXInfo
                 };
                 dlg.ShowDialog(this);
-                ActiveImageForm.DoDrawBitmap(dc);
             });
         }
 
+        private void OpenLocation()
+        {
+            var fileName = ActiveImageForm?.FileName;
+            if (fileName != null && IOUtilities.PathIsFile(fileName))
+            {
+                Extensions.OpenExplorer(System.IO.Path.GetDirectoryName(fileName)!);
+            }
+        }
+
+        private void OpenFileLocationToolStripMenuItem_Click(object sender, EventArgs e) => OpenLocation();
         private void DirectXInfoToolStripMenuItem_Click(object sender, EventArgs e) => DxInfo();
         private void ShowSystemInformationToolStripMenuItem_Click(object sender, EventArgs e) => SysInfo();
         private void AboutWicNetExplorerToolStripMenuItem_Click(object sender, EventArgs e) => About();
@@ -133,8 +152,16 @@ namespace WicNetExplorer
             if (fileName == null)
                 return;
 
+            if (Extensions.IsSvg(fileName))
+            {
+                var svgModel = new SvgFileModel(fileName);
+                var svgDlg = new ObjectForm(svgModel, true);
+                svgDlg.ShowDialog(this);
+                return;
+            }
+
             using var model = FileBitmapSourceModel.Load(fileName);
-            var dlg = new ObjectForm(model);
+            var dlg = new ObjectForm(model, true);
             dlg.ShowDialog(this);
         }
 
@@ -159,7 +186,7 @@ namespace WicNetExplorer
                 }
 
                 var model = new WindowsMetadataModel(reader);
-                var dlg = new ObjectForm(model)
+                var dlg = new ObjectForm(model, true)
                 {
                     Text = Resources.Metadata
                 };
@@ -229,6 +256,15 @@ namespace WicNetExplorer
             ((Control)dlg.AcceptButton).Visible = false;
             ((Control)dlg.CancelButton).Text = Resources.Close;
             dlg.ShowDialog(this);
+        }
+
+        private void ImageToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
+        {
+            var fileName = ActiveImageForm?.FileName;
+            if (fileName == null)
+                return;
+
+            metadataToolStripMenuItem.Enabled = !Extensions.IsSvg(fileName);
         }
     }
 }

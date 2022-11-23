@@ -6,6 +6,33 @@ namespace DirectN
 {
     public static class ID2D1RenderTargetExtensions
     {
+        public static IComObject<ID2D1BitmapBrush> CreateTransparentLookBrush(this IComObject<ID2D1RenderTarget> renderTarget, float size) => CreateTransparentLookBrush(renderTarget?.Object, size);
+        public static IComObject<ID2D1BitmapBrush> CreateTransparentLookBrush(this ID2D1RenderTarget renderTarget, float size, _D3DCOLORVALUE? color = null)
+        {
+            if (renderTarget == null)
+                throw new ArgumentNullException(nameof(renderTarget));
+
+            color = color ?? new _D3DCOLORVALUE(0xFFBFBFBF);
+            IComObject<ID2D1Bitmap> bmp;
+            using (var rt = renderTarget.CreateCompatibleRenderTarget(new D2D_SIZE_F(size * 2, size * 2)))
+            {
+                using (var colorBrush = rt.CreateSolidColorBrush(color.Value))
+                {
+                    rt.BeginDraw();
+                    rt.FillRectangle(D2D_RECT_F.Sized(0, 0, size, size), colorBrush);
+                    rt.FillRectangle(D2D_RECT_F.Sized(size, size, size, size), colorBrush);
+                    rt.EndDraw();
+                    bmp = rt.GetBitmap();
+                }
+            }
+
+            renderTarget.CreateBitmapBrush(bmp.Object, IntPtr.Zero, IntPtr.Zero, out var brush).ThrowOnError();
+            bmp.Dispose();
+            brush.SetExtendModeX(D2D1_EXTEND_MODE.D2D1_EXTEND_MODE_WRAP);
+            brush.SetExtendModeY(D2D1_EXTEND_MODE.D2D1_EXTEND_MODE_WRAP);
+            return new ComObject<ID2D1BitmapBrush>(brush);
+        }
+
         public static void Resize(this IComObject<ID2D1HwndRenderTarget> renderTarget, D2D_SIZE_U size) => Resize(renderTarget?.Object, size);
         public static void Resize(this ID2D1HwndRenderTarget renderTarget, D2D_SIZE_U size)
         {

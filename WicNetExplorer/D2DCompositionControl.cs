@@ -66,7 +66,6 @@ namespace WicNetExplorer
             using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop>(_surface.As<ICompositionDrawingSurfaceInterop>());
             using var dc = surfaceInterop.BeginDraw<ID2D1DeviceContext>();
             action(dc);
-
             surfaceInterop.EndDraw();
         }
 

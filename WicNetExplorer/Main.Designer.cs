@@ -27,6 +27,7 @@
             this.imageToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.infoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.metadataToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.directXInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.optionsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.honorOrientationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.honorColorContextsToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
@@ -46,7 +47,8 @@
             this.tileVerticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.aboutWicNetExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
-            this.directXInfoToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripSeparator7 = new System.Windows.Forms.ToolStripSeparator();
+            this.openFileLocationToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.menuStripMain.SuspendLayout();
             this.SuspendLayout();
             // 
@@ -148,9 +150,12 @@
             this.imageToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.infoToolStripMenuItem,
             this.metadataToolStripMenuItem,
-            this.directXInfoToolStripMenuItem});
+            this.directXInfoToolStripMenuItem,
+            this.toolStripSeparator7,
+            this.openFileLocationToolStripMenuItem});
             this.imageToolStripMenuItem.Name = "imageToolStripMenuItem";
             resources.ApplyResources(this.imageToolStripMenuItem, "imageToolStripMenuItem");
+            this.imageToolStripMenuItem.DropDownOpening += new System.EventHandler(this.ImageToolStripMenuItem_DropDownOpening);
             // 
             // infoToolStripMenuItem
             // 
@@ -163,6 +168,12 @@
             this.metadataToolStripMenuItem.Name = "metadataToolStripMenuItem";
             resources.ApplyResources(this.metadataToolStripMenuItem, "metadataToolStripMenuItem");
             this.metadataToolStripMenuItem.Click += new System.EventHandler(this.MetadataToolStripMenuItem_Click);
+            // 
+            // directXInfoToolStripMenuItem
+            // 
+            this.directXInfoToolStripMenuItem.Name = "directXInfoToolStripMenuItem";
+            resources.ApplyResources(this.directXInfoToolStripMenuItem, "directXInfoToolStripMenuItem");
+            this.directXInfoToolStripMenuItem.Click += new System.EventHandler(this.DirectXInfoToolStripMenuItem_Click);
             // 
             // optionsToolStripMenuItem
             // 
@@ -297,11 +308,16 @@
             resources.ApplyResources(this.aboutWicNetExplorerToolStripMenuItem, "aboutWicNetExplorerToolStripMenuItem");
             this.aboutWicNetExplorerToolStripMenuItem.Click += new System.EventHandler(this.AboutWicNetExplorerToolStripMenuItem_Click);
             // 
-            // directXInfoToolStripMenuItem
+            // toolStripSeparator7
             // 
-            this.directXInfoToolStripMenuItem.Name = "directXInfoToolStripMenuItem";
-            resources.ApplyResources(this.directXInfoToolStripMenuItem, "directXInfoToolStripMenuItem");
-            this.directXInfoToolStripMenuItem.Click += new System.EventHandler(this.DirectXInfoToolStripMenuItem_Click);
+            this.toolStripSeparator7.Name = "toolStripSeparator7";
+            resources.ApplyResources(this.toolStripSeparator7, "toolStripSeparator7");
+            // 
+            // openFileLocationToolStripMenuItem
+            // 
+            this.openFileLocationToolStripMenuItem.Name = "openFileLocationToolStripMenuItem";
+            resources.ApplyResources(this.openFileLocationToolStripMenuItem, "openFileLocationToolStripMenuItem");
+            this.openFileLocationToolStripMenuItem.Click += new System.EventHandler(this.OpenFileLocationToolStripMenuItem_Click);
             // 
             // Main
             // 
@@ -357,5 +373,7 @@
         private System.Windows.Forms.ToolStripSeparator toolStripSeparator6;
         private System.Windows.Forms.ToolStripMenuItem showSystemInformationToolStripMenuItem;
         private System.Windows.Forms.ToolStripMenuItem directXInfoToolStripMenuItem;
+        private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
+        private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;
     }
 }

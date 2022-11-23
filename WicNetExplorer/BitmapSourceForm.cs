@@ -10,7 +10,7 @@ namespace WicNetExplorer
     public partial class BitmapSourceForm : Form
     {
         private IComObject<ID2D1Bitmap1>? _bitmap;
-        private readonly D2DControl _d2d = new();
+        private readonly D2DHwndRenderTargetControl _d2d = new();
 
         public BitmapSourceForm(WicBitmapSource bitmap)
         {

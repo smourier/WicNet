@@ -42,7 +42,7 @@ namespace WicNetExplorer.Model
             var precisions = new List<D2D1_BUFFER_PRECISION>();
             foreach (D2D1_BUFFER_PRECISION precision in Enum.GetValues(typeof(D2D1_BUFFER_PRECISION)))
             {
-                if (precision == D2D1_BUFFER_PRECISION.D2D1_BUFFER_PRECISION_FORCE_DWORD)
+                if (precision == D2D1_BUFFER_PRECISION.D2D1_BUFFER_PRECISION_FORCE_DWORD || precision == D2D1_BUFFER_PRECISION.D2D1_BUFFER_PRECISION_UNKNOWN)
                     continue;
 
                 if (context.Object.IsBufferPrecisionSupported(precision))

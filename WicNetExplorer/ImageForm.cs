@@ -8,12 +8,14 @@ using System.Windows.Forms;
 using DirectN;
 using WicNet;
 using WicNetExplorer.Utilities;
+using Extensions = WicNetExplorer.Utilities.Extensions;
 
 namespace WicNetExplorer
 {
     public partial class ImageForm : MdiForm
     {
         private IComObject<ID2D1Bitmap1>? _bitmap;
+        private IComObject<ID2D1BitmapBrush>? _backgroundBrush;
         private WicBitmapSource? _bitmapSource;
         private IComObject<IWICColorContext>? _colorContext;
         private IComObject<ID2D1Effect>? _colorManagementEffect;
@@ -28,6 +30,7 @@ namespace WicNetExplorer
         }
 
         public ID2DControl? D2DControl => _d2d;
+        public IComObject<ID2D1Bitmap1>? Bitmap => _bitmap;
         public string? FileName { get; private set; }
 
         private void EnsureD2DControl()
@@ -39,7 +42,11 @@ namespace WicNetExplorer
             var ctl = (Control)_d2d;
             _d2d.Draw += (s, e) => DoDraw(e.DeviceContext);
             ctl.Dock = DockStyle.Fill;
-            ctl.BackColor = Color.AliceBlue;
+            var color = Settings.Current.BackgroundColor;
+            if (color != Color.Transparent)
+            {
+                ctl.BackColor = color;
+            }
             Controls.Add(ctl);
         }
 
@@ -48,7 +55,7 @@ namespace WicNetExplorer
             if (FileName == null)
                 return;
 
-            if (IsSvg(FileName))
+            if (Extensions.IsSvg(FileName))
             {
                 DoDrawSvg(deviceContext);
             }
@@ -64,9 +71,7 @@ namespace WicNetExplorer
             if (_d2d == null)
                 throw new InvalidProgramException();
 
-            var ctl = (Control)_d2d;
-            deviceContext.Clear(_D3DCOLORVALUE.FromColor(ctl.BackColor));
-
+            DrawBackground(deviceContext);
             var dc5 = deviceContext.As<ID2D1DeviceContext5>();
             if (dc5 == null)
                 return;
@@ -132,7 +137,7 @@ namespace WicNetExplorer
 
             if (_bitmap != null)
             {
-                deviceContext.Clear(_D3DCOLORVALUE.FromColor(ctl.BackColor));
+                DrawBackground(deviceContext);
 
                 // keep proportions
                 var size = _bitmap.GetSize();
@@ -154,6 +159,25 @@ namespace WicNetExplorer
             ctx?.Dispose();
         }
 
+        protected virtual void DrawBackground(IComObject<ID2D1DeviceContext> deviceContext)
+        {
+            ArgumentNullException.ThrowIfNull(deviceContext);
+            if (_d2d == null)
+                throw new InvalidProgramException();
+
+            var color = Settings.Current.BackgroundColor;
+            if (color.A == 0 && color.R == 0 && color.G == 0 && color.B == 0 || color == Color.Transparent)
+            {
+                _backgroundBrush ??= deviceContext.CreateTransparentLookBrush(8);
+                deviceContext.Clear(_D3DCOLORVALUE.White);
+                deviceContext.FillRectangle(new D2D_RECT_F(0, 0, Width, Height), _backgroundBrush);
+            }
+            else
+            {
+                deviceContext.Clear(_D3DCOLORVALUE.FromColor(color));
+            }
+        }
+
         private void ButtonMinimize_Click(object sender, EventArgs e)
         {
             WindowState = FormWindowState.Minimized;
@@ -162,16 +186,11 @@ namespace WicNetExplorer
         private ID2DControl CreateD2DControl()
         {
             if (!OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17134) || Settings.Current.ForceW7)
-                return new D2DControl();
+                return new D2DHwndRenderTargetControl();
 
             var ctl = new D2DCompositionControl();
 
-            if (_bitmapSource?.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
-            {
-                ctl.PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT;
-            }
-
-            if (Settings.Current.ForceFP16)
+            if (Settings.Current.ForceFP16 || _bitmapSource?.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
             {
                 ctl.PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT;
             }
@@ -248,7 +267,8 @@ namespace WicNetExplorer
         {
             if (disposing)
             {
-                DisposeResources();
+                DisposeContextDependentResources();
+                DisposeContextIndependentResources();
                 components?.Dispose();
                 _d2d?.Dispose();
             }
@@ -264,7 +284,7 @@ namespace WicNetExplorer
         public virtual bool LoadFile(string fileName)
         {
             ArgumentNullException.ThrowIfNull(fileName);
-            if (IsSvg(fileName))
+            if (Extensions.IsSvg(fileName))
                 return LoadSvgFile(fileName);
 
             return LoadBitmapFile(fileName);
@@ -282,7 +302,8 @@ namespace WicNetExplorer
         {
             ArgumentNullException.ThrowIfNull(fileName);
 
-            DisposeResources();
+            DisposeContextDependentResources();
+            DisposeContextIndependentResources();
             try
             {
                 _bitmapSource = WicBitmapSource.Load(fileName);
@@ -295,7 +316,8 @@ namespace WicNetExplorer
 
             if (Settings.Current.HonorColorContexts)
             {
-                _colorContext = _bitmapSource.GetBestColorContext()?.ComObject;
+                var best = _bitmapSource.GetBestColorContext();
+                _colorContext = best?.ComObject;
             }
 
             var orientation = Settings.Current.HonorOrientation ? _bitmapSource.GetOrientation() : null;
@@ -417,12 +439,23 @@ namespace WicNetExplorer
         private void CloseFile()
         {
             FileName = null;
-            DisposeResources();
+            DisposeContextIndependentResources();
+            DisposeContextDependentResources();
             (_d2d as Control)?.Invalidate();
         }
 
-        private void DisposeResources()
+        private void DisposeContextIndependentResources()
         {
+            _bitmapSource?.Dispose();
+            _bitmapSource = null;
+            _colorContext?.Dispose();
+            _colorContext = null;
+        }
+
+        private void DisposeContextDependentResources()
+        {
+            _backgroundBrush?.Dispose();
+            _backgroundBrush = null;
             _bitmap?.Dispose();
             _bitmap = null;
             _colorManagementEffect?.Dispose();
@@ -435,12 +468,6 @@ namespace WicNetExplorer
             _bitmapSource = null;
             _colorContext?.Dispose();
             _colorContext = null;
-        }
-
-        private static bool IsSvg(string fileName)
-        {
-            var ext = Path.GetExtension(fileName);
-            return ext.EqualsIgnoreCase(".svg") || ext.EqualsIgnoreCase(".svgz");
         }
     }
 }

@@ -5,14 +5,14 @@ using DirectN;
 
 namespace WicNetExplorer
 {
-    public class D2DControl : Control, ID2DControl
+    public class D2DHwndRenderTargetControl : Control, ID2DControl
     {
         private IComObject<ID2D1HwndRenderTarget>? _target;
         private IComObject<ID2D1DeviceContext>? _dc;
 
         public event EventHandler<D2DDrawEventArgs>? Draw;
 
-        public D2DControl()
+        public D2DHwndRenderTargetControl()
         {
         }
 
@@ -71,11 +71,6 @@ namespace WicNetExplorer
         }
 
         protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
-
-        protected sealed override void OnPaintBackground(PaintEventArgs pevent)
-        {
-            // use Clear (or not)
-        }
 
         protected sealed override void OnPaint(PaintEventArgs e)
         {

@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Drawing;
+using System.Drawing.Design;
 using System.IO;
 using System.Linq;
 using WicNet.Utilities;
@@ -80,6 +82,10 @@ namespace WicNetExplorer
         [DisplayName("Force Windows 7 Mode")]
         public bool ForceW7 { get => GetPropertyValue(false); set { SetPropertyValue(value); } }
 
+        [DisplayName("Background Color")]
+        [DefaultValue(typeof(Color), nameof(Color.Transparent))]
+        public Color BackgroundColor { get => GetPropertyValue(Color.Transparent); set { SetPropertyValue(value); } }
+
         [DefaultValue(_maxArrayElementDisplayedDefault)]
         [DisplayName("Maximum Array Element Displayed")]
         public int MaxArrayElementDisplayed { get => GetPropertyValue(_maxArrayElementDisplayedDefault); set { SetPropertyValue(value); } }
@@ -97,7 +103,7 @@ namespace WicNetExplorer
         public bool HonorOrientation { get => GetPropertyValue(_honorOrientationDefault); set { SetPropertyValue(value); } }
 
         [DefaultValue(_honorColorContextsDefault)]
-        [DisplayName("Honor Color Contexts")]
+        [DisplayName("Honor Color Spaces")]
         public bool HonorColorContexts { get => GetPropertyValue(_honorColorContextsDefault); set { SetPropertyValue(value); } }
 
         private Dictionary<string, DateTime> GetRecentFiles()

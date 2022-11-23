@@ -22,7 +22,9 @@ namespace WicNetExplorer.Model
         public string Name => _device.DeviceName;
         public string Id => _device.DeviceID;
         public string Key => _device.DeviceKey;
-        public string Adapter => _device.DeviceString;
+
+        [DisplayName("Adapter Name")]
+        public string AdapterName => _device.DeviceString;
 
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public Monitor Monitor => _device.Monitor;

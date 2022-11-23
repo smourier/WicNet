@@ -24,6 +24,6 @@ namespace WicNetExplorer.Model
         [DisplayName("Display Devices")]
         [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]
-        public DisplayDeviceModel[] DisplayDevices { get; }
+        public DisplayDeviceModel[] DisplayDevices { get; protected set; }
     }
 }

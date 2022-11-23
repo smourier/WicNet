@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Diagnostics;
 using System.Drawing;
+using System.IO;
 using System.Linq;
 using System.Reflection;
 using DirectN;
@@ -10,6 +12,39 @@ namespace WicNetExplorer.Utilities
 {
     public static class Extensions
     {
+        public static void OpenUrl(Uri uri)
+        {
+            ArgumentNullException.ThrowIfNull(uri);
+            OpenUrl(uri.ToString());
+        }
+
+        public static void OpenUrl(string url)
+        {
+            ArgumentNullException.ThrowIfNull(url);
+            Process.Start(url);
+        }
+
+        public static void OpenExplorer(string directoryPath)
+        {
+            if (directoryPath == null)
+                return;
+
+            if (!IOUtilities.PathIsDirectory(directoryPath))
+                return;
+
+            // see http://support.microsoft.com/kb/152457/en-us
+#pragma warning disable S4036
+            Process.Start("explorer.exe", "/e,/root,/select," + directoryPath);
+#pragma warning restore S4036
+        }
+
+        public static bool IsSvg(string fileName)
+        {
+            ArgumentNullException.ThrowIfNull(fileName);
+            var ext = Path.GetExtension(fileName);
+            return ext.EqualsIgnoreCase(".svg") || ext.EqualsIgnoreCase(".svgz");
+        }
+
         public static _D3DCOLORVALUE FromColor(this Windows.UI.Color color) => _D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
         public static Windows.UI.Color ToColor(this _D3DCOLORVALUE color) => Windows.UI.Color.FromArgb(color.BA, color.BR, color.BG, color.BB);
 
@@ -113,14 +148,24 @@ namespace WicNetExplorer.Utilities
 
             prefix ??= type.Name;
             if (name.StartsWith(prefix))
-                return name.Substring(prefix.Length);
+            {
+                var ss = name.Substring(prefix.Length);
+                if (ss.Length > 1 && ss[0] == '_')
+                    return ss.Substring(1);
+
+                return ss;
+            }
 
             const string tok = "Type";
             if (prefix.Length > tok.Length && prefix.EndsWith(tok))
             {
                 prefix = prefix.Substring(0, prefix.Length - tok.Length);
                 if (name.StartsWith(prefix))
-                    return name.Substring(prefix.Length);
+                {
+                    var ss = name.Substring(prefix.Length);
+                    if (ss.Length > 1 && ss[0] == '_')
+                        return ss.Substring(1);
+                }
             }
             return name;
         }

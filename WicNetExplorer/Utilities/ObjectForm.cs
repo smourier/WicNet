@@ -5,11 +5,17 @@ namespace WicNetExplorer.Utilities
 {
     public partial class ObjectForm : Form
     {
-        public ObjectForm(object obj)
+        public ObjectForm(object obj, bool closeMode = false)
         {
             InitializeComponent();
             Icon = Resources.WicNetIcon;
             propertyGridObject.SelectedObject = obj;
+
+            if (closeMode)
+            {
+                ((Control)AcceptButton).Visible = false;
+                ((Control)CancelButton).Text = Resources.Close;
+            }
         }
 
         protected override void OnKeyDown(KeyEventArgs e)
