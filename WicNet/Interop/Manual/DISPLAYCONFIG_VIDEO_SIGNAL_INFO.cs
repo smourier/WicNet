@@ -10,7 +10,10 @@ namespace DirectN
         public DISPLAYCONFIG_RATIONAL vSyncFreq;
         public DISPLAYCONFIG_2DREGION activeSize;
         public DISPLAYCONFIG_2DREGION totalSize;
-        public uint videoStandard;
+        public uint value;
         public DISPLAYCONFIG_SCANLINE_ORDERING scanLineOrdering;
+
+        public D3DKMDT_VIDEO_SIGNAL_STANDARD videoStandard => (D3DKMDT_VIDEO_SIGNAL_STANDARD)(value & 0xFF);
+        public uint vSyncFreqDivider => (value >> 16) & 0x3F;
     }
 }

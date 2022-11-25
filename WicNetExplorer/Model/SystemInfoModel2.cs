@@ -2,10 +2,8 @@
 using System.Linq;
 using System.Runtime.Versioning;
 using DirectN;
-using WicNet.Utilities;
 using WicNetExplorer.Interop;
 using Windows.Devices.Display.Core;
-using Windows.Graphics.Display;
 
 namespace WicNetExplorer.Model
 {

@@ -217,6 +217,14 @@ namespace WicNet.Utilities
             return 0xFF;
         }
 
+        public static string ToHexa(this IntPtr ptr)
+        {
+            if (IntPtr.Size == 4)
+                return "0x" + ptr.ToInt32().ToString("X8");
+
+            return "0x" + ptr.ToInt32().ToString("X16");
+        }
+
         public static string ToHexa(this byte[] bytes) => bytes != null ? ToHexa(bytes, 0, bytes.Length) : "0x";
         public static string ToHexa(this byte[] bytes, int count) => ToHexa(bytes, 0, count);
         public static string ToHexa(this byte[] bytes, int offset, int count)

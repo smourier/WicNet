@@ -29,9 +29,10 @@ namespace WicNet.Utilities
         public tagRECT Bounds { get; }
         [Browsable(false)]
         public string DeviceName { get; }
-        public int EffectiveDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI);
-        public int RawDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_RAW_DPI);
-        public int AngularDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_ANGULAR_DPI);
+
+        public D2D_SIZE_U EffectiveDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI);
+        public D2D_SIZE_U RawDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_RAW_DPI);
+        public D2D_SIZE_U AngularDpi => DpiUtilities.GetDpiForMonitor(Handle, MONITOR_DPI_TYPE.MDT_ANGULAR_DPI);
 
         public DEVICE_SCALE_FACTOR ScaleFactor
         {

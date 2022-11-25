@@ -9,7 +9,7 @@ namespace WicNet.Utilities
     {
         // you should always use this one and it will fallback if necessary
         // https://docs.microsoft.com/en-us/windows/win32/api/winuser/nf-winuser-getdpiforwindow
-        public static int GetDpiForWindow(IntPtr hwnd)
+        public static D2D_SIZE_U GetDpiForWindow(IntPtr hwnd)
         {
             var h = LoadLibrary("user32.dll");
             try
@@ -18,7 +18,8 @@ namespace WicNet.Utilities
                 if (ptr == IntPtr.Zero)
                     return GetDpiForNearestMonitor(hwnd);
 
-                return Marshal.GetDelegateForFunctionPointer<GetDpiForWindowFn>(ptr)(hwnd);
+                var dpi = Marshal.GetDelegateForFunctionPointer<GetDpiForWindowFn>(ptr)(hwnd);
+                return new D2D_SIZE_U(dpi, dpi);
             }
             finally
             {
@@ -29,25 +30,25 @@ namespace WicNet.Utilities
             }
         }
 
-        public static int GetDpiForNearestMonitor(IntPtr hwnd) => GetDpiForMonitor(Monitor.GetNearestFromWindow(hwnd));
-        public static int GetDpiForNearestMonitor(int x, int y) => GetDpiForMonitor(Monitor.GetNearestFromPoint(x, y));
-        public static int GetDpiForMonitor(IntPtr monitor, MONITOR_DPI_TYPE type = MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI)
+        public static D2D_SIZE_U GetDpiForNearestMonitor(IntPtr hwnd) => GetDpiForMonitor(Monitor.GetNearestFromWindow(hwnd));
+        public static D2D_SIZE_U GetDpiForNearestMonitor(int x, int y) => GetDpiForMonitor(Monitor.GetNearestFromPoint(x, y));
+        public static D2D_SIZE_U GetDpiForMonitor(IntPtr monitor, MONITOR_DPI_TYPE type = MONITOR_DPI_TYPE.MDT_EFFECTIVE_DPI)
         {
             if (monitor == IntPtr.Zero)
-                return 96;
+                return new D2D_SIZE_U(96, 96);
 
             var h = LoadLibrary("shcore.dll");
             try
             {
                 var ptr = GetProcAddress(h, "GetDpiForMonitor"); // Windows 8.1
                 if (ptr == IntPtr.Zero)
-                    return (int)GetDpiForDesktop();
+                    return GetDpiForDesktop();
 
                 var hr = Marshal.GetDelegateForFunctionPointer<GetDpiForMonitorFn>(ptr)(monitor, type, out int x, out int y);
                 if (hr < 0)
-                    return (int)GetDpiForDesktop();
+                    return GetDpiForDesktop();
 
-                return x;
+                return new D2D_SIZE_U(x, y);
             }
             finally
             {
@@ -58,7 +59,12 @@ namespace WicNet.Utilities
             }
         }
 
-        public static float GetDpiForDesktop() => D2D1Functions.GetDesktopDpi().width;
+        public static D2D_SIZE_F GetDpiForDesktopF() => D2D1Functions.GetDesktopDpi();
+        public static D2D_SIZE_U GetDpiForDesktop()
+        {
+            var dpi = D2D1Functions.GetDesktopDpi();
+            return new D2D_SIZE_U(dpi.width, dpi.height);
+        }
 
         public static int GetDpiFromDpiAwarenessContext(DPI_AWARENESS_CONTEXT value)
         {
@@ -84,19 +90,19 @@ namespace WicNet.Utilities
         public static int AdjustForWindowDpi(int value, IntPtr handle)
         {
             var dpi = GetDpiForWindow(handle);
-            if (dpi == 96)
+            if (dpi.width == 96)
                 return value;
 
-            return value * dpi / 96;
+            return (int)(value * dpi.width / 96);
         }
 
         public static float AdjustForWindowDpi(float value, IntPtr handle)
         {
             var dpi = GetDpiForWindow(handle);
-            if (dpi == 96)
+            if (dpi.width == 96)
                 return value;
 
-            return value * dpi / 96;
+            return value * dpi.width / 96;
         }
 
         private delegate int GetDpiForWindowFn(IntPtr hwnd);

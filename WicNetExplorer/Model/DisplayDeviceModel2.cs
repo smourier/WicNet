@@ -20,7 +20,15 @@ namespace WicNetExplorer.Model
             IsInterlaced = path.IsInterlaced == true;
             Rotation= path.Rotation;
             Scaling = path.Scaling;
+
+            var monitor = path.Target.TryGetMonitor();
+            if (monitor != null)
+            {
+                Monitor = new MonitorModel(monitor, base.Monitor);
+            }
         }
+
+        public new MonitorModel? Monitor { get; }
 
         [DisplayName("Wire Format")]
         public WireFormatModel WireFormat { get; }

@@ -17,10 +17,13 @@ namespace WicNetExplorer.Model
             ArgumentNullException.ThrowIfNull(device);
             _device = device;
             Modes = _device.GetModes().ToArray();
+            StateFlags = _device.StateFlags.GetEnumName("DISPLAY_DEVICE");
         }
 
         public string Name => _device.DeviceName;
         public string Id => _device.DeviceID;
+
+        [DisplayName("Registry Key")]
         public string Key => _device.DeviceKey;
 
         [DisplayName("Adapter Name")]
@@ -28,6 +31,9 @@ namespace WicNetExplorer.Model
 
         [TypeConverter(typeof(ExpandableObjectConverter))]
         public Monitor Monitor => _device.Monitor;
+
+        [DisplayName("State Flags")]
+        public string StateFlags { get; }
 
         [DisplayName("Is Primary")]
         public bool IsPrimary => _device.IsPrimary;

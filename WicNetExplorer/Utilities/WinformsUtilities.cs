@@ -36,8 +36,8 @@ namespace WicNetExplorer.Utilities
             if (primary == null || primary.EffectiveDpi == startup.EffectiveDpi)
                 return false;
 
-            var oldDpi = primary.EffectiveDpi;
-            var newDpi = startup.EffectiveDpi;
+            var oldDpi = (int)primary.EffectiveDpi.width;
+            var newDpi = (int)startup.EffectiveDpi.width;
 
             var rc = new tagRECT();
             var monitorRc = startup.Bounds;

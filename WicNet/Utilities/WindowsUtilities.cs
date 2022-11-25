@@ -52,7 +52,7 @@ namespace WicNet.Utilities
         public static int TextScaleFactor => _textScaleFactor.Value;
 
         // https://stackoverflow.com/a/61681245/403671
-        public static tagRECT GetWindowCaptionRect(IntPtr handle) => GetWindowCaptionRect(DpiUtilities.GetDpiForWindow(handle));
+        public static tagRECT GetWindowCaptionRect(IntPtr handle) => GetWindowCaptionRect((int)DpiUtilities.GetDpiForWindow(handle).width);
         public static tagRECT GetWindowCaptionRect(int dpi)
         {
             var rc = new tagRECT();

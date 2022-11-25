@@ -1,9 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.InteropServices;
-using DirectN;
 
-namespace WicNet.Utilities
+namespace DirectN
 {
     public static class DisplayConfig
     {
@@ -22,7 +21,7 @@ namespace WicNet.Utilities
             return paths;
         }
 
-        public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetDeviceInfoTargetName(DISPLAYCONFIG_PATH_INFO path)
+        public static DISPLAYCONFIG_TARGET_DEVICE_NAME GetTargetName(DISPLAYCONFIG_PATH_INFO path)
         {
             var info = new DISPLAYCONFIG_TARGET_DEVICE_NAME();
             info.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_TARGET_NAME;
@@ -36,13 +35,55 @@ namespace WicNet.Utilities
             return info;
         }
 
-        public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetDeviceInfoSourceName(DISPLAYCONFIG_PATH_INFO path)
+        public static DISPLAYCONFIG_SDR_WHITE_LEVEL GetSdrWhiteLevel(DISPLAYCONFIG_PATH_INFO path)
+        {
+            var info = new DISPLAYCONFIG_SDR_WHITE_LEVEL();
+            info.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SDR_WHITE_LEVEL;
+            info.header.size = Marshal.SizeOf<DISPLAYCONFIG_SDR_WHITE_LEVEL>();
+            info.header.adapterId = path.targetInfo.adapterId;
+            info.header.id = path.targetInfo.id;
+            var err = DisplayConfigGetDeviceInfo(ref info);
+            if (err != 0)
+                throw new Win32Exception(err);
+
+            return info;
+        }
+
+        public static DISPLAYCONFIG_GET_MONITOR_SPECIALIZATION GetMonitorSpecialization(DISPLAYCONFIG_PATH_INFO path)
+        {
+            var info = new DISPLAYCONFIG_GET_MONITOR_SPECIALIZATION();
+            info.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_MONITOR_SPECIALIZATION;
+            info.header.size = Marshal.SizeOf<DISPLAYCONFIG_GET_MONITOR_SPECIALIZATION>();
+            info.header.adapterId = path.targetInfo.adapterId;
+            info.header.id = path.targetInfo.id;
+            var err = DisplayConfigGetDeviceInfo(ref info);
+            if (err != 0)
+                throw new Win32Exception(err);
+
+            return info;
+        }
+
+        public static DISPLAYCONFIG_SOURCE_DEVICE_NAME GetSourceName(DISPLAYCONFIG_PATH_INFO path)
         {
             var info = new DISPLAYCONFIG_SOURCE_DEVICE_NAME();
             info.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_SOURCE_NAME;
             info.header.size = Marshal.SizeOf<DISPLAYCONFIG_SOURCE_DEVICE_NAME>();
             info.header.adapterId = path.sourceInfo.adapterId;
             info.header.id = path.sourceInfo.id;
+            var err = DisplayConfigGetDeviceInfo(ref info);
+            if (err != 0)
+                throw new Win32Exception(err);
+
+            return info;
+        }
+
+        public static DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO GetAdvancedColorInfo(DISPLAYCONFIG_PATH_INFO path)
+        {
+            var info = new DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO();
+            info.header.type = DISPLAYCONFIG_DEVICE_INFO_TYPE.DISPLAYCONFIG_DEVICE_INFO_GET_ADVANCED_COLOR_INFO;
+            info.header.size = Marshal.SizeOf<DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO>();
+            info.header.adapterId = path.sourceInfo.adapterId;
+            info.header.id = path.targetInfo.id;
             var err = DisplayConfigGetDeviceInfo(ref info);
             if (err != 0)
                 throw new Win32Exception(err);
@@ -83,6 +124,15 @@ namespace WicNet.Utilities
         private static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_SOURCE_DEVICE_NAME requestPacket);
 
         [DllImport("user32")]
+        private static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_SDR_WHITE_LEVEL requestPacket);
+
+        [DllImport("user32")]
         private static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_TARGET_DEVICE_NAME requestPacket);
+
+        [DllImport("user32")]
+        private static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_GET_ADVANCED_COLOR_INFO requestPacket);
+
+        [DllImport("user32")]
+        private static extern int DisplayConfigGetDeviceInfo(ref DISPLAYCONFIG_GET_MONITOR_SPECIALIZATION requestPacket);
     }
 }
