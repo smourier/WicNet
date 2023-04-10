@@ -1,11 +1,8 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
-using System.Collections.Specialized;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using DirectN;
 using WicNet.Utilities;
 
@@ -15,6 +12,9 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            BuildTurbulences();
+            return;
+
             CopyGif();
             return;
 
@@ -342,6 +342,26 @@ namespace WicNet.Tests
                 var name = boxWidth + "x" + boxHeight + ".jpg";
                 bmp.Save(name);
                 Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
+            }
+        }
+
+        static void BuildTurbulences()
+        {
+            for (var offset = 0f; offset < 10; offset += 1f)
+            {
+                using (var newBmp = new WicBitmapSource(400, 400, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                using (var rt = newBmp.CreateDeviceContext())
+                using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Turbulence))
+                using (var cb = rt.CreateBitmapFromWicBitmap(newBmp.ComObject))
+                {
+                    fx.SetInput(0, cb);
+                    fx.SetValue((int)D2D1_TURBULENCE_PROP.D2D1_TURBULENCE_PROP_OFFSET, new D2D_VECTOR_2F(offset, 0));
+                    rt.BeginDraw();
+                    rt.DrawImage(fx);
+                    rt.EndDraw();
+                    newBmp.Save($"noise{offset}.jpg");
+                    Process.Start(new ProcessStartInfo($"noise{offset}.jpg") { UseShellExecute = true });
+                }
             }
         }
 

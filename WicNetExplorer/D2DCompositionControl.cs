@@ -73,6 +73,7 @@ namespace WicNetExplorer
         {
             base.OnPaint(e);
             EnsureTarget();
+            OnDraw();
         }
 
         protected override void OnHandleDestroyed(EventArgs e)
@@ -119,7 +120,6 @@ namespace WicNetExplorer
             var pf = (DirectXPixelFormat)PixelFormat;
             _surface = _graphicsDevice.Value.CreateDrawingSurface2(new SizeInt32(Width, Height), pf, DirectXAlphaMode.Premultiplied);
             root.Brush = _graphicsDevice.Value.Compositor.CreateSurfaceBrush(_surface);
-            OnDraw();
         }
 
         protected virtual void OnResize()

@@ -5,6 +5,7 @@ using System.Windows.Forms;
 using WicNet;
 using WicNetExplorer.Model;
 using WicNetExplorer.Utilities;
+using Extensions = WicNetExplorer.Utilities.Extensions;
 
 namespace WicNetExplorer
 {

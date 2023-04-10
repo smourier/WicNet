@@ -33,7 +33,7 @@ namespace WicNetExplorer
         public IComObject<ID2D1Bitmap1>? Bitmap => _bitmap;
         public string? FileName { get; private set; }
 
-        private void EnsureD2DControl()
+        protected virtual void EnsureD2DControl()
         {
             if (_d2d != null)
                 return;
@@ -52,10 +52,7 @@ namespace WicNetExplorer
 
         public virtual void DoDraw(IComObject<ID2D1DeviceContext> deviceContext)
         {
-            if (FileName == null)
-                return;
-
-            if (Extensions.IsSvg(FileName))
+            if (FileName != null && Extensions.IsSvg(FileName))
             {
                 DoDrawSvg(deviceContext);
             }
