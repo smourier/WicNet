@@ -12,7 +12,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            BuildTurbulences();
+            BuildBlur(3);
             return;
 
             CopyGif();
@@ -361,6 +361,35 @@ namespace WicNet.Tests
                     rt.EndDraw();
                     newBmp.Save($"noise{offset}.jpg");
                     Process.Start(new ProcessStartInfo($"noise{offset}.jpg") { UseShellExecute = true });
+                }
+            }
+        }
+
+
+        static void BuildBlur(float width)
+        {
+            using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
+            {
+                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+                using (var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA))
+                using (var rt = newBmp.CreateDeviceContext())
+                using (var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1GaussianBlur))
+                using (var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
+                {
+                    fx.SetInput(0, cb);
+                    fx.SetValue((int)D2D1_GAUSSIANBLUR_PROP.D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, width * 3.0f);
+                    fx.SetValue((int)D2D1_GAUSSIANBLUR_PROP.D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION, D2D1_DIRECTIONALBLUR_OPTIMIZATION.D2D1_DIRECTIONALBLUR_OPTIMIZATION_QUALITY);
+
+                    using (var img = fx.GetOutput())
+                    {
+                        var bounds = rt.GetImageLocalBounds(img);
+                    }
+
+                    rt.BeginDraw();
+                    rt.DrawImage(fx);
+                    rt.EndDraw();
+                    newBmp.Save("blur.jpg");
+                    Process.Start(new ProcessStartInfo("blur.jpg") { UseShellExecute = true });
                 }
             }
         }

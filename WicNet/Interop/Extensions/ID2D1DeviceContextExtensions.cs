@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Xml.Linq;
 
 namespace DirectN
 {
@@ -67,6 +66,37 @@ namespace DirectN
 
             context.GetDevice(out var device);
             return device != null ? new ComObject<T>((T)device) : null;
+        }
+
+        public static IComObject<ID2D1Image> GetTarget(this IComObject<ID2D1DeviceContext> context) => GetTarget<ID2D1Image>(context?.Object);
+        public static IComObject<T> GetTarget<T>(this IComObject<ID2D1DeviceContext> context) where T : ID2D1Image => GetTarget<T>(context?.Object);
+        public static IComObject<T> GetTarget<T>(this ID2D1DeviceContext context) where T : ID2D1Image
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            context.GetTarget(out var device);
+            return device != null ? new ComObject<T>((T)device) : null;
+        }
+
+        public static D2D_RECT_F GetImageLocalBounds(this IComObject<ID2D1DeviceContext> context, IComObject<ID2D1Image> image) => GetImageLocalBounds(context?.Object, image?.Object);
+        public static D2D_RECT_F GetImageLocalBounds(this ID2D1DeviceContext context, ID2D1Image image)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            context.GetImageLocalBounds(image, out var bounds).ThrowOnError();
+            return bounds;
+        }
+
+        public static D2D_RECT_F GetImageWorldBounds(this IComObject<ID2D1DeviceContext> context, IComObject<ID2D1Image> image) => GetImageWorldBounds(context?.Object, image?.Object);
+        public static D2D_RECT_F GetImageWorldBounds(this ID2D1DeviceContext context, ID2D1Image image)
+        {
+            if (context == null)
+                throw new ArgumentNullException(nameof(context));
+
+            context.GetImageWorldBounds(image, out var bounds).ThrowOnError();
+            return bounds;
         }
 
         public static void SetTarget(this IComObject<ID2D1DeviceContext> context, IComObject<ID2D1Image> target) => SetTarget(context?.Object, target?.Object);
