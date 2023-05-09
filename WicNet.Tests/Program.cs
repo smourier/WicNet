@@ -365,7 +365,6 @@ namespace WicNet.Tests
             }
         }
 
-
         static void BuildBlur(float width)
         {
             using (var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg"))
