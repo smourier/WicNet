@@ -3,7 +3,6 @@ using System.Drawing;
 using System.Windows.Forms;
 using DirectN;
 using WicNet;
-using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer
 {
@@ -50,7 +49,7 @@ namespace WicNetExplorer
         {
             if (disposing)
             {
-                _bitmap?.Dispose();
+                _bitmap.SafeDispose();
                 _d2d?.Dispose();
             }
             base.Dispose(disposing);

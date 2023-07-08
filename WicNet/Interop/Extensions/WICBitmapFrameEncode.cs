@@ -33,8 +33,8 @@ namespace DirectN
 
         public void Dispose()
         {
-            Encode.Dispose();
-            Bag.Dispose();
+            Encode.SafeDispose();
+            Bag.SafeDispose();
         }
     }
 }

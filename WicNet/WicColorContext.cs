@@ -1,12 +1,18 @@
 ﻿using System;
+using System.IO;
+using System.Runtime.InteropServices;
+using System.Text;
 using DirectN;
 
 namespace WicNet
 {
     public sealed class WicColorContext : IDisposable
     {
+        public static WicColorContext Standard { get; } = new WicColorContext(StandardColorSpaceProfile); // sRGB
+
         private readonly IComObject<IWICColorContext> _comObject;
         private readonly Lazy<ColorProfile> _profile;
+        private readonly Lazy<byte[]> _profileBytes;
 
         public WicColorContext(IWICColorContext palette)
             : this((object)palette)
@@ -40,6 +46,7 @@ namespace WicNet
 
         public WicColorContext(object source)
         {
+            _profileBytes = new Lazy<byte[]>(GetProfileBytes);
             if (source == null)
             {
                 _comObject = WICImagingFactory.CreateColorContext();
@@ -98,6 +105,31 @@ namespace WicNet
             }
         }
 
+        public string ExifColorSpaceName
+        {
+            get
+            {
+                var exif = ExifColorSpace;
+                if (!exif.HasValue)
+                    return "Unspecified";
+
+                switch (exif.Value)
+                {
+                    case 1:
+                        return "sRGB";
+
+                    case 2:
+                        return "Adobe RGB";
+
+                    case 0xFFFF:
+                        return "Uncalibrated";
+
+                    default:
+                        return "Unknown";
+                }
+            }
+        }
+
         public WICColorContextType Type
         {
             get
@@ -107,26 +139,63 @@ namespace WicNet
             }
         }
 
-        public byte[] ProfileBytes
+        public byte[] ProfileBytes => _profileBytes.Value;
+        private byte[] GetProfileBytes()
+        {
+            var hr = _comObject.Object.GetProfileBytes(0, null, out var count);
+            if (hr.IsError)
+                return null;
+
+            var bytes = new byte[count];
+            _comObject.Object.GetProfileBytes(count, bytes, out _).ThrowOnError();
+            return bytes;
+        }
+
+        public override string ToString() => Profile?.Description ?? ExifColorSpaceName;
+        public void Dispose() => _comObject.SafeDispose();
+
+        public static string StandardColorSpaceProfile
         {
             get
             {
-                var hr = _comObject.Object.GetProfileBytes(0, null, out var count);
-                if (hr.IsError)
-                    return null;
+                const int sRGB = 0x73524742; //  'sRGB'
+                GetStandardColorSpaceProfile(IntPtr.Zero, sRGB, null, out var size);
+                var sb = new StringBuilder(size);
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+                GetStandardColorSpaceProfile(IntPtr.Zero, sRGB, sb, out size);
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
+                var s = sb.ToString();
+                if (string.IsNullOrWhiteSpace(s))
+                    return string.Empty;
 
-                var bytes = new byte[count];
-                _comObject.Object.GetProfileBytes(count, bytes, out _).ThrowOnError();
-                return bytes;
+                if (Path.IsPathRooted(s))
+                    return s;
+
+                var dir = ColorDirectory;
+                if (string.IsNullOrEmpty(dir))
+                    return string.Empty;
+
+                return Path.Combine(dir, s);
             }
         }
 
-        public void Dispose()
+        public static string ColorDirectory
         {
-            if (_comObject == null || _comObject.IsDisposed)
-                return;
-
-            _comObject.Dispose();
+            get
+            {
+                GetColorDirectory(IntPtr.Zero, null, out var size);
+                var sb = new StringBuilder(size);
+#pragma warning disable IDE0059 // Unnecessary assignment of a value
+                GetColorDirectory(IntPtr.Zero, sb, out size);
+#pragma warning restore IDE0059 // Unnecessary assignment of a value
+                return sb.ToString();
+            }
         }
+
+        [DllImport("mscms", CharSet = CharSet.Unicode)]
+        private static extern HRESULT GetColorDirectory(IntPtr pMachineName, StringBuilder pBuffer, out int pdwSize);
+
+        [DllImport("mscms", CharSet = CharSet.Unicode)]
+        private static extern HRESULT GetStandardColorSpaceProfile(IntPtr pMachineName, uint dwProfileID, StringBuilder pProfileName, out int pdwSize);
     }
 }

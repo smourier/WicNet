@@ -173,7 +173,7 @@ namespace WicNet
             }
         }
 
-        public void Dispose() => _comObject?.Dispose();
+        public void Dispose() => _comObject.SafeDispose();
         IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<WicMetadataKeyValue>)this).GetEnumerator();
 
         public static string GetFormatName(Guid guid)

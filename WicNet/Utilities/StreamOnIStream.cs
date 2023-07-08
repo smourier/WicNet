@@ -1,9 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.IO;
 using System.Runtime.InteropServices;
 using System.Runtime.InteropServices.ComTypes;
-using System.Text;
 using System.Threading;
 using DirectN;
 
@@ -11,24 +9,23 @@ namespace WicNet.Utilities
 {
     public class StreamOnIStream : Stream
     {
-#pragma warning disable IDE1006 // Naming Styles
         private const int STATFLAG_NONAME = 1;
-#pragma warning restore IDE1006 // Naming Styles
-
         private IStream _stream;
         private IntPtr _ptr;
         private long _position;
 
-        public StreamOnIStream(IStream stream)
+        public StreamOnIStream(IStream stream, bool releaseOnDispose = false)
         {
             _stream = stream;
             _ptr = Marshal.AllocCoTaskMem(8); // works for 32b & 64b
+            ReleaseOnDispose = releaseOnDispose;
             CanRead = true;
             CanSeek = true;
             CanWrite = true;
         }
 
         public IStream NativeStream => CheckDisposed();
+        public bool ReleaseOnDispose { get; }
         public override bool CanTimeout => false;
         public override int ReadTimeout => Timeout.Infinite;
         public override int WriteTimeout => Timeout.Infinite;
@@ -201,7 +198,10 @@ namespace WicNet.Utilities
                 try
                 {
                     stream.Commit((int)STGC.STGC_DEFAULT);
-                    //Marshal.ReleaseComObject(stream);
+                    if (ReleaseOnDispose)
+                    {
+                        Marshal.ReleaseComObject(stream);
+                    }
                 }
                 catch
                 {

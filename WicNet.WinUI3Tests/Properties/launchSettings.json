@@ -1,0 +1,11 @@
+{
+  "profiles": {
+    "WicNet.WinUI3Tests (Package)": {
+      "commandName": "MsixPackage",
+      "nativeDebugging": true
+    },
+    "WicNet.WinUI3Tests (Unpackaged)": {
+      "commandName": "Project"
+    }
+  }
+}

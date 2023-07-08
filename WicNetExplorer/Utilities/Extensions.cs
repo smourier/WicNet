@@ -3,7 +3,6 @@ using System.ComponentModel;
 using System.Diagnostics;
 using System.Drawing;
 using System.IO;
-using System.Linq;
 using System.Reflection;
 using DirectN;
 using WicNet;
@@ -62,35 +61,6 @@ namespace WicNetExplorer.Utilities
                 return null;
 
             return (PHOTO_ORIENTATION)orientation.Value;
-        }
-
-        public static WicColorContext? GetBestColorContext(this WicBitmapSource source)
-        {
-            if (source == null)
-                return null;
-
-            var contexts = source.GetColorContexts();
-            if (contexts.Count == 0)
-                return null;
-
-            if (contexts.Count == 1)
-                return contexts[0];
-
-            // https://stackoverflow.com/a/70215280/403671
-            // get last not uncalibrated color context
-            WicColorContext? best = null;
-            foreach (var ctx in contexts.Reverse())
-            {
-                if (ctx.ExifColorSpace.HasValue && ctx.ExifColorSpace.Value == 0xFFFF)
-                    continue;
-
-                best = ctx;
-            }
-
-            // last resort
-            best ??= contexts[contexts.Count - 1];
-            contexts.Dispose(new[] { best });
-            return best;
         }
 
         public static Size ToSize(this WicIntSize size) => new((int)size.Width, (int)size.Height);

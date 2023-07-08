@@ -4,6 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using DirectN;
+using WicNet.Interop.Extensions;
 using WicNet.Utilities;
 
 namespace WicNet
@@ -101,6 +102,17 @@ namespace WicNet
 
         public override string ToString() => Size.ToString();
 
+        public Stream GetStream()
+        {
+            var prov = _comObject.AsComObject<IWICStreamProvider>(false);
+            if (prov == null)
+                return null;
+
+            var strm = prov.GetStream();
+            var sois = new StreamOnIStream(strm, true);
+            return sois;
+        }
+
         public WicBitmapSource GetThumbnail()
         {
             var bmp = _comObject.As<IWICBitmapFrameDecode>(false)?.GetThumbnail();
@@ -122,6 +134,45 @@ namespace WicNet
                 list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
             }
             return list;
+        }
+
+        public WicColorContext GetBestColorContext()
+        {
+            var contexts = GetColorContexts();
+            if (contexts.Count == 0)
+                return null;
+
+            if (contexts.Count == 1)
+                return contexts[0];
+
+            // https://stackoverflow.com/a/70215280/403671
+            // get last not uncalibrated color context
+            WicColorContext best = null;
+            foreach (var ctx in contexts.Reverse())
+            {
+                if (ctx.ExifColorSpace.HasValue && ctx.ExifColorSpace.Value == 0xFFFF)
+                    continue;
+
+                best = ctx;
+            }
+
+            // last resort
+            best = best ?? contexts[contexts.Count - 1];
+            contexts.Dispose(new[] { best });
+            return best;
+        }
+
+        public WicBitmapSource GetColorTransform(WicColorContext sourceColorContext, WicColorContext destinationColorContext, Guid destinationPixelFormat)
+        {
+            if (sourceColorContext == null)
+                throw new ArgumentNullException(nameof(sourceColorContext));
+
+            if (destinationColorContext == null)
+                throw new ArgumentNullException(nameof(destinationColorContext));
+
+            var transformer = WICImagingFactory.CreateColorTransformer();
+            transformer.Initialize(ComObject, sourceColorContext.ComObject, destinationColorContext.ComObject, destinationPixelFormat);
+            return new WicBitmapSource(transformer);
         }
 
         public void CenterClip(int? width, int? height)
@@ -156,21 +207,23 @@ namespace WicNet
 
             var clip = WICImagingFactory.CreateBitmapClipper();
             clip.Object.Initialize(_comObject.Object, ref rect).ThrowOnError();
-            _comObject?.Dispose();
+            _comObject.SafeDispose();
             _comObject = clip;
         }
 
         public void Clip(int left, int top, int width, int height)
         {
-            var rect = new WICRect();
-            rect.X = left;
-            rect.Y = top;
-            rect.Width = width;
-            rect.Height = height;
+            var rect = new WICRect
+            {
+                X = left,
+                Y = top,
+                Width = width,
+                Height = height
+            };
 
             var clip = WICImagingFactory.CreateBitmapClipper();
             clip.Object.Initialize(_comObject.Object, ref rect).ThrowOnError();
-            _comObject?.Dispose();
+            _comObject.SafeDispose();
             _comObject = clip;
         }
 
@@ -178,7 +231,7 @@ namespace WicNet
         {
             var clip = WICImagingFactory.CreateBitmapFlipRotator();
             clip.Object.Initialize(_comObject.Object, options).ThrowOnError();
-            _comObject?.Dispose();
+            _comObject.SafeDispose();
             _comObject = clip;
         }
 
@@ -192,10 +245,14 @@ namespace WicNet
 
             var cvt = WicPixelFormat.GetPixelFormatConvertersTo(pixelFormat).FirstOrDefault();
             if (cvt == null)
-                throw new InvalidOperationException();
+            {
+                var pf = WicPixelFormat.FromClsid(pixelFormat);
+                var format = pf?.ToString() ?? pixelFormat.ToString();
+                throw new WicNetException("WIC0005: There's no converter available to convert from '" + WicPixelFormat + "' to '" + format + "'.");
+            }
 
             var converter = cvt.Convert(this, pixelFormat, ditherType, palette, alphaThresholdPercent, paletteTranslate);
-            _comObject?.Dispose();
+            _comObject.SafeDispose();
             _comObject = converter;
             return true;
         }
@@ -227,11 +284,13 @@ namespace WicNet
                 throw new ArgumentOutOfRangeException(nameof(buffer));
 
             stride = stride ?? DefaultStride;
-            var rect = new WICRect();
-            rect.X = left;
-            rect.Y = top;
-            rect.Width = width;
-            rect.Height = height;
+            var rect = new WICRect
+            {
+                X = left,
+                Y = top,
+                Width = width,
+                Height = height
+            };
             using (var mem = new ComMemory(rect))
             {
                 _comObject.Object.CopyPixels(mem.Pointer, (uint)stride.Value, (uint)bufferSize, buffer).ThrowOnError();
@@ -259,6 +318,54 @@ namespace WicNet
                 CopyPixels(left, top, width, height, size, ptr, stride);
             }
             return bytes;
+        }
+
+        public void WithSoftwareBitmap(bool forceReadOnly, Action<IntPtr> action, bool throwOnError = true)
+        {
+            if (action == null)
+                throw new ArgumentNullException(nameof(action));
+
+            var ptr = ToSoftwareBitmap(forceReadOnly, throwOnError);
+            try
+            {
+                action(ptr);
+            }
+            finally
+            {
+                Marshal.Release(ptr);
+            }
+        }
+
+        public T WithSoftwareBitmap<T>(bool forceReadOnly, Func<IntPtr, T> func, bool throwOnError = true)
+        {
+            if (func == null)
+                throw new ArgumentNullException(nameof(func));
+
+            var ptr = ToSoftwareBitmap(forceReadOnly, throwOnError);
+            try
+            {
+                return func(ptr);
+            }
+            finally
+            {
+                Marshal.Release(ptr);
+            }
+        }
+
+        public IntPtr ToSoftwareBitmap(bool forceReadOnly, bool throwOnError = true)
+        {
+            var bmp = _comObject.As<IWICBitmap>();
+            if (bmp == null)
+                throw new WicNetException("WIC0004: Converting to WinRT SoftwareBitmap is only supported on in-memory bitmaps. You must Clone this bitmap first.");
+
+            var factory = (ISoftwareBitmapNativeFactory)new SoftwareBitmapNativeFactory();
+            var IID_ISoftwareBitmap = new Guid("689e0708-7eef-483f-963f-da938818e073");
+
+            // note: parameter incorrect is probably a format issue
+            // SoftwareBitmap only supports a few https://learn.microsoft.com/en-us/uwp/api/windows.graphics.imaging.bitmappixelformat
+            // and SoftwareBitmapSource only supports Brga8...
+            factory.CreateFromWICBitmap(bmp, forceReadOnly, IID_ISoftwareBitmap, out var ppv).ThrowOnError(throwOnError);
+            return ppv;
         }
 
         public static WicBitmapSource FromHIcon(IntPtr iconHandle) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHICON(iconHandle));
@@ -298,7 +405,7 @@ namespace WicNet
             var newh = (uint)(size.Height * factor.height);
             var clip = WICImagingFactory.CreateBitmapScaler();
             clip.Object.Initialize(_comObject.Object, neww, newh, mode).ThrowOnError();
-            _comObject?.Dispose();
+            _comObject.SafeDispose();
             _comObject = clip;
         }
 
@@ -386,7 +493,8 @@ namespace WicNet
             IEnumerable<WicMetadataKeyValue> metadata = null,
             WicPalette encoderPalette = null,
             WicPalette framePalette = null,
-            WICRect? sourceRectangle = null)
+            WICRect? sourceRectangle = null,
+            IEnumerable<WicColorContext> colorContexts = null)
         {
             if (filePath == null)
                 throw new ArgumentNullException(nameof(filePath));
@@ -406,7 +514,7 @@ namespace WicNet
             }
 
             using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-                Save(file, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle);
+                Save(file, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle, colorContexts);
         }
 
         public void Save(
@@ -418,7 +526,8 @@ namespace WicNet
             IEnumerable<WicMetadataKeyValue> metadata = null,
             WicPalette encoderPalette = null,
             WicPalette framePalette = null,
-            WICRect? sourceRectangle = null)
+            WICRect? sourceRectangle = null,
+            IEnumerable<WicColorContext> colorContexts = null)
         {
             if (stream == null)
                 throw new ArgumentNullException(nameof(stream));
@@ -461,6 +570,11 @@ namespace WicNet
                         frame.Encode.SetPalette(framePalette.ComObject);
                     }
 
+                    if (colorContexts?.Any() == true)
+                    {
+                        frame.SetColorContexts(colorContexts.Select(c => c.ComObject.Object));
+                    }
+
                     // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
                     // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
                     frame.WriteSource(_comObject, sourceRectangle);
@@ -473,7 +587,7 @@ namespace WicNet
         public void Dispose()
         {
             _palette?.Dispose();
-            _comObject?.Dispose();
+            _comObject.SafeDispose();
         }
 
         int IComparable.CompareTo(object obj) => CompareTo(obj as WicBitmapSource);

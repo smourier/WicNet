@@ -169,12 +169,6 @@ namespace WicNet
             return string.Join(" ", list);
         }
 
-        public void Dispose()
-        {
-            if (_comObject == null || _comObject.IsDisposed)
-                return;
-
-            _comObject.Dispose();
-        }
+        public void Dispose() => _comObject.SafeDispose();
     }
 }

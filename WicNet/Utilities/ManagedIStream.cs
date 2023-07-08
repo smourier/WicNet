@@ -56,10 +56,12 @@ namespace WicNet.Utilities
 
         public void Stat(out STATSTG pstatstg, int grfStatFlag)
         {
-            pstatstg = new STATSTG();
-            pstatstg.type = (int)STGTY.STGTY_STREAM;
-            pstatstg.cbSize = _stream.Length;
-            pstatstg.grfMode = 0;
+            pstatstg = new STATSTG
+            {
+                type = (int)STGTY.STGTY_STREAM,
+                cbSize = _stream.Length,
+                grfMode = 0
+            };
 
             if (_stream.CanRead && _stream.CanWrite)
             {

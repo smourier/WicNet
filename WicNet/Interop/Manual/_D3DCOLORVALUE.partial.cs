@@ -348,9 +348,7 @@ namespace DirectN
         public static readonly _D3DCOLORVALUE YellowGreen = new _D3DCOLORVALUE(0xFF9ACD32);
     }
 
-#pragma warning disable IDE1006 // Naming Styles
     public class _D3DCOLORVALUEConverter : TypeConverter
-#pragma warning restore IDE1006 // Naming Styles
     {
         public override bool CanConvertFrom(ITypeDescriptorContext td, Type t) => t == typeof(string);
         public override object ConvertFrom(ITypeDescriptorContext td, CultureInfo ci, object value)

@@ -204,6 +204,16 @@ namespace DirectN
             return new ComObject<IWICColorContext>(value);
         }
 
+        public static IComObject<IWICColorTransform> CreateColorTransformer(this IComObject<IWICImagingFactory> factory) => CreateColorTransformer(factory?.Object);
+        public static IComObject<IWICColorTransform> CreateColorTransformer(this IWICImagingFactory factory)
+        {
+            if (factory == null)
+                throw new ArgumentNullException(nameof(factory));
+
+            factory.CreateColorTransformer(out var value).ThrowOnError();
+            return new ComObject<IWICColorTransform>(value);
+        }
+
         public static IEnumerable<IComObject<IWICComponentInfo>> EnumerateComponents(this IWICImagingFactory factory, WICComponentType type, WICComponentEnumerateOptions options)
         {
             using (var enumerator = factory.CreateComponentEnumerator(type, options))

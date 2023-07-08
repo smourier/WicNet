@@ -10,10 +10,12 @@ namespace WicNetExplorer.Model
     public class ColorContextModel
     {
         private readonly byte[] _profileBytes;
+        private readonly string _name;
 
         public ColorContextModel(WicColorContext context)
         {
             ArgumentNullException.ThrowIfNull(context);
+            _name = context.ToString();
             ExifColorSpace = ((ExifColorSpace)context.ExifColorSpace.GetValueOrDefault()).GetEnumName();
             Type = context.Type.GetEnumName("WICColorContext").Decamelize();
             Profile = context.Profile != null ? new ColorProfileModel(context.Profile) : null;
@@ -31,6 +33,6 @@ namespace WicNetExplorer.Model
         [TypeConverter(typeof(ByteArrayConverter))]
         public byte[] ProfileBytes { get => _profileBytes; set => throw new NotSupportedException(); } // set for property grid support
 
-        public override string ToString() => Profile?.ToString() ?? string.Empty;
+        public override string ToString() => _name;
     }
 }

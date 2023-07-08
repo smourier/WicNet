@@ -10,7 +10,6 @@ namespace DirectN
     [StructLayout(LayoutKind.Explicit)]
     public sealed class PropVariant : IDisposable
     {
-#pragma warning disable IDE0044 // Add readonly modifier
         [FieldOffset(0)]
         private PropertyType _vt;
 
@@ -58,7 +57,6 @@ namespace DirectN
 
         [FieldOffset(0)]
         private decimal _decimal;
-#pragma warning restore IDE0044 // Add readonly modifier
 
         [StructLayout(LayoutKind.Sequential)]
         private struct PROPARRAY

@@ -95,6 +95,6 @@ namespace WicNet
             return new WicBitmapDecoder(WICImagingFactory.CreateDecoderFromStream(stream, guidVendor, options));
         }
 
-        public void Dispose() => _comObject?.Dispose();
+        public void Dispose() => _comObject.SafeDispose();
     }
 }

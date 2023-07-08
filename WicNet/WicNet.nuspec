@@ -12,6 +12,6 @@
     <requireLicenseAcceptance>false</requireLicenseAcceptance>
     <description>$description$</description>
     <copyright>$copyright$</copyright>
-    <tags>Windows Imaging Component C# .NET WIC PNG JPG JPEG GIF BMP D2D HEIC HEIF</tags>
+    <tags>Windows Imaging Component C# .NET WIC PNG JPG JPEG GIF BMP D2D HEIC HEIF WinRT WinUi3 SoftwareBitmap</tags>
   </metadata>
 </package>

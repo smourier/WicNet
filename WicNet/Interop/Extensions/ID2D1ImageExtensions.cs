@@ -19,8 +19,9 @@ namespace DirectN
             IEnumerable<KeyValuePair<string, object>> encoderOptions = null,
             IEnumerable<WicMetadataKeyValue> metadata = null,
             WicPalette encoderPalette = null,
-            WicPalette framePalette = null
-            ) => Save(image?.Object, device?.Object, encoderContainerFormat, stream, parameters, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette);
+            WicPalette framePalette = null,
+            IEnumerable<WicColorContext> colorContexts = null
+            ) => Save(image?.Object, device?.Object, encoderContainerFormat, stream, parameters, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, colorContexts);
 
         public static void Save(this ID2D1Image image,
             ID2D1Device device,
@@ -32,7 +33,8 @@ namespace DirectN
             IEnumerable<KeyValuePair<string, object>> encoderOptions = null,
             IEnumerable<WicMetadataKeyValue> metadata = null,
             WicPalette encoderPalette = null,
-            WicPalette framePalette = null
+            WicPalette framePalette = null,
+            IEnumerable<WicColorContext> colorContexts = null
             )
         {
             if (image == null)
@@ -82,6 +84,11 @@ namespace DirectN
                         if (framePalette != null)
                         {
                             frame.Encode.SetPalette(framePalette.ComObject);
+                        }
+
+                        if (colorContexts?.Any() == true)
+                        {
+                            frame.SetColorContexts(colorContexts.Select(c => c.ComObject.Object));
                         }
 
                         using (var imageEncoder = f.CreateImageEncoder(device))

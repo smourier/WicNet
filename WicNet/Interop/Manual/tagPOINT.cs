@@ -5,9 +5,7 @@ using System.Runtime.InteropServices;
 namespace DirectN
 {
     [StructLayout(LayoutKind.Sequential)]
-#pragma warning disable IDE1006 // Naming Styles
     public struct tagPOINT : IEquatable<tagPOINT>
-#pragma warning restore IDE1006 // Naming Styles
     {
         public int x;
         public int y;

@@ -3,7 +3,6 @@ using System.Diagnostics;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
-using WicNet.Utilities;
 
 namespace DirectN
 {
@@ -214,7 +213,9 @@ namespace DirectN
             _sw.Start();
         }
 
+#pragma warning disable IDE0060 // Remove unused parameter
         protected void Trace(string message, [CallerMemberName] string methodName = null)
+#pragma warning restore IDE0060 // Remove unused parameter
         {
             return;
             //// many COM objects (like DXGI ones) dont' like to be used on different threads
@@ -304,6 +305,17 @@ namespace DirectN
     public interface IComObject<out T> : IComObject
     {
         new T Object { get; }
+    }
+
+    public static class ComObjectExtensions
+    {
+        public static void SafeDispose(this IComObject comObject)
+        {
+            if (comObject == null || comObject.IsDisposed)
+                return;
+
+            comObject.Dispose();
+        }
     }
 
     public sealed class ComObjectWrapper<T> : IDisposable

@@ -127,7 +127,7 @@ namespace WicNetExplorer
                     _bitmap = deviceContext.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
                     _bitmapSource.Dispose();
                     _bitmapSource = null;
-                    _colorContext?.Dispose();
+                    _colorContext.SafeDispose();
                     _colorContext = null;
                 }
             }
@@ -153,7 +153,7 @@ namespace WicNetExplorer
                     deviceContext.DrawBitmap(_bitmap, 1, D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC, rc);
                 }
             }
-            ctx?.Dispose();
+            ctx.SafeDispose();
         }
 
         protected virtual void DrawBackground(IComObject<ID2D1DeviceContext> deviceContext)
@@ -445,25 +445,25 @@ namespace WicNetExplorer
         {
             _bitmapSource?.Dispose();
             _bitmapSource = null;
-            _colorContext?.Dispose();
+            _colorContext.SafeDispose();
             _colorContext = null;
         }
 
         private void DisposeContextDependentResources()
         {
-            _backgroundBrush?.Dispose();
+            _backgroundBrush.SafeDispose();
             _backgroundBrush = null;
-            _bitmap?.Dispose();
+            _bitmap.SafeDispose();
             _bitmap = null;
-            _colorManagementEffect?.Dispose();
+            _colorManagementEffect.SafeDispose();
             _colorManagementEffect = null;
-            _scaleEffect?.Dispose();
+            _scaleEffect.SafeDispose();
             _scaleEffect = null;
-            _svgDocument?.Dispose();
+            _svgDocument.SafeDispose();
             _svgDocument = null;
             _bitmapSource?.Dispose();
             _bitmapSource = null;
-            _colorContext?.Dispose();
+            _colorContext.SafeDispose();
             _colorContext = null;
         }
     }
