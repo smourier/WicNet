@@ -38,7 +38,9 @@ namespace WicNet.WinUI3Tests
             using var bmp = WicBitmapSource.Load(filePath);
 
             // note: software bitmap doesn't seem to support color contexts
-            // so must must transform it ourself and build one using pixels
+            // so we must transform it ourselves, building one using pixels after color transformation
+            // this is the moral equivalent to WinRT's BitmapDecoder.GetPixelDataAsync (which uses Wic underneath...)
+            // https://learn.microsoft.com/en-us/uwp/api/windows.graphics.imaging.bitmapdecoder.getpixeldataasync
             var ctx = bmp.GetColorContexts();
             if (ctx.Count > 0)
             {
