@@ -17,7 +17,7 @@ namespace WicNet
                 var pf = new Guid[len];
                 if (len > 0)
                 {
-                    info.Object.GetPixelFormats(len, pf, out _);
+                    info.Object.GetPixelFormats((int)len, pf, out _);
                 }
 
                 PixelFormats = pf;

@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using DirectN;
 using WicNet.Utilities;
 
@@ -91,7 +90,7 @@ namespace WicNet
         }
 
         public static IEnumerable<WicImagingComponent> AllComponents => _allComponents.Value.Values;
-        
+
         // these should be IReadOnlySet<string> (but it's not in .NET standard...)
         public static ISet<string> DecoderFileExtensions => _decoderExtensions.Value;
         public static ISet<string> EncoderFileExtensions => _encoderExtensions.Value;
@@ -103,42 +102,34 @@ namespace WicNet
             Clsid = guid;
 
             wrapper.Object.GetSigningStatus(out var status);
-            SigningStatus = status;
+            SigningStatus = (WICComponentSigning)status;
 
             wrapper.Object.GetComponentType(out var type);
             Type = type;
 
-            wrapper.Object.GetFriendlyName(0, null, out var len);
-            if (len >= 0)
+            FriendlyName = Utilities.Extensions.GetString((s, capacity) =>
             {
-                var sb = new StringBuilder(len);
-                wrapper.Object.GetFriendlyName(len + 1, sb, out _);
-                FriendlyName = sb.ToString();
-            }
+                wrapper.Object.GetFriendlyName(capacity, s, out var size);
+                return size;
+            });
 
-            wrapper.Object.GetAuthor(0, null, out len);
-            if (len >= 0)
+            Author = Utilities.Extensions.GetString((s, capacity) =>
             {
-                var sb = new StringBuilder(len);
-                wrapper.Object.GetAuthor(len + 1, sb, out _);
-                Author = sb.ToString();
-            }
+                wrapper.Object.GetAuthor(capacity, s, out var size);
+                return size;
+            });
 
-            wrapper.Object.GetVersion(0, null, out len);
-            if (len >= 0)
+            Version = Utilities.Extensions.GetString((s, capacity) =>
             {
-                var sb = new StringBuilder(len);
-                wrapper.Object.GetVersion(len + 1, sb, out _);
-                Version = sb.ToString();
-            }
+                wrapper.Object.GetVersion(capacity, s, out var size);
+                return size;
+            });
 
-            wrapper.Object.GetSpecVersion(0, null, out len);
-            if (len >= 0)
+            SpecVersion = Utilities.Extensions.GetString((s, capacity) =>
             {
-                var sb = new StringBuilder(len);
-                wrapper.Object.GetSpecVersion(len + 1, sb, out _);
-                SpecVersion = sb.ToString();
-            }
+                wrapper.Object.GetSpecVersion(capacity, s, out var size);
+                return size;
+            });
         }
 
         public Guid Clsid { get; }

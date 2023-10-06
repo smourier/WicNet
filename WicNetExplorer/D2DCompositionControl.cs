@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Windows.Forms;
@@ -18,7 +19,7 @@ namespace WicNetExplorer
     {
         // device independent resources
         private static readonly Lazy<IDispatcherQueueController> _dispatcherQueueController = new(() => DispatcherQueueController.Create());
-        private static readonly Lazy<object> _d3d11Device = new(() => D3D11Functions.D3D11CreateDevice());
+        private static readonly Lazy<object> _d3d11Device = new(() => Utilities.Extensions.D3D11CreateDevice());
         private static readonly Lazy<IComObject<ID2D1Factory1>> _d2dFactory = new(() => D2D1Functions.D2D1CreateFactory<ID2D1Factory1>());
         private static readonly Lazy<CompositionGraphicsDevice> _graphicsDevice = new(CreateCompositionGraphicsDevice);
 
@@ -66,7 +67,7 @@ namespace WicNetExplorer
             using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop>(_surface.As<ICompositionDrawingSurfaceInterop>());
             using var dc = surfaceInterop.BeginDraw<ID2D1DeviceContext>();
             action(dc);
-            surfaceInterop.EndDraw();
+            surfaceInterop.Object.EndDraw(); // don't throw
         }
 
         protected override void OnPaint(PaintEventArgs e)
@@ -110,8 +111,10 @@ namespace WicNetExplorer
             ReleaseTarget();
 
             var interop = _graphicsDevice.Value.Compositor.As<ICompositorDesktopInterop>();
-            interop.CreateDesktopWindowTarget(Handle, true, out var ptr).ThrowOnError();
-            _target = MarshalInterface<DesktopWindowTarget>.FromAbi(ptr);
+            interop.CreateDesktopWindowTarget(Handle, true, out var target).ThrowOnError();
+            var unk = Marshal.GetIUnknownForObject(target);
+            _target = MarshalInterface<DesktopWindowTarget>.FromAbi(unk);
+            Marshal.Release(unk);
 
             var root = _graphicsDevice.Value.Compositor.CreateSpriteVisual();
             root.Size = new Vector2(Width, Height);

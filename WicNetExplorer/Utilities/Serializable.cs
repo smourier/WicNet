@@ -7,7 +7,7 @@ using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using System.Threading.Tasks;
-using WicNet.Utilities;
+using DirectN;
 
 namespace WicNetExplorer.Utilities
 {

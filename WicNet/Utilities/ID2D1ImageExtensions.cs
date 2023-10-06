@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using WicNet;
-using WicNet.Utilities;
+using DirectN;
 
-namespace DirectN
+namespace WicNet.Utilities
 {
     public static class ID2D1ImageExtensions
     {
@@ -21,7 +20,7 @@ namespace DirectN
             WicPalette encoderPalette = null,
             WicPalette framePalette = null,
             IEnumerable<WicColorContext> colorContexts = null
-            ) => Save(image?.Object, device?.Object, encoderContainerFormat, stream, parameters, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, colorContexts);
+            ) => (image?.Object).Save(device?.Object, encoderContainerFormat, stream, parameters, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, colorContexts);
 
         public static void Save(this ID2D1Image image,
             ID2D1Device device,

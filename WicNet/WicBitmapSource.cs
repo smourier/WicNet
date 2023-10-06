@@ -4,7 +4,6 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using DirectN;
-using WicNet.Interop.Extensions;
 using WicNet.Utilities;
 
 namespace WicNet
@@ -266,7 +265,7 @@ namespace WicNet
                 throw new ArgumentOutOfRangeException(nameof(buffer));
 
             stride = stride ?? DefaultStride;
-            _comObject.Object.CopyPixels(IntPtr.Zero, (uint)stride.Value, (uint)bufferSize, buffer).ThrowOnError();
+            _comObject.Object.CopyPixels(IntPtr.Zero, (uint)stride.Value, bufferSize, buffer).ThrowOnError();
         }
 
         public void CopyPixels(int left, int top, int width, int height, int bufferSize, IntPtr buffer, int? stride = null)
@@ -293,7 +292,7 @@ namespace WicNet
             };
             using (var mem = new ComMemory(rect))
             {
-                _comObject.Object.CopyPixels(mem.Pointer, (uint)stride.Value, (uint)bufferSize, buffer).ThrowOnError();
+                _comObject.Object.CopyPixels(mem.Pointer, (uint)stride.Value, bufferSize, buffer).ThrowOnError();
             }
         }
 

@@ -1,9 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
-using System.Text;
 using DirectN;
-using WicNet.Utilities;
 
 namespace WicNet
 {
@@ -25,13 +23,11 @@ namespace WicNet
         {
             get
             {
-                _comObject.Object.GetLocation(0, null, out var size);
-                if (size <= 0)
-                    return null;
-
-                var sb = new StringBuilder(size);
-                _comObject.Object.GetLocation(sb.Capacity, sb, out _);
-                return sb.ToString();
+                return Utilities.Extensions.GetString((s, capacity) =>
+                {
+                    _comObject.Object.GetLocation(capacity, s, out var size);
+                    return size;
+                });
             }
         }
 

@@ -39,7 +39,7 @@ namespace WicNetExplorer.Model
 
         [DisplayName("Rendering Intent")]
         public int RenderingIntent => _profile.RenderingIntent;
-        public CIEXYZ Illuminant => _profile.Illuminant;
+        public tagCIEXYZ Illuminant => _profile.Illuminant;
         public ColorProfileFlags Flags => _profile.Flags;
 
         [DisplayName("CMM Type")]

@@ -3,6 +3,7 @@ using System.Drawing;
 using System.Windows.Forms;
 using DirectN;
 using WicNet;
+using WicNet.Utilities;
 
 namespace WicNetExplorer
 {
@@ -26,7 +27,7 @@ namespace WicNetExplorer
                 {
                     using var dc = e.DeviceContext.AsComObject<ID2D1DeviceContext>();
                     _bitmap = dc.CreateBitmapFromWicBitmap(BitmapSource.ComObject);
-                    e.DeviceContext.Clear(_D3DCOLORVALUE.FromColor(_d2d.BackColor));
+                    e.DeviceContext.Clear(_d2d.BackColor.ToD3DCOLORVALUE());
                 }
 
                 if (_bitmap != null)
@@ -35,7 +36,7 @@ namespace WicNetExplorer
                     var size = _bitmap.GetSize();
                     var factor = size.GetScaleFactor(_d2d.Width, _d2d.Height);
                     var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
-                    e.DeviceContext.DrawBitmap(_bitmap, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
+                    e.DeviceContext.DrawBitmap(_bitmap, 1, interpolationMode: D2D1_BITMAP_INTERPOLATION_MODE.D2D1_BITMAP_INTERPOLATION_MODE_LINEAR, destinationRectangle: rc);
                 }
             };
             _d2d.Dock = DockStyle.Fill;

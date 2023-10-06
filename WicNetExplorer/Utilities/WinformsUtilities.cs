@@ -3,7 +3,11 @@ using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DirectN;
-using WicNet.Utilities;
+using DialogResult = System.Windows.Forms.DialogResult;
+using MessageBox = System.Windows.Forms.MessageBox;
+using MessageBoxButtons = System.Windows.Forms.MessageBoxButtons;
+using MessageBoxDefaultButton = System.Windows.Forms.MessageBoxDefaultButton;
+using MessageBoxIcon = System.Windows.Forms.MessageBoxIcon;
 
 namespace WicNetExplorer.Utilities
 {

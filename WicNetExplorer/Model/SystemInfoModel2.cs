@@ -2,7 +2,6 @@
 using System.Linq;
 using System.Runtime.Versioning;
 using DirectN;
-using WicNetExplorer.Interop;
 using Windows.Devices.Display.Core;
 
 namespace WicNetExplorer.Model

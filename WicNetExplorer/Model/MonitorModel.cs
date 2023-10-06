@@ -2,8 +2,6 @@
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using DirectN;
-using WicNet;
-using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 using Windows.Devices.Display;
 using Windows.Foundation;
@@ -28,16 +26,16 @@ namespace WicNetExplorer.Model
             foreach (var path in DisplayConfig.Query())
             {
                 var target = DisplayConfig.GetTargetName(path);
-                OutputTechnology = target.outputTechnology.GetEnumName("DISPLAYCONFIG_OUTPUT_TECHNOLOGY");
+                OutputTechnology = target.outputTechnology.GetEnumName(nameof(DISPLAYCONFIG_OUTPUT_TECHNOLOGY));
                 if (target.monitorDevicePath == monitor.DeviceId)
                 {
                     var aci = DisplayConfig.GetAdvancedColorInfo(path);
                     ColorEncoding = aci.colorEncoding.GetEnumName();
                     BitsPerColorChannel = aci.bitsPerColorChannel;
-                    AdvancedColorSupported = aci.advancedColorSupported;
-                    AdvancedColorEnabled = aci.advancedColorEnabled;
-                    WideColorEnforced = aci.wideColorEnforced;
-                    AdvancedColorForceDisabled = aci.advancedColorForceDisabled;
+                    AdvancedColorSupported = aci.__union_1.__field_0.advancedColorSupported != 0;
+                    AdvancedColorEnabled = aci.__union_1.__field_0.advancedColorEnabled != 0;
+                    WideColorEnforced = aci.__union_1.__field_0.wideColorEnforced != 0;
+                    AdvancedColorForceDisabled = aci.__union_1.__field_0.advancedColorForceDisabled != 0;
 
                     var swl = DisplayConfig.GetSdrWhiteLevel(path);
                     SdrWhiteLevel = swl.SDRWhiteLevel;

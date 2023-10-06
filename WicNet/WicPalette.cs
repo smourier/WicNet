@@ -37,7 +37,7 @@ namespace WicNet
             if (bitmap == null)
                 throw new ArgumentNullException(nameof(bitmap));
 
-            _comObject.Object.InitializeFromBitmap(bitmap.ComObject.Object, count, addTransparentColor);
+            _comObject.Object.InitializeFromBitmap(bitmap.ComObject.Object, (uint)count, addTransparentColor);
         }
 
         public WicPalette(IEnumerable<WicColor> colors)
@@ -46,7 +46,7 @@ namespace WicNet
             if (colors == null)
                 throw new ArgumentNullException(nameof(colors));
 
-            var cols = colors.ToArray();
+            var cols = colors.Select(c => (uint)c.ToArgb()).ToArray();
             _comObject.Object.InitializeCustom(cols, cols.Length);
         }
 
@@ -117,7 +117,7 @@ namespace WicNet
             get
             {
                 _comObject.Object.GetColorCount(out var count).ThrowOnError();
-                return count;
+                return (int)count;
             }
         }
 
@@ -137,9 +137,9 @@ namespace WicNet
             if (count == 0)
                 return Array.Empty<WicColor>();
 
-            var colors = new WicColor[count];
+            var colors = new uint[count];
             _comObject.Object.GetColors(count, colors, out _).ThrowOnError();
-            return colors;
+            return colors.Select(c => WicColor.FromArgb(c)).ToArray();
         }
 
         public WicPalette CopyColors() => new WicPalette(Colors);

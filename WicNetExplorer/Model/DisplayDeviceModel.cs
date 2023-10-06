@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Linq;
 using DirectN;
-using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model
@@ -17,7 +16,7 @@ namespace WicNetExplorer.Model
             ArgumentNullException.ThrowIfNull(device);
             _device = device;
             Modes = _device.GetModes().ToArray();
-            StateFlags = _device.StateFlags.GetEnumName("DISPLAY_DEVICE");
+            StateFlags = _device.StateFlags.GetEnumName(nameof(DISPLAY_DEVICE));
         }
 
         public string Name => _device.DeviceName;

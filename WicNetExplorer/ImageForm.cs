@@ -7,6 +7,7 @@ using System.Linq;
 using System.Windows.Forms;
 using DirectN;
 using WicNet;
+using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 using Extensions = WicNetExplorer.Utilities.Extensions;
 
@@ -144,8 +145,8 @@ namespace WicNetExplorer
                 if (_colorManagementEffect != null)
                 {
                     _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_SCALE, factor.ToD2D_VECTOR_2F());
-                    _scaleEffect.SetInput(0, _bitmap);
-                    _colorManagementEffect.SetInput(0, _scaleEffect);
+                    _scaleEffect.SetInput(_bitmap);
+                    _colorManagementEffect.SetInput(_scaleEffect);
                     deviceContext.DrawImage(_colorManagementEffect);
                 }
                 else
@@ -171,7 +172,7 @@ namespace WicNetExplorer
             }
             else
             {
-                deviceContext.Clear(_D3DCOLORVALUE.FromColor(color));
+                deviceContext.Clear(color.ToD3DCOLORVALUE());
             }
         }
 
@@ -215,7 +216,7 @@ namespace WicNetExplorer
                     // note the "all image" list is super long but what other choice do we have?
                     FilterIndex = filter.Item2, // select all images by default
                 };
-                if (fd.ShowDialog(parent) != DialogResult.OK)
+                if (fd.ShowDialog(parent) != System.Windows.Forms.DialogResult.OK)
                     return null;
 
                 fileName = fd.FileName;
@@ -405,7 +406,7 @@ namespace WicNetExplorer
                     Filter = filter.Item1,
                     FilterIndex = filter.Item2, // select all images by default
                 };
-                if (fd.ShowDialog(this) != DialogResult.OK)
+                if (fd.ShowDialog(this) != System.Windows.Forms.DialogResult.OK)
                     return;
 
                 fileName = fd.FileName;

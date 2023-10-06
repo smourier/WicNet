@@ -78,11 +78,13 @@ namespace WicNetExplorer.Model
         [DisplayName("Supports Transparency")]
         public bool SupportsTransparency => _format.SupportsTransparency;
 
+        [ToStringVisitor(Ignore = true)]
         [DisplayName("Supported Target Formats")]
         [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]
         public PixelFormatModel[] TargetConversions => _targetConversions.Value;
 
+        [ToStringVisitor(Ignore = true)]
         [DisplayName("Supported Source Formats")]
         [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]

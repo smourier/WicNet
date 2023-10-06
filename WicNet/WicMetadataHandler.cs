@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using DirectN;
 using WicNet.Utilities;
 
@@ -17,27 +16,23 @@ namespace WicNet
                 info.Object.GetMetadataFormat(out Guid guid);
                 Guid = guid;
 
-                info.Object.GetDeviceManufacturer(0, null, out var len);
-                if (len >= 0)
+                DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetDeviceManufacturer(len + 1, sb, out _);
-                    DeviceManufacturer = sb.ToString();
-                }
+                    info.Object.GetDeviceManufacturer(capacity, s, out var size);
+                    return size;
+                });
 
-                info.Object.GetDeviceModels(0, null, out len);
-                if (len >= 0)
+                DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetDeviceModels(len + 1, sb, out _);
-                    DeviceModels = sb.ToString();
-                }
+                    info.Object.GetDeviceModels(capacity, s, out var size);
+                    return size;
+                });
 
                 info.Object.GetContainerFormats(0, null, out var count);
                 if (count > 0)
                 {
                     var guids = new Guid[count];
-                    if (info.Object.GetContainerFormats(count, guids, out _) == 0)
+                    if (info.Object.GetContainerFormats((int)count, guids, out _) == 0)
                     {
                         ContainerFormats = guids;
                     }

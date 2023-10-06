@@ -25,9 +25,11 @@ namespace WicNetExplorer.Model
         [DisplayName("Exif Color Space")]
         public string ExifColorSpace { get; }
 
+        [ToStringVisitor(Ignore = true)]
         public ColorProfileModel? Profile { get; }
         public string? Type { get; }
 
+        [ToStringVisitor(Ignore = true)]
         [DisplayName("Profile Bytes")]
         [Editor(typeof(ByteArrayEditor), typeof(UITypeEditor))]
         [TypeConverter(typeof(ByteArrayConverter))]

@@ -44,7 +44,7 @@ namespace WicNetExplorer
 #endif
             using var fac = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, new D2D1_FACTORY_OPTIONS { debugLevel = level });
 
-            _target = fac.CreateHwndRenderTarget(new D2D1_HWND_RENDER_TARGET_PROPERTIES { hwnd = Handle, pixelSize = new D2D_SIZE_U(Width, Height) });
+            _target = fac.CreateHwndRenderTarget(new D2D1_HWND_RENDER_TARGET_PROPERTIES { hwnd = Handle, pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height) });
             _dc = _target.AsComObject<ID2D1DeviceContext>(true);
         }
 
@@ -60,7 +60,7 @@ namespace WicNetExplorer
         {
             if (IsValidTarget)
             {
-                var d2dsize = new D2D_SIZE_U(Width, Height);
+                var d2dsize = new D2D_SIZE_U((uint)Width, (uint)Height);
                 var hr = _target!.Object.Resize(ref d2dsize);
                 if (hr.IsError)
                 {

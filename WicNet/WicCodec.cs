@@ -2,7 +2,6 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using System.Text;
 using DirectN;
 using WicNet.Utilities;
 
@@ -21,45 +20,35 @@ namespace WicNet
                 info.Object.GetContainerFormat(out Guid guid);
                 ContainerFormat = guid;
 
-                info.Object.GetFileExtensions(0, null, out var len);
-                if (len >= 0)
+                FileExtensions = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetFileExtensions(len + 1, sb, out _);
-                    FileExtensions = sb.ToString();
-                }
+                    info.Object.GetFileExtensions(capacity, s, out var size);
+                    return size;
+                });
 
-                info.Object.GetColorManagementVersion(0, null, out len);
-                if (len >= 0)
+                ColorManagementVersion = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetColorManagementVersion(len + 1, sb, out _);
-                    ColorManagementVersion = sb.ToString();
-                }
+                    info.Object.GetColorManagementVersion(capacity, s, out var size);
+                    return size;
+                });
 
-                info.Object.GetDeviceManufacturer(0, null, out len);
-                if (len >= 0)
+                DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetDeviceManufacturer(len + 1, sb, out _);
-                    DeviceManufacturer = sb.ToString();
-                }
+                    info.Object.GetDeviceManufacturer(capacity, s, out var size);
+                    return size;
+                });
 
-                info.Object.GetDeviceModels(0, null, out len);
-                if (len >= 0)
+                DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetDeviceModels(len + 1, sb, out _);
-                    DeviceModels = sb.ToString();
-                }
+                    info.Object.GetDeviceModels(capacity, s, out var size);
+                    return size;
+                });
 
-                info.Object.GetMimeTypes(0, null, out len);
-                if (len >= 0)
+                MimeTypes = Utilities.Extensions.GetString((s, capacity) =>
                 {
-                    var sb = new StringBuilder(len);
-                    info.Object.GetMimeTypes(len + 1, sb, out _);
-                    MimeTypes = sb.ToString();
-                }
+                    info.Object.GetMimeTypes(capacity, s, out var size);
+                    return size;
+                });
 
                 info.Object.DoesSupportAnimation(out bool b);
                 SupportsAnimation = b;
@@ -76,11 +65,11 @@ namespace WicNet
                 FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
                 MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
 
-                info.Object.GetPixelFormats(0, null, out len);
+                info.Object.GetPixelFormats(0, null, out var len);
                 if (len > 0)
                 {
                     var pf = new Guid[len];
-                    info.Object.GetPixelFormats(len, pf, out _).ThrowOnError();
+                    info.Object.GetPixelFormats((int)len, pf, out _).ThrowOnError();
                     PixelFormats = pf;
                 }
                 else

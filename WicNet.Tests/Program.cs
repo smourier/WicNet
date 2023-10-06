@@ -333,7 +333,7 @@ namespace WicNet.Tests
             bmp.Scale(100, null);
             bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
             using var cb = dc.CreateBitmapFromWicBitmap(bmp.ComObject);
-            fx.SetInput(0, cb);
+            fx.SetInput(cb);
             dc.BeginDraw();
             dc.DrawImage(fx);
             dc.EndDraw();
@@ -364,7 +364,7 @@ namespace WicNet.Tests
                 using var rt = newBmp.CreateDeviceContext();
                 using var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Turbulence);
                 using var cb = rt.CreateBitmapFromWicBitmap(newBmp.ComObject);
-                fx.SetInput(0, cb);
+                fx.SetInput(cb);
                 fx.SetValue((int)D2D1_TURBULENCE_PROP.D2D1_TURBULENCE_PROP_OFFSET, new D2D_VECTOR_2F(offset, 0));
                 rt.BeginDraw();
                 rt.DrawImage(fx);
@@ -382,7 +382,7 @@ namespace WicNet.Tests
             using var rt = newBmp.CreateDeviceContext();
             using var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1GaussianBlur);
             using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
-            fx.SetInput(0, cb);
+            fx.SetInput(cb);
             fx.SetValue((int)D2D1_GAUSSIANBLUR_PROP.D2D1_GAUSSIANBLUR_PROP_STANDARD_DEVIATION, width * 3.0f);
             fx.SetValue((int)D2D1_GAUSSIANBLUR_PROP.D2D1_GAUSSIANBLUR_PROP_OPTIMIZATION, D2D1_DIRECTIONALBLUR_OPTIMIZATION.D2D1_DIRECTIONALBLUR_OPTIMIZATION_QUALITY);
 
@@ -407,7 +407,7 @@ namespace WicNet.Tests
             using var rt = newBmp.CreateDeviceContext();
             using var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Grayscale);
             using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
-            fx.SetInput(0, cb);
+            fx.SetInput(cb);
             rt.BeginDraw();
             rt.DrawImage(fx);
             rt.EndDraw();
@@ -426,7 +426,7 @@ namespace WicNet.Tests
             using var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
             using var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.Red);
             rt.BeginDraw();
-            rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(new D2D_SIZE_F(memBmp.Size)));
+            rt.DrawBitmap(dbmp, destinationRectangle: new D2D_RECT_F(memBmp.Size.ToD2D_SIZE_F()));
             rt.DrawEllipse(new D2D1_ELLIPSE(width / 2, height / 2, Math.Min(width, height) / 2), brush, 4);
             rt.EndDraw();
             memBmp.Save("ellipse.jpg");

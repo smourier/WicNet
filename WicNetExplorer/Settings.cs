@@ -2,10 +2,9 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing;
-using System.Drawing.Design;
 using System.IO;
 using System.Linq;
-using WicNet.Utilities;
+using DirectN;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer

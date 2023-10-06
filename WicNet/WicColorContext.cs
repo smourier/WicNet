@@ -147,7 +147,7 @@ namespace WicNet
                 return null;
 
             var bytes = new byte[count];
-            _comObject.Object.GetProfileBytes(count, bytes, out _).ThrowOnError();
+            _comObject.Object.GetProfileBytes((int)count, bytes, out _).ThrowOnError();
             return bytes;
         }
 

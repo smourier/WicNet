@@ -18,11 +18,11 @@ namespace WicNet
                 PixelFormat = WicImagingComponent.FromClsid<WicPixelFormat>(format);
 
                 wrapper.Object.GetSize(out var width, out var height);
-                Width = width;
-                Height = height;
+                Width = (int)width;
+                Height = (int)height;
 
                 wrapper.Object.GetStride(out var stride);
-                Stride = stride;
+                Stride = (int)stride;
             }
         }
 
