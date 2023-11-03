@@ -14,7 +14,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            CopyWithColorContext();
+            ExtractGif();
             return;
             LoadFromIcon();
             return;
@@ -455,6 +455,36 @@ namespace WicNet.Tests
             Process.Start(new ProcessStartInfo("helloworld.jpg") { UseShellExecute = true });
         }
 
+        static void ExtractGif()
+        {
+            var path = @"source.gif";
+            using var dec = WicBitmapDecoder.Load(path);
+            Console.WriteLine("Frames: " + dec.FrameCount);
+            var reader = dec.GetMetadataQueryReader();
+            Dump(reader);
+            Console.WriteLine();
+
+            var i = 1;
+            var name = Path.GetFileNameWithoutExtension(path);
+            var ext = Path.GetExtension(path);
+
+            var dir = Path.GetFullPath(name);
+            if (!Directory.Exists(dir))
+            {
+                Directory.CreateDirectory(dir);
+            }
+
+            foreach (var frame in dec)
+            {
+                frame.Save(Path.Combine(dir, name + "." + i + ext));
+                reader = frame.GetMetadataReader();
+                Console.WriteLine("Frame " + i + " metadata");
+                Dump(reader);
+                Console.WriteLine();
+                i++;
+            }
+        }
+
         static void CopyGif()
         {
             using var dec = WicBitmapDecoder.Load(@"source.gif");
@@ -470,7 +500,6 @@ namespace WicNet.Tests
                 Dump(reader);
                 Console.WriteLine();
             }
-
 
             using var encoder = WICImagingFactory.CreateEncoder(dec.ContainerFormat);
             using var file = File.OpenWrite("test.gif");
