@@ -5,6 +5,7 @@ using System.Drawing;
 using System.IO;
 using System.Linq;
 using DirectN;
+using WicNetExplorer.Model;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer
@@ -84,6 +85,10 @@ namespace WicNetExplorer
         [DisplayName("Background Color")]
         [DefaultValue(typeof(Color), nameof(Color.Transparent))]
         public Color BackgroundColor { get => GetPropertyValue(Color.Transparent); set { SetPropertyValue(value); } }
+
+        [DisplayName("Scaling Interpolation Mode")]
+        [DefaultValue(InterpolationMode.NearestNeighbor)]
+        public InterpolationMode ScalingInterpolationMode { get => GetPropertyValue(InterpolationMode.NearestNeighbor); set { SetPropertyValue(value); } }
 
         [DefaultValue(_maxArrayElementDisplayedDefault)]
         [DisplayName("Maximum Array Element Displayed")]

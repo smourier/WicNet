@@ -125,6 +125,19 @@ namespace WicNetExplorer
                         _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_SOURCE_COLOR_CONTEXT, ctx);
                     }
 
+                    // check max Direct2D bitmap size
+                    var maxSize = deviceContext.Object.GetMaximumBitmapSize();
+                    if (_bitmapSource.Width > maxSize || _bitmapSource.Height > maxSize)
+                    {
+                        var scalingMode = (WICBitmapInterpolationMode)Settings.Current.ScalingInterpolationMode;
+                        var format = _bitmapSource.PixelFormat;
+                        _bitmapSource.Scale((int)maxSize, scalingMode);
+                        if (_bitmapSource.PixelFormat != format)
+                        {
+                            _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+                        }
+                    }
+
                     _bitmap = deviceContext.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
                     _bitmapSource.Dispose();
                     _bitmapSource = null;
