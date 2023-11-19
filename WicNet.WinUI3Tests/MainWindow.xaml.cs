@@ -33,6 +33,19 @@ namespace WicNet.WinUI3Tests
             myImage.Source = source;
         }
 
+        private static WicBitmapSource GetTransformed(WicBitmapSource bmp)
+        {
+            try
+            {
+                return bmp.GetColorTransform(bmp.GetBestColorContext(), WicColorContext.Standard, WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
+            }
+            catch
+            {
+                // some color context don't support transformation
+                return null;
+            }
+        }
+
         private static SoftwareBitmap GetSoftwareBitmap(string filePath)
         {
             using var bmp = WicBitmapSource.Load(filePath);
@@ -44,19 +57,21 @@ namespace WicNet.WinUI3Tests
             var ctx = bmp.GetColorContexts();
             if (ctx.Count > 0)
             {
-                using var transformed = bmp.GetColorTransform(bmp.GetBestColorContext(), WicColorContext.Standard, WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
+                using var transformed = GetTransformed(bmp);
+                if (transformed != null)
+                {
+                    // get pixels as an array of bytes
+                    var bytes = transformed.CopyPixels();
 
-                // get pixels as an array of bytes
-                var bytes = transformed.CopyPixels();
-
-                // get WinRT SoftwareBitmap
-                var softwareBitmap = new SoftwareBitmap(
-                    BitmapPixelFormat.Bgra8,
-                    bmp.Width,
-                    bmp.Height,
-                    BitmapAlphaMode.Premultiplied);
-                softwareBitmap.CopyFromBuffer(bytes.AsBuffer());
-                return softwareBitmap;
+                    // get WinRT SoftwareBitmap
+                    var softwareBitmap = new SoftwareBitmap(
+                        BitmapPixelFormat.Bgra8,
+                        bmp.Width,
+                        bmp.Height,
+                        BitmapAlphaMode.Premultiplied);
+                    softwareBitmap.CopyFromBuffer(bytes.AsBuffer());
+                    return softwareBitmap;
+                }
             }
 
             // software bitmap doesn't support all formats
