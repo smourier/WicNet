@@ -32,7 +32,7 @@ Draw ellipse over an image and save (uses D2D):
         }
     }
 
-Rotate image, convert to grayscale and save (uses D2D effects):
+Rotate image, convert to grayscale and save (uses Direct2D effects):
 
     static void RotateAndGrayscale()
     {
@@ -53,3 +53,14 @@ Rotate image, convert to grayscale and save (uses D2D effects):
             }
         }
     }
+    
+## WicNetExplorer
+WicNetExplorer is a GUI sample program that demonstrates how to use WicNet, it's capable of loading and saving images and shows WIC information:
+
+![image](https://github.com/smourier/WicNet/assets/5328574/af1795f4-3627-4193-a849-3e2c50f87aac)
+
+WicNetExplorer demonstrates two Windows technologies for the WIC display surface:
+
+* Direct2D's `ID2D1HwndRenderTarget` interface: https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nn-d2d1-id2d1hwndrendertarget
+* Windows Direct Composition (aka the [Visual Layer](https://learn.microsoft.com/en-us/windows/uwp/composition/visual-layer) ), through the use of `CompositionDrawingSurface` Class: https://learn.microsoft.com/en-us/uwp/api/windows.ui.composition.compositiondrawingsurface
+
