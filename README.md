@@ -64,3 +64,44 @@ WicNetExplorer demonstrates two Windows technologies for the WIC display surface
 * Direct2D's `ID2D1HwndRenderTarget` interface: https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nn-d2d1-id2d1hwndrendertarget
 * Windows Direct Composition (aka the [Visual Layer](https://learn.microsoft.com/en-us/windows/uwp/composition/visual-layer) ), through the use of `CompositionDrawingSurface` Class: https://learn.microsoft.com/en-us/uwp/api/windows.ui.composition.compositiondrawingsurface
 
+## WinUI3/WinRT interop
+The WinUI3Tests program demonstrates WicNet (and therefore WIC) interop with WinRT's [SoftwareBitmap](https://learn.microsoft.com/en-us/uwp/api/windows.graphics.imaging.softwarebitmap) and WinUI3:
+
+    private static SoftwareBitmap GetSoftwareBitmap(string filePath)
+    {
+        using var bmp = WicBitmapSource.Load(filePath);
+
+        // note: software bitmap doesn't seem to support color contexts
+        // so we must transform it ourselves, building one using pixels after color transformation
+        // this is the moral equivalent to WinRT's BitmapDecoder.GetPixelDataAsync (which uses Wic underneath...)
+        // https://learn.microsoft.com/en-us/uwp/api/windows.graphics.imaging.bitmapdecoder.getpixeldataasync
+        var ctx = bmp.GetColorContexts();
+        if (ctx.Count > 0)
+        {
+            using var transformed = GetTransformed(bmp);
+            if (transformed != null)
+            {
+                // get pixels as an array of bytes
+                var bytes = transformed.CopyPixels();
+
+                // get WinRT SoftwareBitmap
+                var softwareBitmap = new SoftwareBitmap(
+                    BitmapPixelFormat.Bgra8,
+                    bmp.Width,
+                    bmp.Height,
+                    BitmapAlphaMode.Premultiplied);
+                softwareBitmap.CopyFromBuffer(bytes.AsBuffer());
+                return softwareBitmap;
+            }
+        }
+
+        // software bitmap doesn't support all formats
+        // https://learn.microsoft.com/en-us/uwp/api/windows.graphics.imaging.bitmappixelformat
+        // and SoftwareBitmapSource only support Bgra8...
+        bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPBGRA);
+
+        // software bitmap doesn't support "raw" IWicBitmapSource, it wants an IWicBitmap
+        using var clone = bmp.Clone();
+        return clone.WithSoftwareBitmap(true, ptr => SoftwareBitmap.FromAbi(ptr));
+    }
+
