@@ -14,7 +14,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            LoadAndConvertToBW();
+            ConvertToBW();
             return;
             ExtractGif();
             return;
@@ -417,10 +417,11 @@ namespace WicNet.Tests
             Process.Start(new ProcessStartInfo("gray.jpg") { UseShellExecute = true });
         }
 
-        static void LoadAndConvertToBW()
+        static void ConvertToBW()
         {
             using var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg");
-            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat1bppIndexed, ditherType: WICBitmapDitherType.WICBitmapDitherTypeErrorDiffusion, paletteTranslate: WICBitmapPaletteType.WICBitmapPaletteTypeFixedBW);
+            //bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat1bppIndexed, ditherType: WICBitmapDitherType.WICBitmapDitherTypeErrorDiffusion, paletteTranslate: WICBitmapPaletteType.WICBitmapPaletteTypeFixedBW);
+            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormatBlackWhite, ditherType: WICBitmapDitherType.WICBitmapDitherTypeDualSpiral8x8, paletteTranslate: WICBitmapPaletteType.WICBitmapPaletteTypeFixedHalftone256);
             bmp.Save("bw.bmp");
             Process.Start(new ProcessStartInfo("bw.bmp") { UseShellExecute = true });
         }
