@@ -14,6 +14,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            LoadAndConvertToBW();
+            return;
             ExtractGif();
             return;
             LoadFromIcon();
@@ -413,6 +415,14 @@ namespace WicNet.Tests
             rt.EndDraw();
             newBmp.Save("gray.jpg");
             Process.Start(new ProcessStartInfo("gray.jpg") { UseShellExecute = true });
+        }
+
+        static void LoadAndConvertToBW()
+        {
+            using var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg");
+            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat1bppIndexed, ditherType: WICBitmapDitherType.WICBitmapDitherTypeErrorDiffusion, paletteTranslate: WICBitmapPaletteType.WICBitmapPaletteTypeFixedBW);
+            bmp.Save("bw.bmp");
+            Process.Start(new ProcessStartInfo("bw.bmp") { UseShellExecute = true });
         }
 
         static void DrawEllipse()
