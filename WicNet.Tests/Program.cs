@@ -14,6 +14,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            ConvertSvgAsPng("tiger.svg");
+            return;
             ConvertToBW();
             return;
             ExtractGif();
@@ -227,6 +229,53 @@ namespace WicNet.Tests
 
             memBmp.Save("atlas.jpg");
         }
+
+        static void ConvertSvgAsPng(string fileName)
+        {
+            using var memBmp = new WicBitmapSource(1000, 1000, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            using var dc = memBmp.CreateDeviceContext();
+            var dc5 = dc.As<ID2D1DeviceContext5>();
+            using var stream = new Utilities.UnmanagedMemoryStream(fileName);
+            using var doc = dc5.CreateSvgDocument(stream, new D2D_SIZE_F(memBmp.Width, memBmp.Height));
+            dc.BeginDraw();
+            dc5.DrawSvgDocument(doc.Object);
+            dc.EndDraw();
+            memBmp.Save(Path.ChangeExtension(fileName, ".jpg"));
+        }
+
+        // equivalent with Winforms's Bitmap:
+        //static void ConvertSvgAsPng(string fileName, int width, int height)
+        //{
+        //    using (var memBmp = new Bitmap(width, height))
+        //    {
+        //        using (var fac = D2D1Functions.D2D1CreateFactory())
+        //        {
+        //            using (var dc = fac.CreateDCRenderTarget(new D2D1_RENDER_TARGET_PROPERTIES
+        //            {
+        //                type = D2D1_RENDER_TARGET_TYPE.D2D1_RENDER_TARGET_TYPE_SOFTWARE,
+        //                pixelFormat = new D2D1_PIXEL_FORMAT { alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_IGNORE, format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM }
+        //            }))
+        //            {
+        //                using (var graphics = Graphics.FromImage(memBmp))
+        //                {
+        //                    dc.Object.BindDC(graphics.GetHdc(), new tagRECT(0, 0, width, height));
+        //                    var dc5 = dc.As<ID2D1DeviceContext5>();
+        //                    using (var stream = new WicNet.Utilities.UnmanagedMemoryStream(fileName))
+        //                    {
+        //                        using (var doc = dc5.CreateSvgDocument(stream, new D2D_SIZE_F(memBmp.Width, memBmp.Height)))
+        //                        {
+        //                            dc.BeginDraw();
+        //                            dc5.DrawSvgDocument(doc.Object);
+        //                            dc.EndDraw();
+        //                        }
+
+        //                    }
+        //                }
+        //            }
+        //            memBmp.Save(Path.ChangeExtension(fileName, ".jpg"));
+        //        }
+        //    }
+        //}
 
         static void BuildAtlasWithGPU(int thumbSize = 96, int dimension = 20)
         {
