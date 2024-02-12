@@ -165,14 +165,29 @@
   <data name="Metadata" xml:space="preserve">
     <value>Metadata</value>
   </data>
+  <data name="Minimize" xml:space="preserve">
+    <value>Minimize</value>
+  </data>
+  <data name="NextPage" xml:space="preserve">
+    <value>Next Page</value>
+  </data>
   <data name="NoMetadata" xml:space="preserve">
     <value>The file has no metadata.</value>
   </data>
   <data name="OneImageFileFilter" xml:space="preserve">
     <value>{0} files (*{1})|*{1}</value>
   </data>
+  <data name="Pages" xml:space="preserve">
+    <value>{0} page(s)</value>
+  </data>
   <data name="Preferences" xml:space="preserve">
     <value>Preferences</value>
+  </data>
+  <data name="PreviousPage" xml:space="preserve">
+    <value>Previous Page</value>
+  </data>
+  <data name="Restore" xml:space="preserve">
+    <value>Restore</value>
   </data>
   <data name="SysInfo" xml:space="preserve">
     <value>System Information</value>

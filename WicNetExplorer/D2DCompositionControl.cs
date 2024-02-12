@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
+using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -58,7 +59,7 @@ namespace WicNetExplorer
         {
             ArgumentNullException.ThrowIfNull(action);
             if (_surface == null)
-                throw new NotSupportedException();
+                return;
 
             var size = _surface.Size;
             if (size._width < 0.5f || size._height < 0.5f)
@@ -81,6 +82,12 @@ namespace WicNetExplorer
         {
             base.OnHandleDestroyed(e);
             ReleaseTarget();
+        }
+
+        protected override void NotifyInvalidate(Rectangle invalidatedArea)
+        {
+            base.NotifyInvalidate(invalidatedArea);
+            OnDraw();
         }
 
         protected override void OnResize(EventArgs e)
@@ -113,8 +120,14 @@ namespace WicNetExplorer
             var interop = _graphicsDevice.Value.Compositor.As<ICompositorDesktopInterop>();
             interop.CreateDesktopWindowTarget(Handle, true, out var target).ThrowOnError();
             var unk = Marshal.GetIUnknownForObject(target);
-            _target = MarshalInterface<DesktopWindowTarget>.FromAbi(unk);
-            Marshal.Release(unk);
+            try
+            {
+                _target = MarshalInterface<DesktopWindowTarget>.FromAbi(unk);
+            }
+            finally
+            {
+                Marshal.Release(unk);
+            }
 
             var root = _graphicsDevice.Value.Compositor.CreateSpriteVisual();
             root.Size = new Vector2(Width, Height);
@@ -134,6 +147,7 @@ namespace WicNetExplorer
             OnDraw();
         }
 
+        void ID2DControl.Redraw() => OnDraw();
         protected virtual void OnDraw() => WithDeviceContext(dc => OnDraw(this, new D2DDrawEventArgs(dc)));
         protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
 

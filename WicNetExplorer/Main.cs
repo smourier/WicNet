@@ -153,11 +153,11 @@ namespace WicNetExplorer
             if (fileName == null)
                 return;
 
-            if (Extensions.IsSvg(fileName))
+            if (Extensions.IsSvg(fileName) || Extensions.IsPdf(fileName))
             {
-                var svgModel = new SvgFileModel(fileName);
-                var svgDlg = new ObjectForm(svgModel, true);
-                svgDlg.ShowDialog(this);
+                var fileModel = new FileModel(fileName);
+                var fileDlg = new ObjectForm(fileModel, true);
+                fileDlg.ShowDialog(this);
                 return;
             }
 

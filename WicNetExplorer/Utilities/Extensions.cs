@@ -5,8 +5,10 @@ using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
 using DirectN;
 using WicNet;
+using WicNetExplorer.Interop;
 
 namespace WicNetExplorer.Utilities
 {
@@ -48,8 +50,18 @@ namespace WicNetExplorer.Utilities
             return device;
         }
 
+        public static IPdfRendererNative? PdfCreateRenderer(IDXGIDevice device, bool throwOnError = true)
+        {
+            ArgumentNullException.ThrowIfNull(device);
+            PdfCreateRenderer(device, out var renderer).ThrowOnError(throwOnError);
+            return renderer;
+        }
+
         [DllImport("d3d11", ExactSpelling = true)]
         private static extern HRESULT D3D11CreateDevice(/*IDXGIAdapter*/ [MarshalAs(UnmanagedType.IUnknown)] object? pAdapter, D3D_DRIVER_TYPE DriverType, IntPtr Software, D3D11_CREATE_DEVICE_FLAG Flags, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5)] D3D_FEATURE_LEVEL[]? pFeatureLevels, uint FeatureLevels, uint SDKVersion, /*ID3D11Device*/ [MarshalAs(UnmanagedType.IUnknown)] out object ppDevice, out D3D_FEATURE_LEVEL pFeatureLevel, /*out ID3D11DeviceContext*/ IntPtr ppImmediateContext);
+
+        [DllImport("windows.data.pdf", ExactSpelling = true)]
+        private static extern HRESULT PdfCreateRenderer(IDXGIDevice pDevice, out IPdfRendererNative ppRenderer);
 
         public static void OpenUrl(Uri uri)
         {
@@ -82,6 +94,15 @@ namespace WicNetExplorer.Utilities
             ArgumentNullException.ThrowIfNull(fileName);
             var ext = Path.GetExtension(fileName);
             return ext.EqualsIgnoreCase(".svg") || ext.EqualsIgnoreCase(".svgz");
+        }
+
+        [SupportedOSPlatformGuard("windows10.0.10240.0")]
+        public static bool IsPdfDocumentSupported() => RuntimeInformation.IsOSPlatform(OSPlatform.Windows) && OperatingSystem.IsWindowsVersionAtLeast(10, 0, 10240) && !Settings.Current.ForceW7;
+        public static bool IsPdf(string fileName)
+        {
+            ArgumentNullException.ThrowIfNull(fileName);
+            var ext = Path.GetExtension(fileName);
+            return ext.EqualsIgnoreCase(".pdf");
         }
 
         public static _D3DCOLORVALUE FromColor(this Windows.UI.Color color) => _D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);

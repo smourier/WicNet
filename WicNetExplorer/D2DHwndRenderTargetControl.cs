@@ -70,6 +70,7 @@ namespace WicNetExplorer
             Invalidate();
         }
 
+        void ID2DControl.Redraw() => Invalidate();
         protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
 
         protected sealed override void OnPaint(PaintEventArgs e)

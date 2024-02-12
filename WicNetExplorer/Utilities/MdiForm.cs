@@ -13,9 +13,9 @@ namespace WicNetExplorer.Utilities
         private Font? _buttonFont;
         private Font? _textFont;
         private float? _initialFontSize;
-        private readonly Button _closeButton = new() { Text = "r", FlatStyle = FlatStyle.Flat, Name = "Close" };
-        private readonly Button _restoreButton = new() { Text = "1", FlatStyle = FlatStyle.Flat, Name = "Restore" };
-        private readonly Button _minimizeButton = new() { Text = "0", FlatStyle = FlatStyle.Flat, Name = "Minimize" };
+        private readonly Button _closeButton = new() { Text = "r", FlatStyle = FlatStyle.Flat, Name = Resources.Close };
+        private readonly Button _restoreButton = new() { Text = "1", FlatStyle = FlatStyle.Flat, Name = Resources.Restore };
+        private readonly Button _minimizeButton = new() { Text = "0", FlatStyle = FlatStyle.Flat, Name = Resources.Minimize };
 
         private const int _frameSize = 4;
 
@@ -340,14 +340,14 @@ namespace WicNetExplorer.Utilities
             Invalidate(caption);
         }
 
-        private void RecomputeSizes()
+        protected virtual void RecomputeSizes()
         {
             SetFonts();
             Padding = GetCaptionPadding();
             SetCaptionButtons();
         }
 
-        private void SetFonts()
+        protected virtual void SetFonts()
         {
             _initialFontSize ??= Font.Size;
             var fontSize = DpiUtilities.AdjustForWindowDpi(_initialFontSize.Value, Handle);
@@ -359,7 +359,7 @@ namespace WicNetExplorer.Utilities
             _buttonFont = new Font("Marlett", fontSize);
         }
 
-        private void SetCaptionColors()
+        protected virtual void SetCaptionColors()
         {
             BackColor = IsActive ? SystemColors.InactiveCaption : SystemColors.ActiveCaption;
             _closeButton.BackColor = BackColor;
@@ -367,7 +367,7 @@ namespace WicNetExplorer.Utilities
             _minimizeButton.BackColor = BackColor;
         }
 
-        private void SetCaptionButtons()
+        protected virtual void SetCaptionButtons()
         {
             var buttonWidth = Padding.Top;
             var buttonHeight = Padding.Top - Padding.Bottom;

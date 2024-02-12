@@ -17,6 +17,7 @@ namespace WicNetExplorer
         private const int _maxArrayElementToCopyToClipboardDefault = int.MaxValue;
         private const bool _honorOrientationDefault = true;
         private const bool _honorColorContextsDefault = true;
+        private const bool _pdfIgnoreHighContrast = false;
 
         public const string FileName = "settings.json";
 
@@ -109,6 +110,10 @@ namespace WicNetExplorer
         [DefaultValue(_honorColorContextsDefault)]
         [DisplayName("Honor Color Spaces")]
         public bool HonorColorContexts { get => GetPropertyValue(_honorColorContextsDefault); set { SetPropertyValue(value); } }
+
+        [DefaultValue(_pdfIgnoreHighContrast)]
+        [DisplayName("Ignore High Contrast for PDF rendering")]
+        public bool PdfIgnoreHighContrast { get => GetPropertyValue(_pdfIgnoreHighContrast); set { SetPropertyValue(value); } }
 
         private Dictionary<string, DateTime> GetRecentFiles()
         {

@@ -4,11 +4,17 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
+using System.Runtime.Versioning;
+using System.Threading.Tasks;
 using System.Windows.Forms;
 using DirectN;
 using WicNet;
 using WicNet.Utilities;
+using WicNetExplorer.Interop;
 using WicNetExplorer.Utilities;
+using Windows.Data.Pdf;
+using Windows.Storage;
 using Extensions = WicNetExplorer.Utilities.Extensions;
 
 namespace WicNetExplorer
@@ -23,6 +29,11 @@ namespace WicNetExplorer
         private IComObject<ID2D1Effect>? _scaleEffect;
         private IComObject<ID2D1SvgDocument>? _svgDocument;
         private ID2DControl? _d2d;
+        private PdfDocument? _pdfDocument;
+        private IPdfRendererNative? _pdfRendererNative;
+        private Button? _nextPage;
+        private Button? _previousPage;
+        private int _currentPage;
 
         public ImageForm()
         {
@@ -53,9 +64,16 @@ namespace WicNetExplorer
 
         public virtual void DoDraw(IComObject<ID2D1DeviceContext> deviceContext)
         {
-            if (FileName != null && Extensions.IsSvg(FileName))
+            if (FileName != null)
             {
-                DoDrawSvg(deviceContext);
+                if (Extensions.IsSvg(FileName))
+                {
+                    DoDrawSvg(deviceContext);
+                }
+                else if (Extensions.IsPdf(FileName))
+                {
+                    DoDrawPdf(deviceContext);
+                }
             }
             else
             {
@@ -63,7 +81,49 @@ namespace WicNetExplorer
             }
         }
 
-        public virtual void DoDrawSvg(IComObject<ID2D1DeviceContext> deviceContext)
+        protected virtual void DoDrawPdf(IComObject<ID2D1DeviceContext> deviceContext)
+        {
+            ArgumentNullException.ThrowIfNull(deviceContext);
+            deviceContext.Clear(_D3DCOLORVALUE.White);
+            if (!Extensions.IsPdfDocumentSupported())
+                return;
+
+            if (_pdfDocument == null || _pdfDocument.PageCount == 0)
+                return;
+
+            if (_pdfRendererNative == null)
+            {
+                using var device = deviceContext.GetDevice<ID2D1Device2>();
+                device.Object.GetDxgiDevice(out var dxgi);
+                if (dxgi == null) // HwndRenderTarget has no underlying dxgi device
+                    return;
+
+                _pdfRendererNative = Extensions.PdfCreateRenderer(dxgi, false);
+            }
+
+            var page = _pdfDocument.GetPage((uint)_currentPage);
+            var unk = Marshal.GetIUnknownForObject(page);
+            try
+            {
+                // keep proportions
+                var size = new D2D_SIZE_F(page.Size.Width, page.Size.Height);
+                var factor = size.GetScaleFactor(Width, Height);
+                using var mem = new ComMemory(new PDF_RENDER_PARAMS
+                {
+                    BackgroundColor = _D3DCOLORVALUE.White,
+                    DestinationWidth = (int)(size.width * factor.width),
+                    DestinationHeight = (int)(size.height * factor.height),
+                    IgnoreHighContrast = Settings.Current.PdfIgnoreHighContrast,
+                });
+                _pdfRendererNative?.RenderPageToDeviceContext(unk, deviceContext.Object, mem.Pointer);
+            }
+            finally
+            {
+                Marshal.Release(unk);
+            }
+        }
+
+        protected virtual void DoDrawSvg(IComObject<ID2D1DeviceContext> deviceContext)
         {
             ArgumentNullException.ThrowIfNull(deviceContext);
             if (_d2d == null)
@@ -86,7 +146,7 @@ namespace WicNetExplorer
             }
         }
 
-        public virtual void DoDrawBitmap(IComObject<ID2D1DeviceContext> deviceContext)
+        protected virtual void DoDrawBitmap(IComObject<ID2D1DeviceContext> deviceContext)
         {
             ArgumentNullException.ThrowIfNull(deviceContext);
             if (_d2d == null)
@@ -218,6 +278,12 @@ namespace WicNetExplorer
                     ".svg",
                     ".svgz"
                 };
+
+                if (Extensions.IsPdfDocumentSupported())
+                {
+                    exts.Add(".pdf");
+                }
+
                 var filter = BuildFilters(exts);
                 var fd = new OpenFileDialog
                 {
@@ -280,6 +346,8 @@ namespace WicNetExplorer
             {
                 DisposeContextDependentResources();
                 DisposeContextIndependentResources();
+                _nextPage?.Dispose();
+                _previousPage?.Dispose();
                 components?.Dispose();
                 _d2d?.Dispose();
             }
@@ -292,11 +360,33 @@ namespace WicNetExplorer
             base.OnClosing(e);
         }
 
+        protected override void SetCaptionButtons()
+        {
+            base.SetCaptionButtons();
+            var buttonHeight = Padding.Top - Padding.Bottom;
+            if (_previousPage != null)
+            {
+                _previousPage.Height = buttonHeight;
+                _previousPage.Location = new Point(Padding.Left * 2, Padding.Bottom + buttonHeight);
+                _previousPage.BringToFront();
+            }
+
+            if (_nextPage != null)
+            {
+                _nextPage.Height = buttonHeight;
+                _nextPage.Location = new Point(Padding.Left * 3 + _previousPage!.Width, Padding.Bottom + buttonHeight);
+                _nextPage.BringToFront();
+            }
+        }
+
         public virtual bool LoadFile(string fileName)
         {
             ArgumentNullException.ThrowIfNull(fileName);
             if (Extensions.IsSvg(fileName))
                 return LoadSvgFile(fileName);
+
+            if (Extensions.IsPdfDocumentSupported() && Extensions.IsPdf(fileName))
+                return LoadPdfFile(fileName);
 
             return LoadBitmapFile(fileName);
         }
@@ -307,6 +397,65 @@ namespace WicNetExplorer
             Text = fileName;
             FileName = fileName;
             return true;
+        }
+
+        [SupportedOSPlatform("windows10.0.10240.0")]
+        protected virtual bool LoadPdfFile(string fileName)
+        {
+            EnsureD2DControl();
+            Text = fileName;
+            FileName = fileName;
+            _ = LoadPdfDocument(FileName);
+            return true;
+        }
+
+        [SupportedOSPlatform("windows10.0.10240.0")]
+        protected async Task LoadPdfDocument(string fileName)
+        {
+            ArgumentNullException.ThrowIfNull(fileName);
+
+            var file = await StorageFile.GetFileFromPathAsync(fileName);
+            _pdfDocument = await PdfDocument.LoadFromFileAsync(file);
+
+            Text = fileName + " - " + string.Format(Resources.Pages, _pdfDocument.PageCount);
+            if (_pdfDocument.PageCount > 1)
+            {
+                _nextPage = new Button
+                {
+                    Text = Resources.NextPage,
+                    AutoSize = true,
+                    FlatStyle = FlatStyle.Flat,
+                };
+
+                _nextPage.Click += (s, e) => UpdatePage(1);
+                Controls.Add(_nextPage);
+
+                _previousPage = new Button
+                {
+                    Text = Resources.PreviousPage,
+                    AutoSize = true,
+                    FlatStyle = FlatStyle.Flat,
+                };
+
+                _previousPage.Click += (s, e) => UpdatePage(-1);
+                Controls.Add(_previousPage);
+                SetCaptionButtons();
+            }
+        }
+
+        protected virtual void UpdatePage(int delta)
+        {
+            if (delta == 0 || _pdfDocument == null || !Extensions.IsPdfDocumentSupported())
+                return;
+
+            var tentative = delta + _currentPage;
+            if (tentative < 0 || tentative >= _pdfDocument.PageCount)
+                return;
+
+            _currentPage = tentative;
+            _nextPage!.Enabled = _currentPage < _pdfDocument.PageCount - 1;
+            _previousPage!.Enabled = _currentPage > 0;
+            _d2d?.Redraw();
         }
 
         protected virtual bool LoadBitmapFile(string fileName)

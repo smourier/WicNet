@@ -5,9 +5,9 @@ using System.IO;
 namespace WicNetExplorer.Model
 {
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class SvgFileModel
+    public class FileModel
     {
-        public SvgFileModel(string filePath)
+        public FileModel(string filePath)
         {
             ArgumentNullException.ThrowIfNull(filePath);
             FilePath = filePath;
