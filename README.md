@@ -63,6 +63,7 @@ WicNetExplorer demonstrates two Windows technologies for the WIC display surface
 
 * Direct2D's `ID2D1HwndRenderTarget` interface: https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nn-d2d1-id2d1hwndrendertarget
 * Windows Direct Composition (aka the [Visual Layer](https://learn.microsoft.com/en-us/windows/uwp/composition/visual-layer) ), through the use of `CompositionDrawingSurface` Class: https://learn.microsoft.com/en-us/uwp/api/windows.ui.composition.compositiondrawingsurface
+* Direct2D's PDF rendering using PdfCreateRenderer method (https://learn.microsoft.com/en-us/windows/win32/api/windows.data.pdf.interop/nf-windows-data-pdf-interop-pdfcreaterenderer). Ok, it's not really WIC related, but it's fun :-)
 
 ## WinUI3/WinRT interop
 The WinUI3Tests program demonstrates WicNet (and therefore WIC) interop with WinRT's [SoftwareBitmap](https://learn.microsoft.com/en-us/uwp/api/windows.graphics.imaging.softwarebitmap) and WinUI3:
