@@ -8,7 +8,6 @@ using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using DirectN;
 using WicNet;
-using WicNetExplorer.Interop;
 
 namespace WicNetExplorer.Utilities
 {

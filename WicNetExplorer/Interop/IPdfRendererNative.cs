@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Runtime.InteropServices;
-using DirectN;
 
-namespace WicNetExplorer.Interop
+namespace DirectN
 {
     [ComImport, Guid("7d9dcd91-d277-4947-8527-07a0daeda94a"), InterfaceType(ComInterfaceType.InterfaceIsIUnknown)]
     public interface IPdfRendererNative

@@ -1,7 +1,6 @@
 ﻿using System.Runtime.InteropServices;
-using DirectN;
 
-namespace WicNetExplorer.Interop
+namespace DirectN
 {
     [StructLayout(LayoutKind.Sequential)]
     public struct PDF_RENDER_PARAMS

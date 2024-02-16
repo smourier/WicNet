@@ -11,7 +11,6 @@ using System.Windows.Forms;
 using DirectN;
 using WicNet;
 using WicNet.Utilities;
-using WicNetExplorer.Interop;
 using WicNetExplorer.Utilities;
 using Windows.Data.Pdf;
 using Windows.Storage;
@@ -69,16 +68,17 @@ namespace WicNetExplorer
                 if (Extensions.IsSvg(FileName))
                 {
                     DoDrawSvg(deviceContext);
+                    return;
                 }
-                else if (Extensions.IsPdf(FileName))
+
+                if (Extensions.IsPdf(FileName))
                 {
                     DoDrawPdf(deviceContext);
+                    return;
                 }
             }
-            else
-            {
-                DoDrawBitmap(deviceContext);
-            }
+
+            DoDrawBitmap(deviceContext);
         }
 
         protected virtual void DoDrawPdf(IComObject<ID2D1DeviceContext> deviceContext)

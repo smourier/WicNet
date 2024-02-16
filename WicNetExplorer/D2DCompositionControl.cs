@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Diagnostics.CodeAnalysis;
-using System.Drawing;
 using System.Numerics;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
@@ -82,12 +81,6 @@ namespace WicNetExplorer
         {
             base.OnHandleDestroyed(e);
             ReleaseTarget();
-        }
-
-        protected override void NotifyInvalidate(Rectangle invalidatedArea)
-        {
-            base.NotifyInvalidate(invalidatedArea);
-            OnDraw();
         }
 
         protected override void OnResize(EventArgs e)
