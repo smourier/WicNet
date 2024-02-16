@@ -189,6 +189,9 @@
   <data name="Restore" xml:space="preserve">
     <value>Restore</value>
   </data>
+  <data name="SaveNotSupported" xml:space="preserve">
+    <value>Saving this type of image is not supported.</value>
+  </data>
   <data name="SysInfo" xml:space="preserve">
     <value>System Information</value>
   </data>

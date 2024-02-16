@@ -18,6 +18,7 @@ namespace WicNetExplorer
         private const bool _honorOrientationDefault = true;
         private const bool _honorColorContextsDefault = true;
         private const bool _pdfIgnoreHighContrast = false;
+        private const bool _drawSvgTransparencyAsCheckerboard = false;
 
         public const string FileName = "settings.json";
 
@@ -114,6 +115,10 @@ namespace WicNetExplorer
         [DefaultValue(_pdfIgnoreHighContrast)]
         [DisplayName("Ignore High Contrast for PDF rendering")]
         public bool PdfIgnoreHighContrast { get => GetPropertyValue(_pdfIgnoreHighContrast); set { SetPropertyValue(value); } }
+
+        [DefaultValue(_drawSvgTransparencyAsCheckerboard)]
+        [DisplayName("Draw Svg Transparency as Checkerboard")]
+        public bool DrawSvgTransparencyAsCheckerboard { get => GetPropertyValue(_drawSvgTransparencyAsCheckerboard); set { SetPropertyValue(value); } }
 
         private Dictionary<string, DateTime> GetRecentFiles()
         {

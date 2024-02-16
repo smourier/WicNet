@@ -129,7 +129,11 @@ namespace WicNetExplorer
             if (_d2d == null)
                 throw new InvalidProgramException();
 
-            DrawBackground(deviceContext);
+            if (Settings.Current.DrawSvgTransparencyAsCheckerboard)
+            {
+                DrawBackground(deviceContext);
+            }
+
             var dc5 = deviceContext.As<ID2D1DeviceContext5>();
             if (dc5 == null)
                 return;
@@ -554,46 +558,70 @@ namespace WicNetExplorer
         public void SaveFileAs() => SaveFile(true);
         private void SaveFile(bool choose)
         {
-            if (_bitmap == null || _d2d == null)
+            if (_d2d == null)
                 return;
 
-            var fileName = FileName;
-            if (fileName == null || choose)
+            var dispose = false;
+            var bitmap = _bitmap;
+            if (bitmap == null)
             {
-                var filter = BuildFilters(WicImagingComponent.EncoderFileExtensions);
-                var fd = new SaveFileDialog
+                bitmap = _d2d.GetSurfaceBitmap();
+                if (bitmap == null)
                 {
-                    RestoreDirectory = true,
-                    CheckPathExists = true,
-                    Filter = filter.Item1,
-                    FilterIndex = filter.Item2, // select all images by default
-                };
-                if (fd.ShowDialog(this) != System.Windows.Forms.DialogResult.OK)
+                    this.ShowError(Resources.SaveNotSupported);
                     return;
+                }
 
-                fileName = fd.FileName;
+                dispose = true;
             }
 
-            var encoder = WicEncoder.FromFileExtension(Path.GetExtension(fileName));
-            if (encoder == null)
-                throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
-
-            IOUtilities.FileDelete(fileName, true, false);
-            _d2d.WithDeviceContext(dc =>
+            try
             {
-                using var device = dc.GetDevice();
-                using var image = _bitmap.AsComObject<ID2D1Image>(true);
-                using var stream = File.OpenWrite(fileName);
-                image.Save(device, encoder.ContainerFormat, stream);
-                DoDraw(dc);
-            });
+                var fileName = FileName;
+                if (fileName == null || choose)
+                {
+                    var filter = BuildFilters(WicImagingComponent.EncoderFileExtensions);
+                    var fd = new SaveFileDialog
+                    {
+                        RestoreDirectory = true,
+                        CheckPathExists = true,
+                        Filter = filter.Item1,
+                        FilterIndex = filter.Item2, // select all images by default
+                    };
+                    if (fd.ShowDialog(this) != System.Windows.Forms.DialogResult.OK)
+                        return;
 
-            if (new FileInfo(fileName).Length == 0)
-            {
+                    fileName = fd.FileName;
+                }
+
+                var encoder = WicEncoder.FromFileExtension(Path.GetExtension(fileName));
+                if (encoder == null)
+                    throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
+
                 IOUtilities.FileDelete(fileName, true, false);
-            }
+                _d2d.WithDeviceContext(dc =>
+                {
+                    using var device = dc.GetDevice();
+                    using var image = bitmap.AsComObject<ID2D1Image>(true);
+                    using var stream = File.OpenWrite(fileName);
+                    image.Save(device, encoder.ContainerFormat, stream);
+                    DoDraw(dc);
+                });
 
-            LoadFile(fileName);
+                if (new FileInfo(fileName).Length == 0)
+                {
+                    IOUtilities.FileDelete(fileName, true, false);
+                }
+
+                LoadFile(fileName);
+            }
+            finally
+            {
+                if (dispose)
+                {
+                    bitmap.Dispose();
+                }
+            }
         }
 
         private void CloseFile()

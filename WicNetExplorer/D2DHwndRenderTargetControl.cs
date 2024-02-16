@@ -70,6 +70,7 @@ namespace WicNetExplorer
             Invalidate();
         }
 
+        IComObject<ID2D1Bitmap1>? ID2DControl.GetSurfaceBitmap() => null;
         void ID2DControl.Redraw() => Invalidate();
         protected virtual void OnDraw(object sender, D2DDrawEventArgs e) => Draw?.Invoke(sender, e);
 

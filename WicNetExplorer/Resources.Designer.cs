@@ -277,6 +277,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Saving this type of image is not supported..
+        /// </summary>
+        internal static string SaveNotSupported {
+            get {
+                return ResourceManager.GetString("SaveNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to System Information.
         /// </summary>
         internal static string SysInfo {

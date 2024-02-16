@@ -26,7 +26,7 @@ namespace WicNetExplorer
         private static CompositionGraphicsDevice CreateCompositionGraphicsDevice()
         {
             _ = _dispatcherQueueController.Value;
-            using var dev = new ComObject<IDXGIDevice>((IDXGIDevice)_d3d11Device.Value);
+            var dev = new ComObject<IDXGIDevice>((IDXGIDevice)_d3d11Device.Value);
             using var d2dDevice = _d2dFactory.Value.CreateDevice(dev);
             var compositor = new Compositor();
             var interop = compositor.As<ICompositorInterop>();
@@ -67,7 +67,39 @@ namespace WicNetExplorer
             using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop>(_surface.As<ICompositionDrawingSurfaceInterop>());
             using var dc = surfaceInterop.BeginDraw<ID2D1DeviceContext>();
             action(dc);
+
             surfaceInterop.Object.EndDraw(); // don't throw
+        }
+
+        public IComObject<ID2D1Bitmap1>? GetSurfaceBitmap()
+        {
+            if (_surface == null)
+                return null;
+
+            var device = (ID3D11Device)_d3d11Device.Value;
+            var desc = new D3D11_TEXTURE2D_DESC
+            {
+                Width = (uint)_surface.Size.Width,
+                Height = (uint)_surface.Size.Height,
+                Format = PixelFormat,
+                ArraySize = 1,
+                MipLevels = 1, // to be able to query for IDXGISurface
+                SampleDesc = new DXGI_SAMPLE_DESC { Count = 1 },
+            };
+
+            using var tex = device.CreateTexture2D<ID3D11Texture2D>(desc);
+            using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop2>(_surface.As<ICompositionDrawingSurfaceInterop2>());
+            var hr = tex.WithComPointer(unk => surfaceInterop.Object.CopySurface(unk, 0, 0, IntPtr.Zero));
+            if (hr.IsError)
+                return null;
+
+            var surface = new ComObject<IDXGISurface>(tex.As<IDXGISurface>(), false);
+            IComObject<ID2D1Bitmap1>? bmp = null;
+            WithDeviceContext(dc =>
+            {
+                bmp = dc.CreateBitmapFromDxgiSurface(surface);
+            });
+            return bmp;
         }
 
         protected override void OnPaint(PaintEventArgs e)
