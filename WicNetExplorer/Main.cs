@@ -28,6 +28,15 @@ namespace WicNetExplorer
 
         public ImageForm? ActiveImageForm => ActiveMdiChild as ImageForm;
 
+        protected override void Dispose(bool disposing)
+        {
+            base.Dispose(disposing);
+            if (OperatingSystem.IsWindowsVersionAtLeast(10, 0, 17763))
+            {
+                D2DCompositionControl.DisposeResources();
+            }
+        }
+
         private void OpenFile(string? fileName = null)
         {
             var form = ImageForm.OpenFile(this, fileName);

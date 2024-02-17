@@ -19,8 +19,8 @@ namespace WicNet.Utilities
 
         public static _D3DCOLORVALUE ToD3DCOLORVALUE(this Color color) => _D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
 
-        public static IComObject<ID2D1BitmapBrush> CreateTransparentLookBrush(this IComObject<ID2D1RenderTarget> renderTarget, float size) => CreateTransparentLookBrush(renderTarget?.Object, size);
-        public static IComObject<ID2D1BitmapBrush> CreateTransparentLookBrush(this ID2D1RenderTarget renderTarget, float size, _D3DCOLORVALUE? color = null)
+        public static IComObject<ID2D1BitmapBrush> CreateCheckerboardBrush(this IComObject<ID2D1RenderTarget> renderTarget, float size) => CreateCheckerboardBrush(renderTarget?.Object, size);
+        public static IComObject<ID2D1BitmapBrush> CreateCheckerboardBrush(this ID2D1RenderTarget renderTarget, float size, _D3DCOLORVALUE? color = null)
         {
             if (renderTarget == null)
                 throw new ArgumentNullException(nameof(renderTarget));

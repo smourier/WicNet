@@ -34,6 +34,24 @@ namespace WicNetExplorer
             return MarshalInterface<CompositionGraphicsDevice>.FromAbi(graphicsDevice);
         }
 
+        internal static void DisposeResources()
+        {
+            if (_d2dFactory.IsValueCreated)
+            {
+                _d2dFactory.Value?.Dispose();
+            }
+
+            if (_d3d11Device.IsValueCreated)
+            {
+                (_d3d11Device.Value as IDisposable)?.Dispose();
+            }
+
+            if (_graphicsDevice.IsValueCreated)
+            {
+                _graphicsDevice.Value?.Dispose();
+            }
+        }
+
         private DesktopWindowTarget? _target;
         private CompositionDrawingSurface? _surface;
 

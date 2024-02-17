@@ -129,7 +129,7 @@ namespace WicNetExplorer
             if (_d2d == null)
                 throw new InvalidProgramException();
 
-            if (Settings.Current.DrawSvgTransparencyAsCheckerboard)
+            if (Settings.Current.UseBackgroundColorForSvgTransparency)
             {
                 DrawBackground(deviceContext);
             }
@@ -243,7 +243,7 @@ namespace WicNetExplorer
             var color = Settings.Current.BackgroundColor;
             if (color.A == 0 && color.R == 0 && color.G == 0 && color.B == 0 || color == Color.Transparent)
             {
-                _backgroundBrush ??= deviceContext.CreateTransparentLookBrush(8);
+                _backgroundBrush ??= deviceContext.CreateCheckerboardBrush(8);
                 deviceContext.Clear(_D3DCOLORVALUE.White);
                 deviceContext.FillRectangle(new D2D_RECT_F(0, 0, Width, Height), _backgroundBrush);
             }
