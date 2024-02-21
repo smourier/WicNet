@@ -14,9 +14,11 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            ConvertSvgAsPng("tiger.svg");
+            Posterize(256);
             return;
             ConvertToBW();
+            return;
+            ConvertSvgAsPng("tiger.svg");
             return;
             ExtractGif();
             return;
@@ -464,6 +466,26 @@ namespace WicNet.Tests
             rt.EndDraw();
             newBmp.Save("gray.jpg");
             Process.Start(new ProcessStartInfo("gray.jpg") { UseShellExecute = true });
+        }
+
+        static void Posterize(uint numberOfColors)
+        {
+            using var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg");
+            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+            using var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            using var rt = newBmp.CreateDeviceContext();
+            using var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Posterize);
+            using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
+            fx.SetInput(cb);
+            fx.SetValue((int)D2D1_POSTERIZE_PROP.D2D1_POSTERIZE_PROP_RED_VALUE_COUNT, numberOfColors);
+            fx.SetValue((int)D2D1_POSTERIZE_PROP.D2D1_POSTERIZE_PROP_GREEN_VALUE_COUNT, numberOfColors);
+            fx.SetValue((int)D2D1_POSTERIZE_PROP.D2D1_POSTERIZE_PROP_BLUE_VALUE_COUNT, numberOfColors);
+            rt.BeginDraw();
+            rt.DrawImage(fx);
+            rt.EndDraw();
+            var name = "posterize" + numberOfColors + ".jpg";
+            newBmp.Save(name);
+            Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
         }
 
         static void ConvertToBW()
