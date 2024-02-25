@@ -137,7 +137,7 @@ namespace WicNet
 
         public static T FromContainerFormatGuid<T>(Guid guid) where T : WicCodec => AllComponents.OfType<T>().FirstOrDefault(c => c.ContainerFormat == guid);
 
-        public static string GetFormatName(Guid guid) => Utilities.Extensions.GetGuidName(typeof(WicCodec), guid);
+        public static string GetFormatName(Guid guid) => typeof(WicCodec).GetGuidName(guid);
 
         public static readonly Guid GUID_ContainerFormatAdng = new Guid("f3ff6d0d-38c0-41c4-b1fe-1f3824f17b84");
         public static readonly Guid GUID_ContainerFormatBmp = new Guid("0af1d87e-fcfe-4188-bdeb-a7906471cbe3");

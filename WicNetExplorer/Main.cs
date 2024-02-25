@@ -133,9 +133,18 @@ namespace WicNetExplorer
         private void ToolStripMenuItemOpen_Click(object sender, EventArgs e) => OpenFile(null);
         private void FileToolStripMenuItem_DropDownOpening(object sender, EventArgs e)
         {
+            closeToolStripMenuItem.Enabled = ActiveMdiChild != null;
             saveAsToolStripMenuItem.Enabled = ActiveMdiChild != null;
             saveToolStripMenuItem.Enabled = ActiveMdiChild != null;
-            closeToolStripMenuItem.Enabled = ActiveMdiChild != null;
+
+            if (saveToolStripMenuItem.Enabled)
+            {
+                var fileName = ActiveImageForm?.FileName;
+                if (fileName == null || Extensions.IsSvg(fileName) || Extensions.IsPdf(fileName))
+                {
+                    saveToolStripMenuItem.Enabled = false;
+                }
+            }
 
             const int fixedRecentItemsCount = 2;
             while (openRecentToolStripMenuItem.DropDownItems.Count > fixedRecentItemsCount)

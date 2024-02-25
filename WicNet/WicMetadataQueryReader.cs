@@ -174,10 +174,10 @@ namespace WicNet
 
         public static string GetFormatName(Guid guid)
         {
-            if (Utilities.Extensions.TryGetGuidName(typeof(WicMetadataQueryReader), guid, out var name))
+            if (typeof(WicMetadataQueryReader).TryGetGuidName(guid, out var name))
                 return name;
 
-            return Utilities.Extensions.GetGuidName(typeof(WicCodec), guid);
+            return typeof(WicCodec).GetGuidName(guid);
         }
 
         public static readonly Guid GUID_MetadataFormat8BIMIPTC = new Guid("0010568c-0852-4e6a-b191-5c33ac5b0430");

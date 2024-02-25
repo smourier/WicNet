@@ -206,7 +206,7 @@ namespace WicNet
             return DecoderFileExtensions.Contains(ext);
         }
 
-        public static string GetClassName(Guid guid) => Utilities.Extensions.GetGuidName(typeof(WicImagingComponent), guid);
+        public static string GetClassName(Guid guid) => typeof(WicImagingComponent).GetGuidName(guid);
 
         public static readonly Guid CLSID_WICAdngDecoder = new Guid("981d9411-909e-42a7-8f5d-a747ff052edb");
         public static readonly Guid CLSID_WICBmpDecoder = new Guid("6b462062-7cbf-400d-9fdb-813dd10f2778");

@@ -26,7 +26,7 @@ namespace WicNetExplorer
         private static CompositionGraphicsDevice CreateCompositionGraphicsDevice()
         {
             _ = _dispatcherQueueController.Value;
-            var dev = new ComObject<IDXGIDevice>((IDXGIDevice)_d3d11Device.Value);
+            var dev = new ComObject<IDXGIDevice>((IDXGIDevice)_d3d11Device.Value, false);
             using var d2dDevice = _d2dFactory.Value.CreateDevice(dev);
             var compositor = new Compositor();
             var interop = compositor.As<ICompositorInterop>();
