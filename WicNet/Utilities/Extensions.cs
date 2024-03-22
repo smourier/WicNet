@@ -69,7 +69,7 @@ namespace WicNet.Utilities
                         factory.CreateQueryWriter(kv.Key.Format, IntPtr.Zero, out var childWriter).ThrowOnError();
                         using (var pv = new PropVariant(childWriter))
                         {
-                            var hr = writer.SetMetadataByName(kv.Key.Key, pv).ThrowOnError();
+                            var hr = writer.SetMetadataByName(kv.Key.Key, pv.Detached).ThrowOnError();
                         }
                         EncodeMetadata(childWriter, childMetadata);
                     }
@@ -77,7 +77,7 @@ namespace WicNet.Utilities
                     {
                         using (var pv = new PropVariant(kv.Value, kv.Type))
                         {
-                            var hr = writer.SetMetadataByName(kv.Key.Key, pv).ThrowOnError();
+                            var hr = writer.SetMetadataByName(kv.Key.Key, pv.Detached).ThrowOnError();
                         }
                     }
                 }

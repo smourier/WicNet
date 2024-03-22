@@ -283,7 +283,7 @@ namespace WicNetExplorer
             if (fileName == null)
                 return;
 
-            metadataToolStripMenuItem.Enabled = !Extensions.IsSvg(fileName);
+            metadataToolStripMenuItem.Enabled = !Extensions.IsSvg(fileName) && !Extensions.IsPdf(fileName);
         }
     }
 }

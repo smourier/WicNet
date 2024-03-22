@@ -96,15 +96,16 @@ namespace WicNet
             if (name == null)
                 throw new ArgumentNullException(nameof(name));
 
-            using (var pv = new PropVariant())
+            var detached = new PROPVARIANT();
+            if (_comObject.Object.GetMetadataByName(name, detached).IsError)
             {
-                if (_comObject.Object.GetMetadataByName(name, pv).IsError)
-                {
-                    value = null;
-                    type = PropertyType.VT_EMPTY;
-                    return false;
-                }
+                value = null;
+                type = PropertyType.VT_EMPTY;
+                return false;
+            }
 
+            using (var pv = detached.Attach())
+            {
                 value = pv.Value;
                 type = pv.VarType;
                 return true;

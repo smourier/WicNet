@@ -256,11 +256,8 @@ namespace WicNet
             return true;
         }
 
-        public void CopyPixels(int bufferSize, IntPtr buffer, int? stride = null)
+        public void CopyPixels(uint bufferSize, IntPtr buffer, int? stride = null)
         {
-            if (bufferSize < 0)
-                throw new ArgumentOutOfRangeException(nameof(bufferSize));
-
             if (buffer == IntPtr.Zero)
                 throw new ArgumentOutOfRangeException(nameof(buffer));
 
@@ -268,7 +265,7 @@ namespace WicNet
             _comObject.Object.CopyPixels(IntPtr.Zero, (uint)stride.Value, bufferSize, buffer).ThrowOnError();
         }
 
-        public void CopyPixels(int left, int top, int width, int height, int bufferSize, IntPtr buffer, int? stride = null)
+        public void CopyPixels(int left, int top, int width, int height, uint bufferSize, IntPtr buffer, int? stride = null)
         {
             if (width < 0)
                 throw new ArgumentOutOfRangeException(nameof(width));
@@ -309,7 +306,7 @@ namespace WicNet
                 throw new ArgumentOutOfRangeException(nameof(stride));
 
             stride = stride ?? DefaultStride;
-            var size = height * stride.Value;
+            var size = (uint)height * (uint)stride.Value;
             var bytes = new byte[size];
             if (size > 0)
             {
