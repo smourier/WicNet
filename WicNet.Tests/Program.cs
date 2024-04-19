@@ -14,6 +14,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            DumpPossibleWicBitmapRenderTargetFormats();
+            return;
             Posterize(256);
             return;
             ConvertToBW();
@@ -154,6 +156,51 @@ namespace WicNet.Tests
             foreach (var comp in WicImagingComponent.AllComponents)
             {
                 Console.WriteLine(comp.Type + " " + comp);
+            }
+        }
+
+        static void DumpPossibleWicBitmapRenderTargetFormats()
+        {
+            using var fac = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_MULTI_THREADED);
+            foreach (var format in WicImagingComponent.AllComponents.OfType<WicPixelFormat>().Where(f => f.BitsPerPixel == 32))
+            {
+                IComObject<IWICBitmap> bmp;
+                try
+                {
+                    bmp = WICImagingFactory.CreateBitmap(100, 100, format.Guid, WICBitmapCreateCacheOption.WICBitmapCacheOnDemand);
+                }
+                catch
+                {
+                    continue;
+                }
+
+                foreach (var dxgiFormat in Enum.GetValues(typeof(DXGI_FORMAT)).OfType<DXGI_FORMAT>())
+                {
+                    foreach (var alpha in Enum.GetValues(typeof(D2D1_ALPHA_MODE)).OfType<D2D1_ALPHA_MODE>())
+                    {
+                        if (alpha == D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_FORCE_DWORD)
+                            continue;
+
+                        var p = new D2D1_RENDER_TARGET_PROPERTIES
+                        {
+                            pixelFormat = new D2D1_PIXEL_FORMAT
+                            {
+                                alphaMode = alpha,
+                                format = dxgiFormat,
+                            }
+                        };
+
+                        try
+                        {
+                            using var target = fac.CreateWicBitmapRenderTarget(bmp, p);
+                            Console.WriteLine($"{format} {dxgiFormat} {alpha}");
+                        }
+                        catch
+                        {
+                            continue;
+                        }
+                    }
+                }
             }
         }
 
