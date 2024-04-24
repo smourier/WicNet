@@ -56,7 +56,7 @@ namespace WicNet
                             break;
                     }
 
-                    dic.Add(ic.Clsid, ic);
+                    _ = dic.TryAdd(ic.Clsid, ic);
                     component.Dispose();
                 }
             });
