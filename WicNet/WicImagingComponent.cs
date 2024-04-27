@@ -56,7 +56,7 @@ namespace WicNet
                             break;
                     }
 
-                    if (dic.ContainsKey(ic.Clsid))
+                    if (!dic.ContainsKey(ic.Clsid))
                     {
                         dic.Add(ic.Clsid, ic);
                     }
