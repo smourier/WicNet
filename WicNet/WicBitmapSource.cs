@@ -364,6 +364,31 @@ namespace WicNet
             return ppv;
         }
 
+        // use it like this 
+        //    var wic = WicBitmapSource.FromSoftwareBitmap(((IWinRTObject)softwareBitmap).NativeObject.ThisPtr);
+        public static WicBitmapSource FromSoftwareBitmap(IntPtr nativeSoftwareBitmap)
+        {
+            if (nativeSoftwareBitmap == IntPtr.Zero)
+                return null;
+
+            if (!(Marshal.GetObjectForIUnknown(nativeSoftwareBitmap) is ISoftwareBitmapNative native))
+                return null;
+
+            native.GetData(typeof(IWICBitmap).GUID, out var ppv);
+            if (ppv == IntPtr.Zero)
+                return null;
+
+            try
+            {
+                var bmp = Marshal.GetObjectForIUnknown(ppv);
+                return new WicBitmapSource(bmp);
+            }
+            finally
+            {
+                Marshal.Release(ppv);
+            }
+        }
+
         public static WicBitmapSource FromHIcon(IntPtr iconHandle) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHICON(iconHandle));
         public static WicBitmapSource FromMemory(int width, int height, Guid pixelFormat, int stride, byte[] buffer) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
         public static WicBitmapSource FromHBitmap(IntPtr bitmapHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new WicBitmapSource(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, options));

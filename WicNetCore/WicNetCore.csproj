@@ -5,6 +5,20 @@
 		<Nullable>enable</Nullable>
 		<PublishAot>true</PublishAot>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 	</PropertyGroup>
+
+	<ItemGroup>
+	  <Compile Include="..\WicNet\Properties\AssemblyVersionInfo.cs" Link="Properties\AssemblyVersionInfo.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="DirectNAot">
+	    <HintPath>..\..\DirectNAot\DirectNAot\bin\Debug\net8.0\DirectNAot.dll</HintPath>
+	  </Reference>
+	  <Reference Include="DirectNAot.Extensions">
+	    <HintPath>..\..\DirectNAot\DirectNAot.Extensions\bin\Debug\net8.0-windows10.0.19041.0\DirectNAot.Extensions.dll</HintPath>
+	  </Reference>
+	</ItemGroup>
 
 </Project>
