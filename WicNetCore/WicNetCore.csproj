@@ -13,11 +13,15 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <Folder Include="External\" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Reference Include="DirectNAot">
-	    <HintPath>..\..\DirectNAot\DirectNAot\bin\Debug\net8.0\DirectNAot.dll</HintPath>
+	    <HintPath>External\DirectNAot.dll</HintPath>
 	  </Reference>
 	  <Reference Include="DirectNAot.Extensions">
-	    <HintPath>..\..\DirectNAot\DirectNAot.Extensions\bin\Debug\net8.0-windows10.0.19041.0\DirectNAot.Extensions.dll</HintPath>
+	    <HintPath>External\DirectNAot.Extensions.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 
