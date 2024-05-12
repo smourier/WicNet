@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Runtime.CompilerServices;
 using DirectN;
 using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
@@ -17,12 +16,11 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
         using var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject);
         unsafe
         {
-            var n = Unsafe.AsRef<Guid[]>(null);
-            info.Object.GetPixelFormats(0, ref n, out var len);
+            info.Object.GetPixelFormats(0, null!, out var len);
             var pf = new Guid[len];
             if (len > 0)
             {
-                info.Object.GetPixelFormats(len, ref pf, out _);
+                info.Object.GetPixelFormats(len, pf, out _);
             }
 
             PixelFormats = pf;

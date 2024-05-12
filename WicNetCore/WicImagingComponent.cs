@@ -111,25 +111,25 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
 
         FriendlyName = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetFriendlyName(capacity, ref s, out var size);
+            wrapper.Object.GetFriendlyName(capacity, s, out var size);
             return size;
         });
 
         Author = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetAuthor(capacity, ref s, out var size);
+            wrapper.Object.GetAuthor(capacity, s, out var size);
             return size;
         });
 
         Version = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetVersion(capacity, ref s, out var size);
+            wrapper.Object.GetVersion(capacity, s, out var size);
             return size;
         });
 
         SpecVersion = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetSpecVersion(capacity, ref s, out var size);
+            wrapper.Object.GetSpecVersion(capacity, s, out var size);
             return size;
         });
     }

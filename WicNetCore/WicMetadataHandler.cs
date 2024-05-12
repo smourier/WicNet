@@ -1,7 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using DirectN;
 using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
@@ -19,24 +18,23 @@ public abstract class WicMetadataHandler : WicImagingComponent
 
         DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceManufacturer(capacity, ref s, out var size);
+            info.Object.GetDeviceManufacturer(capacity, s, out var size);
             return size;
         });
 
         DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceModels(capacity, ref s, out var size);
+            info.Object.GetDeviceModels(capacity, s, out var size);
             return size;
         });
 
         unsafe
         {
-            var g = Unsafe.AsRef<Guid[]>(null);
-            info.Object.GetContainerFormats(0, ref g, out var count);
+            info.Object.GetContainerFormats(0, null!, out var count);
             if (count > 0)
             {
                 var guids = new Guid[count];
-                if (info.Object.GetContainerFormats(count, ref guids, out _) == 0)
+                if (info.Object.GetContainerFormats(count, guids, out _) == 0)
                 {
                     ContainerFormats = guids;
                 }

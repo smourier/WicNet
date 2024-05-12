@@ -22,7 +22,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
         {
             return Utilities.Extensions.GetString((s, capacity) =>
             {
-                _comObject.Object.GetLocation(capacity, ref s, out var size);
+                _comObject.Object.GetLocation(capacity, s, out var size);
                 return size;
             });
         }
@@ -46,7 +46,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
             if (enumString != null)
             {
                 var strings = new PWSTR[1];
-                while (enumString.Next(1, ref strings, 0) == 0)
+                while (enumString.Next(1, strings, 0) == 0)
                 {
                     var str = strings[0].ToString();
                     if (str != null)

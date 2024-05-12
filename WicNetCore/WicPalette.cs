@@ -136,7 +136,7 @@ public sealed class WicPalette : IDisposable
             return [];
 
         var colors = new uint[count];
-        _comObject.Object.GetColors(count, ref colors, out _).ThrowOnError();
+        _comObject.Object.GetColors(count, colors, out _).ThrowOnError();
         return colors.Select(c => WicColor.FromArgb(c)).ToArray();
     }
 
