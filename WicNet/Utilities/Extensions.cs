@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
@@ -9,8 +8,6 @@ namespace WicNet.Utilities
 {
     public static class Extensions
     {
-        private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>> _guidsNames = new ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>>();
-
         public static int GET_X_LPARAM(this IntPtr lParam) => LOWORD(lParam.ToInt32());
         public static int GET_Y_LPARAM(this IntPtr lParam) => HIWORD(lParam.ToInt32());
         public static int HIWORD(int i) => (short)(i >> 16);

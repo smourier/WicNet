@@ -2,8 +2,8 @@
 using System.Collections.Generic;
 using System.Runtime.CompilerServices;
 using DirectN;
+using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
-using WicNet.Extensions;
 
 namespace WicNet;
 

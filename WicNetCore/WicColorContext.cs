@@ -1,5 +1,6 @@
 ﻿using System;
 using DirectN;
+using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
 
@@ -76,10 +77,12 @@ public sealed class WicColorContext : IDisposable
         }
         else
         {
-            _comObject = source as IComObject<IWICColorContext>;
-            if (_comObject == null)
+            if (source is not IComObject<IWICColorContext> co)
                 throw new ArgumentException("Source must be an " + nameof(IWICColorContext) + ".", nameof(source));
+
+            _comObject = co;
         }
+
         _profile = new Lazy<ColorProfile?>(() =>
         {
             var bytes = ProfileBytes;

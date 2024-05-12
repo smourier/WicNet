@@ -41,7 +41,7 @@ public sealed class WicDecoder(object comObject) : WicCodec(comObject)
         if (item != null)
             return item;
 
-        return AllComponents.OfType<WicDecoder>().FirstOrDefault(f => f.FriendlyName.ToLowerInvariant().Replace("decoder", "").Trim().EqualsIgnoreCase(name));
+        return AllComponents.OfType<WicDecoder>().FirstOrDefault(f => f.FriendlyName?.ToLowerInvariant()?.Replace("decoder", string.Empty).EqualsIgnoreCase(name) == true);
     }
 
     public static WicDecoder? FromContainerFormatGuid(Guid guid) => FromContainerFormatGuid<WicDecoder>(guid);

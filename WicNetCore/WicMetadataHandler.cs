@@ -19,13 +19,13 @@ public abstract class WicMetadataHandler : WicImagingComponent
 
         DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceManufacturer(capacity, s, out var size);
+            info.Object.GetDeviceManufacturer(capacity, ref s, out var size);
             return size;
         });
 
         DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceModels(capacity, s, out var size);
+            info.Object.GetDeviceModels(capacity, ref s, out var size);
             return size;
         });
 
@@ -57,8 +57,8 @@ public abstract class WicMetadataHandler : WicImagingComponent
 
     public Guid Guid { get; }
     public IReadOnlyList<Guid> ContainerFormats { get; }
-    public string DeviceManufacturer { get; }
-    public string DeviceModels { get; }
+    public string? DeviceManufacturer { get; }
+    public string? DeviceModels { get; }
     public bool RequiresFullStream { get; }
     public bool SupportsPadding { get; }
     public bool RequiresFixedSize { get; }
@@ -66,7 +66,7 @@ public abstract class WicMetadataHandler : WicImagingComponent
     public static T? FromFormatGuid<T>(Guid guid) where T : WicMetadataHandler => AllComponents.OfType<T>().FirstOrDefault(c => c.Guid == guid);
     public static T? FromFriendlyName<T>(string friendlyName) where T : WicMetadataHandler => AllComponents.OfType<T>().FirstOrDefault(c => c.FriendlyName.EqualsIgnoreCase(friendlyName));
 
-    public static string FriendlyNameFromGuid(Guid guid)
+    public static string? FriendlyNameFromGuid(Guid guid)
     {
         var handler = FromFormatGuid<WicMetadataHandler>(guid);
         return handler != null ? handler.FriendlyName : guid.ToString();

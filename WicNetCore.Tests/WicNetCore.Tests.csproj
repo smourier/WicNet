@@ -9,7 +9,46 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <Content Include="..\WicNet.Tests\file_example_TIFF_1MB.tiff" Link="file_example_TIFF_1MB.tiff">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\WicNet.Tests\hdr-image.jpg" Link="hdr-image.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\WicNet.Tests\SamsungSGH-P270.jpg" Link="SamsungSGH-P270.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\WicNet.Tests\source.gif" Link="source.gif">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	  <Content Include="..\WicNet.Tests\test.ico" Link="test.ico">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </Content>
+	</ItemGroup>
+
+	<ItemGroup>
+	  <None Include="..\WicNet.Tests\hdr-image.jxr" Link="hdr-image.jxr">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Include="..\WicNet.Tests\image-scrgb-icc.jxr" Link="image-scrgb-icc.jxr">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	  <None Include="..\WicNet.Tests\tiger.svg" Link="tiger.svg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
+	<ItemGroup>
 		<ProjectReference Include="..\WicNetCore\WicNetCore.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="DirectNAot">
+	    <HintPath>..\WicNetCore\External\DirectNAot.dll</HintPath>
+	  </Reference>
+	  <Reference Include="DirectNAot.Extensions">
+	    <HintPath>..\WicNetCore\External\DirectNAot.Extensions.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 </Project>

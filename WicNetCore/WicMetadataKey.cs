@@ -17,7 +17,7 @@ public class WicMetadataKey : IEquatable<WicMetadataKey>
     public Guid Format { get; }
     public string Key { get; }
     public WicMetadataHandler? Handler => WicMetadataHandler.FromFormatGuid<WicMetadataHandler>(Format);
-    public string HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(Format);
+    public string? HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(Format);
 
     public override string ToString() => Key;
     public override bool Equals(object? obj) => Equals(obj as WicMetadataKey);

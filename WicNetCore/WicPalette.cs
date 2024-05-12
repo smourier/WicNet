@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.CompilerServices;
 using DirectN;
+using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
 
 namespace WicNet;
@@ -136,12 +136,8 @@ public sealed class WicPalette : IDisposable
             return [];
 
         var colors = new uint[count];
-        unsafe
-        {
-            var ptr = Unsafe.AsRef(ref colors);
-            _comObject.Object.GetColors(count, out ptr, out _).ThrowOnError();
-            return colors.Select(c => WicColor.FromArgb(c)).ToArray();
-        }
+        _comObject.Object.GetColors(count, ref colors, out _).ThrowOnError();
+        return colors.Select(c => WicColor.FromArgb(c)).ToArray();
     }
 
     public WicPalette CopyColors() => new(Colors);

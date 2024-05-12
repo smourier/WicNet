@@ -4,8 +4,8 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DirectN;
+using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
-using WicNet.Extensions;
 
 namespace WicNet
 {

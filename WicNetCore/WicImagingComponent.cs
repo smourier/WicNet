@@ -3,9 +3,9 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DirectN;
+using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
-using WicNet.Extensions;
 
 namespace WicNet;
 
@@ -27,9 +27,7 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
                 switch (type)
                 {
                     case WICComponentType.WICPixelFormat:
-#pragma warning disable CA1416 // Validate platform compatibility
                         ic = new WicPixelFormat(component); // let's try anyway
-#pragma warning restore CA1416 // Validate platform compatibility
                         break;
 
                     case WICComponentType.WICEncoder:
@@ -113,25 +111,25 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
 
         FriendlyName = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetFriendlyName(capacity, s, out var size);
+            wrapper.Object.GetFriendlyName(capacity, ref s, out var size);
             return size;
         });
 
         Author = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetAuthor(capacity, s, out var size);
+            wrapper.Object.GetAuthor(capacity, ref s, out var size);
             return size;
         });
 
         Version = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetVersion(capacity, s, out var size);
+            wrapper.Object.GetVersion(capacity, ref s, out var size);
             return size;
         });
 
         SpecVersion = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetSpecVersion(capacity, s, out var size);
+            wrapper.Object.GetSpecVersion(capacity, ref s, out var size);
             return size;
         });
     }
@@ -139,10 +137,10 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
     public Guid Clsid { get; }
     public WICComponentSigning SigningStatus { get; }
     public WICComponentType Type { get; }
-    public string FriendlyName { get; internal set; }
-    public string Author { get; }
-    public string Version { get; }
-    public string SpecVersion { get; }
+    public string? FriendlyName { get; internal set; }
+    public string? Author { get; }
+    public string? Version { get; }
+    public string? SpecVersion { get; }
     public virtual string ClsidName => GetClassName(Clsid);
 
     public override string ToString() => FriendlyName + " " + ClsidName;
@@ -175,7 +173,7 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
         if (((object?)item) != null)
             return item;
 
-        return AllComponents.OfType<T>().FirstOrDefault(f => f.FriendlyName.Replace(" ", "").EqualsIgnoreCase(name));
+        return AllComponents.OfType<T>().FirstOrDefault(f => f.FriendlyName?.Replace(" ", string.Empty).EqualsIgnoreCase(name) == true);
     }
 
     public static T? FromClsid<T>(Guid clsid) where T : WicImagingComponent

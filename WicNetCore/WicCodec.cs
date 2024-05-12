@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using DirectN;
 using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
@@ -23,31 +24,31 @@ public abstract class WicCodec : WicImagingComponent
 
         FileExtensions = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetFileExtensions(capacity, s, out var size);
+            info.Object.GetFileExtensions(capacity, ref s, out var size);
             return size;
         });
 
         ColorManagementVersion = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetColorManagementVersion(capacity, s, out var size);
+            info.Object.GetColorManagementVersion(capacity, ref s, out var size);
             return size;
         });
 
         DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceManufacturer(capacity, s, out var size);
+            info.Object.GetDeviceManufacturer(capacity, ref s, out var size);
             return size;
         });
 
         DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceModels(capacity, s, out var size);
+            info.Object.GetDeviceModels(capacity, ref s, out var size);
             return size;
         });
 
         MimeTypes = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetMimeTypes(capacity, s, out var size);
+            info.Object.GetMimeTypes(capacity, ref s, out var size);
             return size;
         });
 
@@ -63,14 +64,14 @@ public abstract class WicCodec : WicImagingComponent
         info.Object.DoesSupportMultiframe(out b);
         SupportsMultiframe = b;
 
-        FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
-        MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
+        FileExtensionsList = [.. (FileExtensions?.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList() ?? [])];
+        MimeTypesList = [.. (MimeTypes?.SplitToList(',').OrderBy(s => s).ToList() ?? [])];
 
-        info.Object.GetPixelFormats(0, null, out var len);
+        info.Object.GetPixelFormats(0, ref Unsafe.NullRef<Guid[]>(), out var len);
         if (len > 0)
         {
             var pf = new Guid[len];
-            info.Object.GetPixelFormats(len, pf, out _).ThrowOnError();
+            info.Object.GetPixelFormats(len, ref pf, out _).ThrowOnError();
             PixelFormats = pf;
         }
         else
@@ -81,11 +82,11 @@ public abstract class WicCodec : WicImagingComponent
 
     public IReadOnlyList<Guid> PixelFormats { get; }
     public Guid ContainerFormat { get; }
-    public string FileExtensions { get; }
-    public string ColorManagementVersion { get; }
-    public string DeviceManufacturer { get; }
-    public string DeviceModels { get; }
-    public string MimeTypes { get; }
+    public string? FileExtensions { get; }
+    public string? ColorManagementVersion { get; }
+    public string? DeviceManufacturer { get; }
+    public string? DeviceModels { get; }
+    public string? MimeTypes { get; }
     public bool SupportsAnimation { get; }
     public bool SupportsChromakey { get; }
     public bool SupportsLossless { get; }

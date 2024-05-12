@@ -1,10 +1,11 @@
 ﻿using System;
-using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
+using System.Runtime.CompilerServices;
 using System.Runtime.Versioning;
 using DirectN;
+using DirectNAot.Extensions;
 using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
 
@@ -12,32 +13,34 @@ namespace WicNet.Utilities;
 
 public static class Extensions
 {
-    private static readonly ConcurrentDictionary<Type, ConcurrentDictionary<Guid, string>> _guidsNames = new();
-
-    public static int GET_X_LPARAM(this IntPtr lParam) => LOWORD(lParam.ToInt32());
-    public static int GET_Y_LPARAM(this IntPtr lParam) => HIWORD(lParam.ToInt32());
-    public static int HIWORD(int i) => (short)(i >> 16);
-    public static int LOWORD(int i) => (short)(i & 65535);
-
     [SupportedOSPlatform("windows")]
     public static D3DCOLORVALUE ToD3DCOLORVALUE(this Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
 
     [SupportedOSPlatform("windows6.1")]
     public static IComObject<ID2D1BitmapBrush> CreateCheckerboardBrush(this IComObject<ID2D1RenderTarget> renderTarget, float size) => CreateCheckerboardBrush(renderTarget?.Object!, size);
+
+    [SupportedOSPlatform("windows6.1")]
     public static IComObject<ID2D1BitmapBrush> CreateCheckerboardBrush(this ID2D1RenderTarget renderTarget, float size, D3DCOLORVALUE? color = null)
     {
         ArgumentNullException.ThrowIfNull(renderTarget);
-
         color ??= new D3DCOLORVALUE(0xFFBFBFBF);
         IComObject<ID2D1Bitmap> bmp;
-        using (var rt = renderTarget.CreateCompatibleRenderTarget(new D2D_SIZE_F(size * 2, size * 2)))
+
+        unsafe
         {
-            using var colorBrush = rt.CreateSolidColorBrush(color.Value);
-            rt.BeginDraw();
-            rt.FillRectangle(D2D_RECT_F.Sized(0, 0, size, size), colorBrush);
-            rt.FillRectangle(D2D_RECT_F.Sized(size, size, size, size), colorBrush);
-            rt.EndDraw();
-            bmp = rt.GetBitmap();
+            var sizef = new D2D_SIZE_F(size * 2, size * 2);
+            renderTarget.CreateCompatibleRenderTarget((nint)Unsafe.AsPointer(ref sizef), 0, 0, D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS.D2D1_COMPATIBLE_RENDER_TARGET_OPTIONS_NONE, out var obj).ThrowOnError();
+            using var rt = new ComObject<ID2D1BitmapRenderTarget>(obj);
+            {
+                rt.Object.CreateSolidColorBrush(color.Value, 0, out var sc).ThrowOnError();
+                using var br = new ComObject<ID2D1SolidColorBrush>(sc);
+                rt.Object.BeginDraw();
+                rt.Object.FillRectangle(D2D_RECT_F.Sized(0, 0, size, size), br.Object);
+                rt.Object.FillRectangle(D2D_RECT_F.Sized(size, size, size, size), br.Object);
+                rt.Object.EndDraw(0, 0);
+                rt.Object.GetBitmap(out var b).ThrowOnError();
+                bmp = new ComObject<ID2D1Bitmap>(b);
+            }
         }
 
         renderTarget.CreateBitmapBrush(bmp.Object, 0, 0, out var brush).ThrowOnError();
@@ -51,7 +54,6 @@ public static class Extensions
     public static void EncodeMetadata(this IWICMetadataQueryWriter writer, IEnumerable<WicMetadataKeyValue> metadata)
     {
         ArgumentNullException.ThrowIfNull(writer);
-
         if (metadata == null)
             return;
 
@@ -67,7 +69,7 @@ public static class Extensions
                     if (!childMetadata.Any())
                         continue;
 
-                    factory.CreateQueryWriter(kv.Key.Format, 0, out var childWriter).ThrowOnError();
+                    factory.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var childWriter).ThrowOnError();
                     using (var pv = new PropVariant(childWriter))
                     {
                         using var p = new Pwstr(kv.Key.Key);
@@ -180,25 +182,14 @@ public static class Extensions
         }
     }
 
-    public static string? GetString(Func<string?, int, int> action)
+    public static string? GetString(Func<PWSTR, uint, uint> action)
     {
-        var len = action(null, 0);
+        var len = action(PWSTR.Null, 0);
         if (len <= 0)
             return null;
 
-        var str = new string('\0', len);
-        action(str, len);
-        return str.Substring(0, len - 1);
-    }
-
-    public static string? GetString(Func<string?, uint, uint> action)
-    {
-        var len = action(null, 0);
-        if (len <= 0)
-            return null;
-
-        var str = new string('\0', (int)len);
-        action(str, len);
-        return str.Substring(0, (int)len - 1);
+        using var p = new Pwstr(len * 2);
+        action(p, len);
+        return p.ToString();
     }
 }

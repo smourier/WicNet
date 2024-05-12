@@ -13,16 +13,16 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
 
     public IComObject<IWICMetadataQueryReader> ComObject => _comObject;
 
-    public string HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(ContainerFormat);
+    public string? HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(ContainerFormat);
     public string ContainerFormatName => GetFormatName(ContainerFormat);
 
-    public string Location
+    public string? Location
     {
         get
         {
             return Utilities.Extensions.GetString((s, capacity) =>
             {
-                _comObject.Object.GetLocation(capacity, s, out var size);
+                _comObject.Object.GetLocation(capacity, ref s, out var size);
                 return size;
             });
         }
@@ -45,12 +45,13 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
             _comObject.Object.GetEnumerator(out var enumString);
             if (enumString != null)
             {
-                var strings = new string[1];
-                while (enumString.Next(1, strings, 0) == 0)
+                var strings = new PWSTR[1];
+                while (enumString.Next(1, ref strings, 0) == 0)
                 {
-                    if (strings[0] != null)
+                    var str = strings[0].ToString();
+                    if (str != null)
                     {
-                        list.Add(strings[0]);
+                        list.Add(str);
                     }
                 }
             }
