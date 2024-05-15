@@ -50,8 +50,7 @@ public static class Extensions
         return new ComObject<ID2D1BitmapBrush>(brush);
     }
 
-    public static void EncodeMetadata(this IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata) => EncodeMetadata(writer?.Object!, metadata);
-    public static void EncodeMetadata(this IWICMetadataQueryWriter writer, IEnumerable<WicMetadataKeyValue> metadata)
+    public static void EncodeMetadata(this IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata)
     {
         ArgumentNullException.ThrowIfNull(writer);
         if (metadata == null)
@@ -60,31 +59,28 @@ public static class Extensions
         if (!metadata.Any())
             return;
 
-        WicImagingFactory.WithFactory(factory =>
-        {
-            foreach (var kv in metadata)
-            {
-                if (kv.Value is IEnumerable<WicMetadataKeyValue> childMetadata)
-                {
-                    if (!childMetadata.Any())
-                        continue;
+        WicImagingFactory.WithFactory(factory => EncodeMetadata(factory, writer, metadata));
+    }
 
-                    factory.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var childWriter).ThrowOnError();
-                    using (var pv = new PropVariant(childWriter))
-                    {
-                        using var p = new Pwstr(kv.Key.Key);
-                        var hr = writer.SetMetadataByName(p, pv.Detached).ThrowOnError();
-                    }
-                    EncodeMetadata(childWriter, childMetadata);
-                }
-                else
-                {
-                    using var pv = new PropVariant(kv.Value, kv.Type);
-                    using var p = new Pwstr(kv.Key.Key);
-                    var hr = writer.SetMetadataByName(p, pv.Detached).ThrowOnError();
-                }
+    private static void EncodeMetadata(IWICImagingFactory factory, IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata)
+    {
+        foreach (var kv in metadata)
+        {
+            if (kv.Value is IEnumerable<WicMetadataKeyValue> childMetadata)
+            {
+                if (!childMetadata.Any())
+                    continue;
+
+                factory.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var obj).ThrowOnError();
+                using var childWriter = new ComObject<IWICMetadataQueryWriter>(obj);
+                writer.SetMetadataByName(kv.Key.Key, childWriter);
+                EncodeMetadata(factory, childWriter, childMetadata);
             }
-        });
+            else
+            {
+                writer.SetMetadataByName(kv.Key.Key, kv.Value, kv.Type);
+            }
+        }
     }
 
     public static D2D_SIZE_F GetScaleFactor(this D2D_SIZE_U size, uint? width = null, uint? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default) => new D2D_SIZE_F(size.width, size.height).GetScaleFactor(width, height, options);

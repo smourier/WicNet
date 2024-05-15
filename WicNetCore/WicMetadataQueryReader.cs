@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using DirectN;
 using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
@@ -52,6 +53,12 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
                     if (str != null)
                     {
                         list.Add(str);
+                    }
+
+                    if (strings[0].Value != 0)
+                    {
+                        Marshal.FreeCoTaskMem(strings[0].Value);
+                        strings[0].Value = 0;
                     }
                 }
             }

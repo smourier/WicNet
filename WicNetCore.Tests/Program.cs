@@ -15,7 +15,8 @@ internal class Program
 {
     static void Main()
     {
-        //CopyFile();
+        CopyFile();
+        return;
         ExtractGif();
         ConvertToBW();
         DumpAllFormats();
@@ -117,7 +118,7 @@ internal class Program
     {
         using var bmp = WicBitmapSource.Load(@"SamsungSGH-P270.jpg");
         // get metadata source (reader)
-        var reader = bmp.GetMetadataReader()!;
+        using var reader = bmp.GetMetadataReader()!;
 
         //var th = bmp.GetThumbnail();
 

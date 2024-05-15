@@ -14,6 +14,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            CopyFile();
+            return;
             DumpPossibleWicBitmapRenderTargetFormats();
             return;
             Posterize(256);
@@ -743,7 +745,7 @@ namespace WicNet.Tests
 
         static void CopyFile()
         {
-            using var bmp = WicBitmapSource.Load(@"SamsungSGH-I777.jpg");
+            using var bmp = WicBitmapSource.Load(@"SamsungSGH-P270.jpg");
             // get metadata source (reader)
             var reader = bmp.GetMetadataReader();
 
