@@ -4,7 +4,6 @@ using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
-using System.Runtime.InteropServices.Marshalling;
 using System.Runtime.Versioning;
 using DirectN;
 using DirectNAot.Extensions;
@@ -12,27 +11,6 @@ using DirectNAot.Extensions.Com;
 using DirectNAot.Extensions.Utilities;
 
 namespace WicNet.Utilities;
-
-[GeneratedComInterface, Guid("af86e2e0-b12d-4c6a-9c5a-d7aa65101e90")]
-public partial interface IInspectable
-{
-    [PreserveSig]
-    [return: MarshalAs(UnmanagedType.Error)]
-    HRESULT GetIids(out uint iidCount, out nint iids);
-
-    [PreserveSig]
-    [return: MarshalAs(UnmanagedType.Error)]
-    HRESULT GetRuntimeClassName(out HSTRING className);
-
-    [PreserveSig]
-    [return: MarshalAs(UnmanagedType.Error)]
-    HRESULT GetTrustLevel(out TrustLevel trustLevel);
-}
-
-[GeneratedComInterface, Guid("bbf8e066-aaaa-49be-9a4d-fd2a858ea27f")]
-public partial interface IX : IInspectable
-{
-}
 
 public static partial class Extensions
 {
