@@ -44,11 +44,11 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="DirectNAot">
-	    <HintPath>..\WicNetCore\External\DirectNAot.dll</HintPath>
+	  <Reference Include="DirectN">
+	    <HintPath>..\WicNetCore\External\DirectN.dll</HintPath>
 	  </Reference>
-	  <Reference Include="DirectNAot.Extensions">
-	    <HintPath>..\WicNetCore\External\DirectNAot.Extensions.dll</HintPath>
+	  <Reference Include="DirectN.Extensions">
+	    <HintPath>..\WicNetCore\External\DirectN.Extensions.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 

@@ -1,9 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-using DirectN;
-using DirectNAot.Extensions.Com;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public sealed class WicBitmapLock
 {

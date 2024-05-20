@@ -1,9 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Runtime.InteropServices;
-using System.Threading;
-
-namespace WicNet.Utilities;
+﻿namespace WicNet.Utilities;
 
 public sealed partial class EventProvider : IDisposable
 {

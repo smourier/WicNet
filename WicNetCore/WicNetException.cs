@@ -1,7 +1,4 @@
-﻿using System;
-using System.Globalization;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 [Serializable]
 public class WicNetException : Exception

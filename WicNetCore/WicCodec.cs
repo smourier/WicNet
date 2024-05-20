@@ -1,13 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using DirectN;
-using DirectNAot.Extensions.Com;
-using DirectNAot.Extensions.Utilities;
-using WicNet.Utilities;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public abstract class WicCodec : WicImagingComponent
 {

@@ -1,21 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using DirectN;
-using DirectNAot.Extensions;
-using DirectNAot.Extensions.Com;
-using DirectNAot.Extensions.Utilities;
-
-namespace WicNet.Utilities;
+﻿namespace WicNet.Utilities;
 
 public static partial class Extensions
 {
-    [SupportedOSPlatform("windows")]
-    public static D3DCOLORVALUE ToD3DCOLORVALUE(this Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
+    //[SupportedOSPlatform("windows")]
+    //public static D3DCOLORVALUE ToD3DCOLORVALUE(this Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
 
     [SupportedOSPlatform("windows6.1")]
     public static IComObject<ID2D1BitmapBrush> CreateCheckerboardBrush(this IComObject<ID2D1RenderTarget> renderTarget, float size) => CreateCheckerboardBrush(renderTarget?.Object!, size);

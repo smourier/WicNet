@@ -1,10 +1,4 @@
-﻿using System;
-using DirectN;
-using DirectNAot.Extensions;
-using DirectNAot.Extensions.Com;
-using DirectNAot.Extensions.Utilities;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public sealed class WicColorContext : IDisposable
 {

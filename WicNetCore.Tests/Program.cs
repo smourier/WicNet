@@ -4,7 +4,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.Versioning;
 using DirectN;
-using DirectNAot.Extensions.Utilities;
+using DirectN.Extensions.Utilities;
 using WicNet;
 
 [assembly: SupportedOSPlatform("windows8.0")]

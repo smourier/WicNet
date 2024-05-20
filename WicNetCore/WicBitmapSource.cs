@@ -1,17 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.IO;
-using System.Linq;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-using DirectN;
-using DirectNAot.Extensions;
-using DirectNAot.Extensions.Com;
-using DirectNAot.Extensions.Utilities;
-using WicNet.Utilities;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicBitmapSource>
 {
@@ -375,7 +362,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (unk == 0)
             return null;
 
-        var bmp = DirectNAot.Extensions.Com.ComObject.ComWrappers.GetOrCreateObjectForComInstance(unk, CreateObjectFlags.UniqueInstance);
+        var bmp = DirectN.Extensions.Com.ComObject.ComWrappers.GetOrCreateObjectForComInstance(unk, CreateObjectFlags.UniqueInstance);
         return new WicBitmapSource(bmp);
     }
 
@@ -449,8 +436,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (bitmap == null)
             throw new InvalidOperationException();
 
-        Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, typeof(ID2D1Factory).GUID, 0, out var obj).ThrowOnError();
-        using var fac = new ComObject<ID2D1Factory>(obj);
+        Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, typeof(ID2D1Factory).GUID, 0, out var unk).ThrowOnError();
+        using var fac = DirectN.Extensions.Com.ComObject.FromPointer<ID2D1Factory>(unk)!;
         ID2D1RenderTarget rt;
         if (renderTargetProperties.HasValue)
         {
@@ -480,10 +467,14 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
     public IComObject<IWICBitmap>? AsBitmap()
     {
-        if (_comObject is not IWICBitmap bmp)
+        if (_comObject is IComObject<IWICBitmap> bmp)
+            return bmp;
+
+        var wb = DirectN.Extensions.Com.ComObject.Unwrap<IWICBitmap>(_comObject);
+        if (wb == null)
             return null;
 
-        return new ComObject<IWICBitmap>(bmp, false);
+        return new ComObject<IWICBitmap>(wb, false);
     }
 
     public WicBitmapSource Clone(WICBitmapCreateCacheOption options = WICBitmapCreateCacheOption.WICBitmapNoCache)

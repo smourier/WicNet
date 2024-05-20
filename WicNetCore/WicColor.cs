@@ -1,7 +1,4 @@
-﻿using System;
-using System.Runtime.InteropServices;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 [StructLayout(LayoutKind.Sequential)]
 public struct WicColor(byte a, byte r, byte g, byte b) : IEquatable<WicColor>

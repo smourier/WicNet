@@ -1,9 +1,4 @@
-﻿using System;
-using System.IO;
-using System.Linq;
-using DirectNAot.Extensions.Utilities;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public sealed class WicEncoder(object comObject) : WicCodec(comObject)
 {

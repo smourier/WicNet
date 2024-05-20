@@ -1,7 +1,4 @@
-﻿using System;
-using DirectN;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public class WicMetadataKeyValue : IDisposable
 {

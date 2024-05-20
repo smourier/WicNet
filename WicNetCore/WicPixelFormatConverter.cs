@@ -1,10 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using DirectN;
-using DirectNAot.Extensions;
-using DirectNAot.Extensions.Com;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public sealed class WicPixelFormatConverter : WicImagingComponent
 {

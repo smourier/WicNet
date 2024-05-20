@@ -1,12 +1,4 @@
-﻿using System;
-using System.Collections;
-using System.Collections.Generic;
-using System.Runtime.InteropServices;
-using DirectN;
-using DirectNAot.Extensions.Com;
-using DirectNAot.Extensions.Utilities;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnumerable<WicMetadataKeyValue>
 {

@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public class WicMetadataKey : IEquatable<WicMetadataKey>
 {

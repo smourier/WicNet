@@ -1,11 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using DirectN;
-using DirectNAot.Extensions.Com;
-using DirectNAot.Extensions.Utilities;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 public abstract class WicMetadataHandler : WicImagingComponent
 {

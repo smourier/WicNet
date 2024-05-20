@@ -1,12 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Runtime.Versioning;
-using DirectN;
-using DirectNAot.Extensions.Utilities;
-using Microsoft.Win32;
-
-namespace WicNet.Utilities;
+﻿namespace WicNet.Utilities;
 
 public static class WindowsUtilities
 {

@@ -13,15 +13,41 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Using Include="DirectN" />
+		<Using Include="DirectN.Extensions" />
+		<Using Include="DirectN.Extensions.Com" />
+		<Using Include="DirectN.Extensions.Utilities" />
+		<Using Include="Microsoft.Win32" />
+		<Using Include="System" />
+		<Using Include="System.ComponentModel" />
+		<Using Include="System.Collections" />
+		<Using Include="System.Collections.Concurrent" />
+		<Using Include="System.Collections.Generic" />
+		<Using Include="System.Diagnostics" />
+		<Using Include="System.Diagnostics.CodeAnalysis" />
+		<Using Include="System.Globalization" />
+		<Using Include="System.IO" />
+		<Using Include="System.Linq" />
+		<Using Include="System.Reflection" />
+		<Using Include="System.Runtime.CompilerServices" />
+		<Using Include="System.Runtime.InteropServices" />
+		<Using Include="System.Runtime.InteropServices.Marshalling" />
+		<Using Include="System.Runtime.Versioning" />
+		<Using Include="System.Text" />
+		<Using Include="System.Threading" />
+		<Using Include="WicNet.Utilities" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Folder Include="External\" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Reference Include="DirectNAot">
-	    <HintPath>External\DirectNAot.dll</HintPath>
+	  <Reference Include="DirectN">
+	    <HintPath>External\DirectN.dll</HintPath>
 	  </Reference>
-	  <Reference Include="DirectNAot.Extensions">
-	    <HintPath>External\DirectNAot.Extensions.dll</HintPath>
+	  <Reference Include="DirectN.Extensions">
+	    <HintPath>External\DirectN.Extensions.dll</HintPath>
 	  </Reference>
 	</ItemGroup>
 
