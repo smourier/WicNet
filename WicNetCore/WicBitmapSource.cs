@@ -371,10 +371,11 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (Marshal.GetObjectForIUnknown(nativeSoftwareBitmap) is not ISoftwareBitmapNative native)
             return null;
 
-        native.GetData(typeof(IWICBitmap).GUID, out var bmp);
-        if (bmp == null)
+        native.GetData(typeof(IWICBitmap).GUID, out var unk);
+        if (unk == 0)
             return null;
 
+        var bmp = DirectNAot.Extensions.Com.ComObject.ComWrappers.GetOrCreateObjectForComInstance(unk, CreateObjectFlags.UniqueInstance);
         return new WicBitmapSource(bmp);
     }
 
@@ -388,7 +389,6 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     public void Scale(int boxSize, WICBitmapInterpolationMode mode = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
     {
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(boxSize);
-
         if (Width > Height)
         {
             Scale(boxSize, null, mode, options);

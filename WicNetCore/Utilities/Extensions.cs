@@ -3,6 +3,8 @@ using System.Collections.Generic;
 using System.Drawing;
 using System.Linq;
 using System.Runtime.CompilerServices;
+using System.Runtime.InteropServices;
+using System.Runtime.InteropServices.Marshalling;
 using System.Runtime.Versioning;
 using DirectN;
 using DirectNAot.Extensions;
@@ -11,7 +13,28 @@ using DirectNAot.Extensions.Utilities;
 
 namespace WicNet.Utilities;
 
-public static class Extensions
+[GeneratedComInterface, Guid("af86e2e0-b12d-4c6a-9c5a-d7aa65101e90")]
+public partial interface IInspectable
+{
+    [PreserveSig]
+    [return: MarshalAs(UnmanagedType.Error)]
+    HRESULT GetIids(out uint iidCount, out nint iids);
+
+    [PreserveSig]
+    [return: MarshalAs(UnmanagedType.Error)]
+    HRESULT GetRuntimeClassName(out HSTRING className);
+
+    [PreserveSig]
+    [return: MarshalAs(UnmanagedType.Error)]
+    HRESULT GetTrustLevel(out TrustLevel trustLevel);
+}
+
+[GeneratedComInterface, Guid("bbf8e066-aaaa-49be-9a4d-fd2a858ea27f")]
+public partial interface IX : IInspectable
+{
+}
+
+public static partial class Extensions
 {
     [SupportedOSPlatform("windows")]
     public static D3DCOLORVALUE ToD3DCOLORVALUE(this Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
@@ -72,8 +95,12 @@ public static class Extensions
                     continue;
 
                 factory.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var obj).ThrowOnError();
+                if (!ComWrappers.TryGetComInstance(obj, out var unk))
+                    throw new InvalidOperationException();
+
+                writer.SetMetadataByName(kv.Key.Key, unk);
+                Marshal.Release(unk);
                 using var childWriter = new ComObject<IWICMetadataQueryWriter>(obj);
-                writer.SetMetadataByName(kv.Key.Key, childWriter);
                 EncodeMetadata(factory, childWriter, childMetadata);
             }
             else
@@ -184,7 +211,7 @@ public static class Extensions
         if (len <= 0)
             return null;
 
-        using var p = new Pwstr(len * 2);
+        using var p = new AllocPwstr(len * 2);
         action(p, len);
         return p.ToString();
     }
