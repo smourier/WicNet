@@ -1,82 +1,14 @@
 ﻿namespace WicNet;
 
-public sealed class WicColorContext : IDisposable
+public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
 {
-    private readonly IComObject<IWICColorContext> _comObject;
     private readonly Lazy<ColorProfile?> _profile;
     private readonly Lazy<byte[]?> _profileBytes;
 
-    public WicColorContext(IWICColorContext palette)
-        : this((object)palette)
-    {
-    }
-
-    public WicColorContext(IComObject<IWICColorContext> palette)
-        : this((object)palette)
-    {
-    }
-
-    public WicColorContext(uint colorSpace)
-        : this((object)colorSpace)
-    {
-    }
-
-    public WicColorContext(string fileName)
-        : this((object)fileName)
-    {
-    }
-
-    public WicColorContext(byte[] bytes)
-        : this((object)bytes)
-    {
-    }
-
-    public WicColorContext()
-        : this((object?)null)
-    {
-    }
-
-    public WicColorContext(object? source)
+    public WicColorContext(IComObject<IWICColorContext> context)
+        : base(context)
     {
         _profileBytes = new Lazy<byte[]?>(GetProfileBytes);
-        if (source == null)
-        {
-            _comObject = WicImagingFactory.CreateColorContext();
-        }
-        else if (source is IWICColorContext p)
-        {
-            _comObject = new ComObject<IWICColorContext>(p);
-        }
-        else if (source is uint colorSpace)
-        {
-            _comObject = WicImagingFactory.CreateColorContext();
-            _comObject.Object.InitializeFromExifColorSpace(colorSpace);
-        }
-        else if (source is string fileName)
-        {
-            _comObject = WicImagingFactory.CreateColorContext();
-            using var fn = new Pwstr(fileName);
-            _comObject.Object.InitializeFromFilename(fn);
-        }
-        else if (source is byte[] memory)
-        {
-            _comObject = WicImagingFactory.CreateColorContext();
-            unsafe
-            {
-                fixed (byte* ptr = memory)
-                {
-                    _comObject.Object.InitializeFromMemory((nint)ptr, (uint)memory.Length);
-                }
-            }
-        }
-        else
-        {
-            if (source is not IComObject<IWICColorContext> co)
-                throw new ArgumentException("Source must be an " + nameof(IWICColorContext) + ".", nameof(source));
-
-            _comObject = co;
-        }
-
         _profile = new Lazy<ColorProfile?>(() =>
         {
             var bytes = ProfileBytes;
@@ -87,7 +19,49 @@ public sealed class WicColorContext : IDisposable
         }, true);
     }
 
-    public IComObject<IWICColorContext> ComObject => _comObject;
+    public WicColorContext(uint colorSpace)
+        : this(From(colorSpace))
+    {
+    }
+
+    public WicColorContext(string fileName)
+        : this(From(fileName))
+    {
+    }
+
+    public WicColorContext(byte[] bytes)
+        : this(From(bytes))
+    {
+    }
+
+    public WicColorContext()
+        : this(WicImagingFactory.CreateColorContext())
+    {
+    }
+
+    private static IComObject<IWICColorContext> From(string fileName)
+    {
+        ArgumentNullException.ThrowIfNull(fileName);
+        var comObject = WicImagingFactory.CreateColorContext();
+        using var fn = new Pwstr(fileName);
+        comObject.Object.InitializeFromFilename(fn);
+        return comObject;
+    }
+
+    private static IComObject<IWICColorContext> From(byte[] bytes)
+    {
+        ArgumentNullException.ThrowIfNull(bytes);
+        var comObject = WicImagingFactory.CreateColorContext();
+        comObject.Object.InitializeFromMemory(bytes.AsPointer(), bytes.Length());
+        return comObject;
+    }
+
+    private static IComObject<IWICColorContext> From(uint colorSpace)
+    {
+        var comObject = WicImagingFactory.CreateColorContext();
+        comObject.Object.InitializeFromExifColorSpace(colorSpace);
+        return comObject;
+    }
 
     public ColorProfile? Profile => _profile.Value;
 
@@ -101,7 +75,7 @@ public sealed class WicColorContext : IDisposable
             if (Type != WICColorContextType.WICColorContextExifColorSpace)
                 return null;
 
-            _comObject.Object.GetExifColorSpace(out var value).ThrowOnError();
+            NativeObject.GetExifColorSpace(out var value).ThrowOnError();
             return value;
         }
     }
@@ -128,7 +102,7 @@ public sealed class WicColorContext : IDisposable
     {
         get
         {
-            _comObject.Object.GetType(out var value).ThrowOnError();
+            NativeObject.GetType(out var value).ThrowOnError();
             return value;
         }
     }
@@ -136,23 +110,16 @@ public sealed class WicColorContext : IDisposable
     public byte[]? ProfileBytes => _profileBytes.Value;
     private byte[]? GetProfileBytes()
     {
-        var hr = _comObject.Object.GetProfileBytes(0, 0, out var count);
+        var hr = NativeObject.GetProfileBytes(0, 0, out var count);
         if (hr.IsError)
             return null;
 
         var bytes = new byte[count];
-        unsafe
-        {
-            fixed (byte* ptr = bytes)
-            {
-                _comObject.Object.GetProfileBytes(count, (nint)ptr, out _).ThrowOnError();
-                return bytes;
-            }
-        }
+        NativeObject.GetProfileBytes(count, bytes.AsPointer(), out _).ThrowOnError();
+        return bytes;
     }
 
     public override string ToString() => Profile?.Description ?? ExifColorSpaceName;
-    public void Dispose() => _comObject.SafeDispose();
 
     public static WicColorContext Standard { get; } = new WicColorContext(StandardColorSpaceProfile); // sRGB
     public static string StandardColorSpaceProfile => ColorProfile.GetStandardColorSpaceProfile();

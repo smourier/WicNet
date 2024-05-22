@@ -1,11 +1,7 @@
 ﻿namespace WicNet;
 
-public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnumerable<WicMetadataKeyValue>
+public sealed class WicMetadataQueryReader(IComObject<IWICMetadataQueryReader> comObject) : InterlockedComObject<IWICMetadataQueryReader>(comObject), IEnumerable<WicMetadataKeyValue>
 {
-    private readonly IComObject<IWICMetadataQueryReader> _comObject = new ComObjectWrapper<IWICMetadataQueryReader>(comObject).ComObject;
-
-    public IComObject<IWICMetadataQueryReader> ComObject => _comObject;
-
     public string? HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(ContainerFormat);
     public string ContainerFormatName => GetFormatName(ContainerFormat);
 
@@ -15,7 +11,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
         {
             return Utilities.Extensions.GetString((s, capacity) =>
             {
-                _comObject.Object.GetLocation(capacity, s, out var size);
+                NativeObject.GetLocation(capacity, s, out var size);
                 return size;
             });
         }
@@ -25,7 +21,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
     {
         get
         {
-            _comObject.Object.GetContainerFormat(out var format);
+            NativeObject.GetContainerFormat(out var format);
             return format;
         }
     }
@@ -35,7 +31,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
         get
         {
             var list = new List<string>();
-            _comObject.Object.GetEnumerator(out var enumString);
+            NativeObject.GetEnumerator(out var enumString);
             if (enumString != null)
             {
                 var strings = new PWSTR[1];
@@ -93,7 +89,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
         ArgumentNullException.ThrowIfNull(name);
         var detached = new PROPVARIANT();
         using var p = new Pwstr(name);
-        if (_comObject.Object.GetMetadataByName(p, ref detached).IsError)
+        if (NativeObject.GetMetadataByName(p, ref detached).IsError)
         {
             value = null;
             type = VARENUM.VT_EMPTY;
@@ -140,6 +136,7 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
         }
     }
 
+    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<WicMetadataKeyValue>)this).GetEnumerator();
     IEnumerator<WicMetadataKeyValue> IEnumerable<WicMetadataKeyValue>.GetEnumerator()
     {
         foreach (var name in Strings)
@@ -152,7 +149,8 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
 
             if (value is IWICMetadataQueryReader reader)
             {
-                var childReader = new WicMetadataQueryReader(reader);
+                var readerObj = new ComObject<IWICMetadataQueryReader>(reader);
+                var childReader = new WicMetadataQueryReader(readerObj);
                 yield return new WicMetadataKeyValue(new WicMetadataKey(childReader.ContainerFormat, name), childReader, type);
             }
             else
@@ -161,9 +159,6 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
             }
         }
     }
-
-    public void Dispose() => _comObject.SafeDispose();
-    IEnumerator IEnumerable.GetEnumerator() => ((IEnumerable<WicMetadataKeyValue>)this).GetEnumerator();
 
     public static string GetFormatName(Guid guid)
     {

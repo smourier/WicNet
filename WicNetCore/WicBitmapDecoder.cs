@@ -1,37 +1,34 @@
 ﻿namespace WicNet;
 
-public sealed class WicBitmapDecoder(object comObject) : IDisposable, IEnumerable<WicBitmapSource>
+public sealed class WicBitmapDecoder(IComObject<IWICBitmapDecoder> comObject) : InterlockedComObject<IWICBitmapDecoder>(comObject), IEnumerable<WicBitmapSource>
 {
-    private readonly IComObject<IWICBitmapDecoder> _comObject = new ComObjectWrapper<IWICBitmapDecoder>(comObject).ComObject;
+    public uint FrameCount => NativeObject.GetFrameCount();
+    public Guid ContainerFormat => NativeObject.GetContainerFormat();
 
-    public IComObject<IWICBitmapDecoder> ComObject => _comObject;
-    public uint FrameCount => _comObject.GetFrameCount();
-    public Guid ContainerFormat => _comObject.GetContainerFormat();
-
-    public WicBitmapSource GetFrame(int index = 0) => new(_comObject.GetFrame(index));
+    public WicBitmapSource GetFrame(uint index = 0) => new(NativeObject.GetFrame(index));
 
     public WicBitmapSource? GetPreview()
     {
-        var bmp = _comObject.GetPreview();
+        var bmp = NativeObject.GetPreview();
         return bmp != null ? new WicBitmapSource(bmp) : null;
     }
 
     public WicBitmapSource? GetThumbnail()
     {
-        var bmp = _comObject.GetThumbnail();
+        var bmp = NativeObject.GetThumbnail();
         return bmp != null ? new WicBitmapSource(bmp) : null;
     }
 
     public WicMetadataQueryReader? GetMetadataQueryReader()
     {
-        var reader = _comObject.GetMetadataQueryReader();
+        var reader = NativeObject.GetMetadataQueryReader();
         return reader != null ? new WicMetadataQueryReader(reader) : null;
     }
 
     public IReadOnlyList<WicColorContext> GetColorContexts()
     {
         var list = new List<WicColorContext>();
-        var contexts = _comObject.GetColorContexts();
+        var contexts = NativeObject.GetColorContexts();
         list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
         return list;
     }
@@ -41,7 +38,7 @@ public sealed class WicBitmapDecoder(object comObject) : IDisposable, IEnumerabl
 
     public IEnumerable<WicBitmapSource> EnumerateFrames()
     {
-        for (var i = 0; i < FrameCount; i++)
+        for (uint i = 0; i < FrameCount; i++)
         {
             yield return GetFrame(i);
         }
@@ -50,7 +47,6 @@ public sealed class WicBitmapDecoder(object comObject) : IDisposable, IEnumerabl
     public static WicBitmapDecoder Load(string filePath, Guid? guidVendor = null, FileAccess access = FileAccess.Read, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         ArgumentNullException.ThrowIfNull(filePath);
-
         if (!File.Exists(filePath))
             throw new FileNotFoundException(null, filePath);
 
@@ -68,16 +64,12 @@ public sealed class WicBitmapDecoder(object comObject) : IDisposable, IEnumerabl
     public static WicBitmapDecoder Load(Stream stream, Guid? guidVendor = null, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         ArgumentNullException.ThrowIfNull(stream);
-
         return new WicBitmapDecoder(WicImagingFactory.CreateDecoderFromStream(stream, guidVendor, options));
     }
 
     public static WicBitmapDecoder Load(IStream stream, Guid? guidVendor = null, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         ArgumentNullException.ThrowIfNull(stream);
-
         return new WicBitmapDecoder(WicImagingFactory.CreateDecoderFromStream(stream, guidVendor, options));
     }
-
-    public void Dispose() => _comObject.SafeDispose();
 }

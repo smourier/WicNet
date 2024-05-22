@@ -1,9 +1,4 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Linq;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class WicMetadataPolicies

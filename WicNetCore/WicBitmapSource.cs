@@ -1,21 +1,19 @@
 ﻿namespace WicNet;
 
-public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicBitmapSource>
+public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IComparable, IComparable<WicBitmapSource>
 {
-    private IComObject<IWICBitmapSource> _comObject;
     private WicPalette? _palette;
 
-    public WicBitmapSource(object comObject)
+    public WicBitmapSource(IComObject<IWICBitmapSource> comObject)
+        : base(comObject)
     {
-        _comObject = new ComObjectWrapper<IWICBitmapSource>(comObject).ComObject;
     }
 
     public WicBitmapSource(uint width, uint height, Guid pixelFormat, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapCacheOnDemand)
+        : base(WicImagingFactory.CreateBitmap(width, height, pixelFormat, option))
     {
-        _comObject = WicImagingFactory.CreateBitmap(width, height, pixelFormat, option);
     }
 
-    public IComObject<IWICBitmapSource> ComObject => _comObject;
     public D2D_SIZE_U Size => new(Width, Height);
     public D2D_RECT_U Bounds => new() { right = Width, bottom = Height };
     public uint DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat?.BitsPerPixel ?? 0);
@@ -28,7 +26,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
             if (_palette == null)
             {
                 var palette = new WicPalette();
-                _comObject.Object.CopyPalette(palette.ComObject.Object).ThrowOnError(false);
+                NativeObject.CopyPalette(palette.ComObject.Object).ThrowOnError(false);
                 if (palette.ColorCount != 0)
                 {
                     _palette = palette;
@@ -48,7 +46,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     {
         get
         {
-            _comObject.Object.GetPixelFormat(out var pixelFormat);
+            NativeObject.GetPixelFormat(out var pixelFormat);
             return pixelFormat;
         }
     }
@@ -57,7 +55,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     {
         get
         {
-            _comObject.Object.GetSize(out var width, out _);
+            NativeObject.GetSize(out var width, out _);
             return width;
         }
     }
@@ -66,7 +64,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     {
         get
         {
-            _comObject.Object.GetSize(out _, out var height);
+            NativeObject.GetSize(out _, out var height);
             return height;
         }
     }
@@ -75,7 +73,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     {
         get
         {
-            _comObject.Object.GetResolution(out var dpix, out _);
+            NativeObject.GetResolution(out var dpix, out _);
             return dpix;
         }
     }
@@ -84,7 +82,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     {
         get
         {
-            _comObject.Object.GetResolution(out _, out var dpiy);
+            NativeObject.GetResolution(out _, out var dpiy);
             return dpiy;
         }
     }
@@ -105,7 +103,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
     public Stream? GetStream()
     {
-        if (_comObject.Object is not IWICStreamProvider prov)
+        if (NativeObject is not IWICStreamProvider prov)
             return null;
 
         var strm = prov.GetStream();
@@ -115,20 +113,20 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
     public WicBitmapSource? GetThumbnail()
     {
-        var bmp = (_comObject.Object as IWICBitmapFrameDecode)?.GetThumbnail();
+        var bmp = (NativeObject as IWICBitmapFrameDecode)?.GetThumbnail();
         return bmp != null ? new WicBitmapSource(bmp) : null;
     }
 
     public WicMetadataQueryReader? GetMetadataReader()
     {
-        var reader = (_comObject.Object as IWICBitmapFrameDecode)?.GetMetadataQueryReader();
+        var reader = (NativeObject as IWICBitmapFrameDecode)?.GetMetadataQueryReader();
         return reader != null ? new WicMetadataQueryReader(reader) : null;
     }
 
     public IReadOnlyList<WicColorContext> GetColorContexts()
     {
         var list = new List<WicColorContext>();
-        var contexts = (_comObject.Object as IWICBitmapFrameDecode)?.GetColorContexts();
+        var contexts = (NativeObject as IWICBitmapFrameDecode)?.GetColorContexts();
         if (contexts != null)
         {
             list.AddRange(contexts.Select(cc => new WicColorContext(cc)));
@@ -209,9 +207,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         }
 
         var clip = WicImagingFactory.CreateBitmapClipper();
-        clip.Object.Initialize(_comObject.Object, rect).ThrowOnError();
-        _comObject.SafeDispose();
-        _comObject = clip;
+        clip.Object.Initialize(NativeObject, rect).ThrowOnError();
+        ExchangeDisposable(clip);
     }
 
     public void Clip(int left, int top, int width, int height)
@@ -225,17 +222,15 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         };
 
         var clip = WicImagingFactory.CreateBitmapClipper();
-        clip.Object.Initialize(_comObject.Object, rect).ThrowOnError();
-        _comObject.SafeDispose();
-        _comObject = clip;
+        clip.Object.Initialize(NativeObject, rect).ThrowOnError();
+        ExchangeDisposable(clip);
     }
 
     public void FlipRotate(WICBitmapTransformOptions options)
     {
         var clip = WicImagingFactory.CreateBitmapFlipRotator();
-        clip.Object.Initialize(_comObject.Object, options).ThrowOnError();
-        _comObject.SafeDispose();
-        _comObject = clip;
+        clip.Object.Initialize(NativeObject, options).ThrowOnError();
+        ExchangeDisposable(clip);
     }
 
     public bool ConvertTo(
@@ -260,8 +255,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         }
 
         var converter = cvt.Convert(this, pixelFormat, ditherType, palette, alphaThresholdPercent, paletteTranslate);
-        _comObject.SafeDispose();
-        _comObject = converter;
+        ExchangeDisposable(converter);
         return true;
     }
 
@@ -269,7 +263,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     {
         ArgumentOutOfRangeException.ThrowIfZero(buffer);
         stride ??= DefaultStride;
-        _comObject.Object.CopyPixels(Unsafe.NullRef<WICRect>(), stride.Value, bufferSize, buffer).ThrowOnError();
+        NativeObject.CopyPixels(Unsafe.NullRef<WICRect>(), stride.Value, bufferSize, buffer).ThrowOnError();
     }
 
     public void CopyPixels(int left, int top, uint width, uint height, uint bufferSize, nint buffer, uint? stride = null)
@@ -286,7 +280,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
             Width = (int)width,
             Height = (int)height
         };
-        _comObject.Object.CopyPixels(rect, stride.Value, bufferSize, buffer).ThrowOnError();
+        NativeObject.CopyPixels(rect, stride.Value, bufferSize, buffer).ThrowOnError();
     }
 
     public byte[] CopyPixels(uint? stride = null) => CopyPixels(0, 0, Width, Height, stride);
@@ -300,8 +294,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         var bytes = new byte[size];
         if (size > 0)
         {
-            var ptr = Marshal.UnsafeAddrOfPinnedArrayElement(bytes, 0);
-            CopyPixels(left, top, width, height, size, ptr, stride);
+            CopyPixels(left, top, width, height, size, bytes.AsPointer(), stride);
         }
         return bytes;
     }
@@ -336,7 +329,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
     public object ToSoftwareBitmap(bool forceReadOnly, bool throwOnError = true)
     {
-        if (_comObject.Object is not IWICBitmap bmp)
+        if (NativeObject is not IWICBitmap bmp)
             throw new WicNetException("WIC0004: Converting to WinRT SoftwareBitmap is only supported on in-memory bitmaps. You must Clone this bitmap first.");
 
         var factory = ComObject<ISoftwareBitmapNativeFactory>.CoCreate(Constants.CLSID_SoftwareBitmapNativeFactory)!;
@@ -355,14 +348,15 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (nativeSoftwareBitmap == 0)
             return null;
 
-        if (Marshal.GetObjectForIUnknown(nativeSoftwareBitmap) is not ISoftwareBitmapNative native)
+        using var native = DirectN.Extensions.Com.ComObject.FromPointer<ISoftwareBitmapNative>(nativeSoftwareBitmap);
+        if (native == null)
             return null;
 
-        native.GetData(typeof(IWICBitmap).GUID, out var unk);
+        native.Object.GetData(typeof(IWICBitmap).GUID, out var unk);
         if (unk == 0)
             return null;
 
-        var bmp = DirectN.Extensions.Com.ComObject.ComWrappers.GetOrCreateObjectForComInstance(unk, CreateObjectFlags.UniqueInstance);
+        var bmp = DirectN.Extensions.Com.ComObject.FromPointer<IWICBitmapSource>(unk)!;
         return new WicBitmapSource(bmp);
     }
 
@@ -371,7 +365,7 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     public static WicBitmapSource FromHBitmap(HBITMAP bitmapHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WicImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, options));
     public static WicBitmapSource FromHBitmap(HBITMAP bitmapHandle, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WicImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, paletteHandle, options));
     public static WicBitmapSource FromSource(WicBitmapSource source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => new(WicImagingFactory.CreateBitmapFromSource(source?.ComObject!, option));
-    public static WicBitmapSource FromSourceRect(WicBitmapSource source, int x, int y, uint width, uint height) => new(WicImagingFactory.CreateBitmapFromSourceRect(source?.ComObject!, x, y, width, height));
+    public static WicBitmapSource FromSourceRect(WicBitmapSource source, uint x, uint y, uint width, uint height) => new(WicImagingFactory.CreateBitmapFromSourceRect(source?.ComObject!, x, y, width, height));
 
     public void Scale(int boxSize, WICBitmapInterpolationMode mode = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default)
     {
@@ -400,24 +394,23 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         var neww = (uint)(size.width * factor.width);
         var newh = (uint)(size.height * factor.height);
         var clip = WicImagingFactory.CreateBitmapScaler();
-        clip.Object.Initialize(_comObject.Object, neww, newh, mode).ThrowOnError();
-        _comObject.SafeDispose();
-        _comObject = clip;
+        clip.Object.Initialize(NativeObject, neww, newh, mode).ThrowOnError();
+        ExchangeDisposable(clip);
     }
 
-    public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+    public static WicBitmapSource Load(string filePath, uint frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         using var decoder = WicBitmapDecoder.Load(filePath, options: options);
         return decoder.GetFrame(frameIndex);
     }
 
-    public static WicBitmapSource Load(nuint fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+    public static WicBitmapSource Load(nuint fileHandle, uint frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         using var decoder = WicBitmapDecoder.Load(fileHandle, options: options);
         return decoder.GetFrame(frameIndex);
     }
 
-    public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+    public static WicBitmapSource Load(Stream stream, uint frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         using var decoder = WicBitmapDecoder.Load(stream, options: options);
         return decoder.GetFrame(frameIndex);
@@ -438,54 +431,37 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
         Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, typeof(ID2D1Factory).GUID, 0, out var unk).ThrowOnError();
         using var fac = DirectN.Extensions.Com.ComObject.FromPointer<ID2D1Factory>(unk)!;
-        ID2D1RenderTarget rt;
-        if (renderTargetProperties.HasValue)
-        {
-            fac.Object.CreateWicBitmapRenderTarget(bitmap.Object, renderTargetProperties.Value, out rt).ThrowOnError();
-        }
-        else
-        {
-            fac.Object.CreateWicBitmapRenderTarget(bitmap.Object, Unsafe.NullRef<D2D1_RENDER_TARGET_PROPERTIES>(), out rt).ThrowOnError();
-        }
+        var props = renderTargetProperties ?? new D2D1_RENDER_TARGET_PROPERTIES();
+        fac.Object.CreateWicBitmapRenderTarget(bitmap.Object, props, out var rt).ThrowOnError();
         return new ComObject<T>(rt);
     }
 
     public void WithLock(WICBitmapLockFlags flags, Action<WicBitmapLock> action, WICRect? rect = null)
     {
         ArgumentNullException.ThrowIfNull(action);
-
         using var lck = CheckBitmap().Lock(flags, rect);
-        action(new WicBitmapLock(lck));
+        using var blck = new WicBitmapLock(lck);
+        action(blck);
     }
 
     public T WithLock<T>(WICBitmapLockFlags flags, Func<WicBitmapLock, T> func, WICRect? rect = null)
     {
         ArgumentNullException.ThrowIfNull(func);
         using var lck = CheckBitmap().Lock(flags, rect);
-        return func(new WicBitmapLock(lck));
+        using var blck = new WicBitmapLock(lck);
+        return func(blck);
     }
 
-    public IComObject<IWICBitmap>? AsBitmap()
-    {
-        if (_comObject is IComObject<IWICBitmap> bmp)
-            return bmp;
-
-        var wb = DirectN.Extensions.Com.ComObject.Unwrap<IWICBitmap>(_comObject);
-        if (wb == null)
-            return null;
-
-        return new ComObject<IWICBitmap>(wb, false);
-    }
-
+    public IComObject<IWICBitmap>? AsBitmap() => ComObject.As<IWICBitmap>();
     public WicBitmapSource Clone(WICBitmapCreateCacheOption options = WICBitmapCreateCacheOption.WICBitmapNoCache)
     {
-        var bmp = WicImagingFactory.CreateBitmapFromSource(_comObject, options);
+        var bmp = WicImagingFactory.CreateBitmapFromSource(ComObject, options);
         return new WicBitmapSource(bmp);
     }
 
     private IWICBitmap CheckBitmap()
     {
-        if (_comObject.Object is not IWICBitmap bmp)
+        if (NativeObject is not IWICBitmap bmp)
             throw new WicNetException("WIC0002: Lock is only supported on in-memory bitmaps. You must Clone this bitmap first.");
 
         return bmp;
@@ -548,7 +524,6 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         IEnumerable<WicColorContext>? colorContexts = null)
     {
         ArgumentNullException.ThrowIfNull(stream);
-
         using var encoder = WicImagingFactory.CreateEncoder(encoderContainerFormat);
         var mis = new ManagedIStream(stream);
         encoder.Initialize(mis, cacheOptions);
@@ -590,15 +565,18 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
         // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
         // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
-        frame.WriteSource(_comObject, sourceRectangle);
+        frame.WriteSource(ComObject, sourceRectangle);
         frame.Commit();
         encoder.Commit();
     }
 
-    public void Dispose()
+    protected override void Dispose(bool disposing)
     {
-        _palette?.Dispose();
-        _comObject.SafeDispose();
+        if (disposing)
+        {
+            _palette?.Dispose();
+        }
+        base.Dispose(disposing);
     }
 
     int IComparable.CompareTo(object? obj) => CompareTo(obj as WicBitmapSource);

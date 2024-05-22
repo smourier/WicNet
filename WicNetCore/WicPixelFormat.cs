@@ -4,30 +4,27 @@ public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparab
 {
     private readonly Lazy<IReadOnlyList<WicPixelFormat>> _possibleTargetFormats;
 
-    public WicPixelFormat(object comObject)
+    public WicPixelFormat(IComObject<IWICPixelFormatInfo> comObject)
         : base(comObject)
     {
-        using (var info = new ComObjectWrapper<IWICPixelFormatInfo>(comObject))
+        comObject.Object.GetFormatGUID(out var guid);
+        Guid = guid;
+
+        comObject.Object.GetChannelCount(out var i);
+        ChannelCount = i;
+
+        comObject.Object.GetBitsPerPixel(out i);
+        BitsPerPixel = i;
+
+        if (OperatingSystem.IsWindowsVersionAtLeast(6, 1))
         {
-            info.Object.GetFormatGUID(out var guid);
-            Guid = guid;
-
-            info.Object.GetChannelCount(out var i);
-            ChannelCount = i;
-
-            info.Object.GetBitsPerPixel(out i);
-            BitsPerPixel = i;
-
-            if (OperatingSystem.IsWindowsVersionAtLeast(6, 1))
+            if (comObject.Object is IWICPixelFormatInfo2 info2)
             {
-                if (info.Object is IWICPixelFormatInfo2 info2)
-                {
-                    info2.GetNumericRepresentation(out var nr);
-                    NumericRepresentation = nr;
+                info2.GetNumericRepresentation(out var nr);
+                NumericRepresentation = nr;
 
-                    info2.SupportsTransparency(out var b);
-                    SupportsTransparency = b;
-                }
+                info2.SupportsTransparency(out var b);
+                SupportsTransparency = b;
             }
         }
         _possibleTargetFormats = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPossibleTargetFormats);
@@ -43,12 +40,12 @@ public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparab
 
     public WicColorContext? GetColorContext() => WicImagingFactory.WithFactory(factory =>
     {
-        factory.CreateComponentInfo(Clsid, out var info);
+        factory.Object.CreateComponentInfo(Clsid, out var info);
         if (info is IWICPixelFormatInfo format)
         {
             format.GetColorContext(out var ctx);
             if (ctx != null)
-                return new WicColorContext(ctx);
+                return new WicColorContext(new ComObject<IWICColorContext>(ctx));
         }
         return null;
     });

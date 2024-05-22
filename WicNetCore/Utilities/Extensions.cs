@@ -51,7 +51,7 @@ public static partial class Extensions
         WicImagingFactory.WithFactory(factory => EncodeMetadata(factory, writer, metadata));
     }
 
-    private static void EncodeMetadata(IWICImagingFactory factory, IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata)
+    private static void EncodeMetadata(IComObject<IWICImagingFactory> factory, IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata)
     {
         foreach (var kv in metadata)
         {
@@ -60,7 +60,7 @@ public static partial class Extensions
                 if (!childMetadata.Any())
                     continue;
 
-                factory.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var obj).ThrowOnError();
+                factory.Object.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var obj).ThrowOnError();
                 if (!ComWrappers.TryGetComInstance(obj, out var unk))
                     throw new InvalidOperationException();
 

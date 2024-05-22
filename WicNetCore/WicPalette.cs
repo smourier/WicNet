@@ -1,86 +1,77 @@
 ﻿namespace WicNet;
 
-public sealed class WicPalette : IDisposable
+public sealed class WicPalette : InterlockedComObject<IWICPalette>
 {
-    private readonly IComObject<IWICPalette> _comObject;
     private readonly Lazy<IReadOnlyList<WicColor>> _colors;
 
-    public WicPalette(WICBitmapPaletteType type, bool addTransparentColor = false)
-        : this()
-    {
-        _comObject.Object.InitializePredefined(type, addTransparentColor);
-    }
-
-    public WicPalette(WicPalette palette)
-        : this((object)palette)
-    {
-    }
-
-    public WicPalette(IWICPalette palette)
-        : this((object)palette)
-    {
-    }
-
     public WicPalette(IComObject<IWICPalette> palette)
-        : this((object)palette)
+        : base(palette)
+    {
+        _colors = new Lazy<IReadOnlyList<WicColor>>(GetColors, true);
+    }
+
+    public WicPalette(WICBitmapPaletteType type, bool addTransparentColor = false)
+        : this(From(type, addTransparentColor))
     {
     }
 
     public WicPalette(WicBitmapSource bitmap, int count, bool addTransparentColor = false)
-        : this()
+        : this(From(bitmap, count, addTransparentColor))
     {
-        ArgumentNullException.ThrowIfNull(bitmap);
-        _comObject.Object.InitializeFromBitmap(bitmap.ComObject.Object, (uint)count, addTransparentColor);
     }
 
     public WicPalette(IEnumerable<WicColor> colors)
-        : this()
+        : this(From(colors))
     {
-        ArgumentNullException.ThrowIfNull(colors);
-        var cols = colors.Select(c => (uint)c.ToArgb()).ToArray();
-        _comObject.Object.InitializeCustom(cols, (uint)cols.Length);
+    }
+
+    public WicPalette(WicPalette palette)
+        : this(From(palette))
+    {
     }
 
     public WicPalette()
-        : this((object?)null)
+        : this(WicImagingFactory.CreatePalette())
     {
     }
 
-    public WicPalette(object? source)
+    private static IComObject<IWICPalette> From(WICBitmapPaletteType type, bool addTransparentColor = false)
     {
-        if (_comObject != null)
-        {
-            if (source is IWICPalette p)
-            {
-                _comObject = new ComObject<IWICPalette>(p);
-            }
-            else if (source is WicPalette wp)
-            {
-                _comObject = WicImagingFactory.CreatePalette();
-                _comObject.Object.InitializeFromPalette(wp._comObject.Object);
-            }
-            else
-            {
-                _comObject = (source as IComObject<IWICPalette>)!;
-                if (_comObject == null)
-                    throw new ArgumentException("Source must be an " + nameof(IWICPalette) + ".", nameof(source));
-            }
-        }
-        else
-        {
-            _comObject = WicImagingFactory.CreatePalette();
-        }
-
-        _colors = new Lazy<IReadOnlyList<WicColor>>(GetColors, true);
+        var comObject = WicImagingFactory.CreatePalette();
+        comObject.Object.InitializePredefined(type, addTransparentColor);
+        return comObject;
     }
 
-    public IComObject<IWICPalette> ComObject => _comObject;
+    private static IComObject<IWICPalette> From(WicBitmapSource bitmap, int count, bool addTransparentColor = false)
+    {
+        ArgumentNullException.ThrowIfNull(bitmap);
+        var comObject = WicImagingFactory.CreatePalette();
+        comObject.Object.InitializeFromBitmap(bitmap.ComObject.Object, (uint)count, addTransparentColor);
+        return comObject;
+    }
+
+    private static IComObject<IWICPalette> From(IEnumerable<WicColor> colors)
+    {
+        ArgumentNullException.ThrowIfNull(colors);
+        var cols = colors.Select(c => (uint)c.ToArgb()).ToArray();
+        var comObject = WicImagingFactory.CreatePalette();
+        comObject.Object.InitializeCustom(cols, (uint)cols.Length);
+        return comObject;
+    }
+
+    private static IComObject<IWICPalette> From(WicPalette palette)
+    {
+        ArgumentNullException.ThrowIfNull(palette);
+        var comObject = WicImagingFactory.CreatePalette();
+        comObject.Object.InitializeFromPalette(palette.ComObject.Object);
+        return comObject;
+    }
 
     public bool HasAlpha
     {
         get
         {
-            _comObject.Object.HasAlpha(out var value).ThrowOnError();
+            NativeObject.HasAlpha(out var value).ThrowOnError();
             return value;
         }
     }
@@ -89,7 +80,7 @@ public sealed class WicPalette : IDisposable
     {
         get
         {
-            _comObject.Object.IsBlackWhite(out var value).ThrowOnError();
+            NativeObject.IsBlackWhite(out var value).ThrowOnError();
             return value;
         }
     }
@@ -98,7 +89,7 @@ public sealed class WicPalette : IDisposable
     {
         get
         {
-            _comObject.Object.IsGrayscale(out var value).ThrowOnError();
+            NativeObject.IsGrayscale(out var value).ThrowOnError();
             return value;
         }
     }
@@ -107,7 +98,7 @@ public sealed class WicPalette : IDisposable
     {
         get
         {
-            _comObject.Object.GetColorCount(out var count).ThrowOnError();
+            NativeObject.GetColorCount(out var count).ThrowOnError();
             return count;
         }
     }
@@ -116,7 +107,7 @@ public sealed class WicPalette : IDisposable
     {
         get
         {
-            _comObject.Object.GetType(out var type).ThrowOnError();
+            NativeObject.GetType(out var type).ThrowOnError();
             return type;
         }
     }
@@ -129,7 +120,7 @@ public sealed class WicPalette : IDisposable
             return [];
 
         var colors = new uint[count];
-        _comObject.Object.GetColors(count, colors, out _).ThrowOnError();
+        NativeObject.GetColors(count, colors, out _).ThrowOnError();
         return colors.Select(c => WicColor.FromArgb(c)).ToArray();
     }
 
@@ -159,6 +150,4 @@ public sealed class WicPalette : IDisposable
         }
         return string.Join(" ", list);
     }
-
-    public void Dispose() => _comObject.SafeDispose();
 }

@@ -2,32 +2,31 @@
 
 public abstract class WicMetadataHandler : WicImagingComponent
 {
-    protected WicMetadataHandler(object comObject)
+    protected WicMetadataHandler(IComObject<IWICMetadataHandlerInfo> comObject)
         : base(comObject)
     {
-        using var info = new ComObjectWrapper<IWICMetadataHandlerInfo>(comObject);
-        info.Object.GetMetadataFormat(out Guid guid);
+        comObject.Object.GetMetadataFormat(out Guid guid);
         Guid = guid;
 
         DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceManufacturer(capacity, s, out var size);
+            comObject.Object.GetDeviceManufacturer(capacity, s, out var size);
             return size;
         });
 
         DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetDeviceModels(capacity, s, out var size);
+            comObject.Object.GetDeviceModels(capacity, s, out var size);
             return size;
         });
 
         unsafe
         {
-            info.Object.GetContainerFormats(0, null!, out var count);
+            comObject.Object.GetContainerFormats(0, null!, out var count);
             if (count > 0)
             {
                 var guids = new Guid[count];
-                if (info.Object.GetContainerFormats(count, guids, out _) == 0)
+                if (comObject.Object.GetContainerFormats(count, guids, out _) == 0)
                 {
                     ContainerFormats = guids;
                 }
@@ -36,13 +35,13 @@ public abstract class WicMetadataHandler : WicImagingComponent
 
         ContainerFormats ??= [];
 
-        info.Object.DoesRequireFullStream(out var b);
+        comObject.Object.DoesRequireFullStream(out var b);
         RequiresFullStream = b;
 
-        info.Object.DoesSupportPadding(out b);
+        comObject.Object.DoesSupportPadding(out b);
         SupportsPadding = b;
 
-        info.Object.DoesRequireFixedSize(out b);
+        comObject.Object.DoesRequireFixedSize(out b);
         RequiresFixedSize = b;
     }
 

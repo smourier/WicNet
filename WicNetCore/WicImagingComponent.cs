@@ -18,29 +18,29 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
                 switch (type)
                 {
                     case WICComponentType.WICPixelFormat:
-                        ic = new WicPixelFormat(component); // let's try anyway
+                        ic = new WicPixelFormat(component.As<IWICPixelFormatInfo>()!);
                         break;
 
                     case WICComponentType.WICEncoder:
-                        ic = new WicEncoder(component);
+                        ic = new WicEncoder(component.As<IWICBitmapEncoderInfo>()!);
                         break;
 
                     case WICComponentType.WICDecoder:
-                        ic = new WicDecoder(component);
+                        ic = new WicDecoder(component.As<IWICBitmapDecoderInfo>()!);
                         break;
 
                     case WICComponentType.WICPixelFormatConverter:
-                        var converter = new WicPixelFormatConverter(component);
+                        var converter = new WicPixelFormatConverter(component.As<IWICFormatConverterInfo>()!);
                         ic = converter;
                         break;
 
                     case WICComponentType.WICMetadataReader:
-                        var reader = new WicMetadataReader(component);
+                        var reader = new WicMetadataReader(component.As<IWICMetadataReaderInfo>()!);
                         ic = reader;
                         break;
 
                     case WICComponentType.WICMetadataWriter:
-                        var writer = new WicMetadataWriter(component);
+                        var writer = new WicMetadataWriter(component.As<IWICMetadataWriterInfo>()!);
                         ic = writer;
                         break;
 
@@ -88,39 +88,42 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
     public static ISet<string> DecoderFileExtensions => _decoderExtensions.Value;
     public static ISet<string> EncoderFileExtensions => _encoderExtensions.Value;
 
-    protected WicImagingComponent(object comObject)
+    protected WicImagingComponent(IComObject<IWICComponentInfo> comObject)
     {
-        var wrapper = new ComObjectWrapper<IWICComponentInfo>(comObject);
-        wrapper.Object.GetCLSID(out Guid guid);
+        ArgumentNullException.ThrowIfNull(comObject);
+        if (comObject.IsDisposed)
+            throw new ArgumentException(null, nameof(comObject));
+
+        comObject.Object.GetCLSID(out Guid guid);
         Clsid = guid;
 
-        wrapper.Object.GetSigningStatus(out var status);
+        comObject.Object.GetSigningStatus(out var status);
         SigningStatus = (WICComponentSigning)status;
 
-        wrapper.Object.GetComponentType(out var type);
+        comObject.Object.GetComponentType(out var type);
         Type = type;
 
         FriendlyName = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetFriendlyName(capacity, s, out var size);
+            comObject.Object.GetFriendlyName(capacity, s, out var size);
             return size;
         });
 
         Author = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetAuthor(capacity, s, out var size);
+            comObject.Object.GetAuthor(capacity, s, out var size);
             return size;
         });
 
         Version = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetVersion(capacity, s, out var size);
+            comObject.Object.GetVersion(capacity, s, out var size);
             return size;
         });
 
         SpecVersion = Utilities.Extensions.GetString((s, capacity) =>
         {
-            wrapper.Object.GetSpecVersion(capacity, s, out var size);
+            comObject.Object.GetSpecVersion(capacity, s, out var size);
             return size;
         });
     }

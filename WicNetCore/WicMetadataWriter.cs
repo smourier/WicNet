@@ -1,5 +1,5 @@
 ﻿namespace WicNet;
 
-public sealed class WicMetadataWriter(object comObject) : WicMetadataHandler(comObject)
+public sealed class WicMetadataWriter(IComObject<IWICMetadataWriterInfo> comObject) : WicMetadataHandler(comObject)
 {
 }

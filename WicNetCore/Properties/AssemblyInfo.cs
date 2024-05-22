@@ -1,9 +1,4 @@
-﻿using System.Reflection;
-using System.Runtime.CompilerServices;
-using System.Runtime.InteropServices;
-using System.Runtime.Versioning;
-
-#if DEBUG
+﻿#if DEBUG
 [assembly: AssemblyConfiguration("DEBUG")]
 #else
 [assembly: AssemblyConfiguration("RELEASE")]

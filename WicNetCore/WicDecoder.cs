@@ -1,8 +1,7 @@
 ﻿namespace WicNet;
 
-public sealed class WicDecoder(object comObject) : WicCodec(comObject)
+public sealed class WicDecoder(IComObject<IWICBitmapDecoderInfo> comObject) : WicCodec(comObject)
 {
-
     // they are supposed to have the same container format
     public static WicDecoder? FromEncoder(WicEncoder encoder) => encoder != null ? FromContainerFormatGuid(encoder.ContainerFormat) : null;
 

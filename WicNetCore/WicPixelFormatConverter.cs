@@ -4,17 +4,16 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
 {
     private readonly Lazy<IReadOnlyList<WicPixelFormat>> _pixelFormatsList;
 
-    public WicPixelFormatConverter(object comObject)
+    public WicPixelFormatConverter(IComObject<IWICFormatConverterInfo> comObject)
         : base(comObject)
     {
-        using var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject);
         unsafe
         {
-            info.Object.GetPixelFormats(0, null!, out var len);
+            comObject.Object.GetPixelFormats(0, null!, out var len);
             var pf = new Guid[len];
             if (len > 0)
             {
-                info.Object.GetPixelFormats(len, pf, out _);
+                comObject.Object.GetPixelFormats(len, pf, out _);
             }
 
             PixelFormats = pf;
@@ -25,10 +24,10 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
     public IReadOnlyList<Guid> PixelFormats { get; }
     public IReadOnlyList<WicPixelFormat> PixelFormatsList => _pixelFormatsList.Value;
 
-    private IComObject<IWICFormatConverterInfo> GetComObject() => WicImagingFactory.WithFactory(f =>
+    private IComObject<IWICFormatConverterInfo> CreateComObject() => WicImagingFactory.WithFactory(f =>
     {
-        f.CreateComponentInfo(Clsid, out var info).ThrowOnError();
-        return new ComObject<IWICFormatConverterInfo>((IWICFormatConverterInfo)info);
+        f.Object.CreateComponentInfo(Clsid, out var info).ThrowOnError();
+        return new ComObject<IWICFormatConverterInfo>(info);
     });
 
     private IReadOnlyList<WicPixelFormat> GetPixelFormatsList()
@@ -49,9 +48,9 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
 
     public bool CanConvert(Guid from, Guid to)
     {
-        using var co = GetComObject();
+        using var co = CreateComObject();
         using var cvt = co.CreateInstance();
-        if (!cvt.Object.CanConvert(from, to, out var can).IsSuccess)
+        if (cvt.Object.CanConvert(from, to, out var can).IsError)
             return false;
 
         return can;
@@ -74,7 +73,7 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
             pal = p.CopyColors();
         }
 
-        using var co = GetComObject();
+        using var co = CreateComObject();
         var cvt = co.CreateInstance();
         cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object!, alphaThresholdPercent, paletteTranslate).ThrowOnError();
         return cvt;

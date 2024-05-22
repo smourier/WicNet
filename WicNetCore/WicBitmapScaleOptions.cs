@@ -1,6 +1,4 @@
-﻿using System;
-
-namespace WicNet;
+﻿namespace WicNet;
 
 [Flags]
 public enum WicBitmapScaleOptions

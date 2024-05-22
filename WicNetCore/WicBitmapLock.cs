@@ -1,42 +1,48 @@
 ﻿namespace WicNet;
 
-public sealed class WicBitmapLock
+public sealed class WicBitmapLock : InterlockedComObject<IWICBitmapLock>
 {
-    public WicBitmapLock(object comObject)
+    public WicBitmapLock(IComObject<IWICBitmapLock> comObject)
+        : base(comObject)
     {
-        using var wrapper = new ComObjectWrapper<IWICBitmapLock>(comObject);
-        wrapper.Object.GetDataPointer(out var size, out var ptr);
+        NativeObject.GetDataPointer(out var size, out var ptr);
         DataSize = size;
         DataPointer = ptr;
 
-        wrapper.Object.GetPixelFormat(out var format);
+        NativeObject.GetPixelFormat(out var format);
         PixelFormat = WicImagingComponent.FromClsid<WicPixelFormat>(format);
 
-        wrapper.Object.GetSize(out var width, out var height);
-        Width = (int)width;
-        Height = (int)height;
+        NativeObject.GetSize(out var width, out var height);
+        Width = width;
+        Height = height;
 
-        wrapper.Object.GetStride(out var stride);
-        Stride = (int)stride;
+        NativeObject.GetStride(out var stride);
+        Stride = stride;
     }
 
-    public nint DataPointer { get; }
-    public uint DataSize { get; }
-    public WicPixelFormat? PixelFormat { get; }
-    public int Width { get; }
-    public int Height { get; }
-    public int Stride { get; }
+    public nint DataPointer { get; private set; }
+    public uint DataSize { get; private set; }
+    public WicPixelFormat? PixelFormat { get; private set; }
+    public uint Width { get; private set; }
+    public uint Height { get; private set; }
+    public uint Stride { get; private set; }
+
+    protected override void Dispose(bool disposing)
+    {
+        base.Dispose(disposing);
+        DataPointer = 0;
+        DataSize = 0;
+        PixelFormat = null;
+        Width = 0;
+        Height = 0;
+        Stride = 0;
+    }
 
     public void WriteRectangle(int left, int top, byte[] input, uint inputStride, uint inputIndex = 0, uint? height = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(left);
         ArgumentOutOfRangeException.ThrowIfNegative(top);
         ArgumentNullException.ThrowIfNull(input);
-        ArgumentOutOfRangeException.ThrowIfNegative(inputIndex);
-        ArgumentOutOfRangeException.ThrowIfNegative(inputStride);
-        if (height < 0)
-            throw new ArgumentOutOfRangeException(nameof(height));
-
         if (PixelFormat == null)
             throw new InvalidOperationException();
 

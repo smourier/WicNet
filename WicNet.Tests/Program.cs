@@ -14,9 +14,12 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            CopyFile();
+            BuildAtlasWithCPU();
             return;
-            DumpPossibleWicBitmapRenderTargetFormats();
+            //DumpPossibleWicBitmapRenderTargetFormats();
+            DumpAllComponentsPossibleConversions();
+            return;
+            CopyFile();
             return;
             Posterize(256);
             return;
@@ -243,7 +246,7 @@ namespace WicNet.Tests
             {
                 var row = 0;
                 var col = 0;
-                var path = @"d:\temp";
+                var path = @"d:\temp\images";
                 var sw = new Stopwatch();
                 sw.Start();
                 foreach (var file in Directory.EnumerateFiles(path, "*.*", SearchOption.TopDirectoryOnly))
