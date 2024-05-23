@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using DirectN;
 using DirectN.Extensions;
@@ -19,20 +20,28 @@ internal class Program
 {
     static void Main()
     {
+        BuildTurbulences();
+        RotateAndGrayscale();
+        BuildBlur(20);
+        Posterize(256);
+        ToTiff("file_example_TIFF_1MB.tiff");
+        LoadFromIcon();
+        LoadAndScale();
+        ConvertSvgAsPng("tiger.svg");
         DumpAllComponentsPossibleConversions();
         BuildAtlasWithCPU();
         BuildAtlasWithGPU();
         DrawEllipse();
         DumpAllComponents();
         DumpPossibleWicBitmapRenderTargetFormats();
-        //TryVariousConversions();
+        TryVariousConversions();
         CopyFile();
         ExtractGif();
         ConvertToBW();
-        //DumpAllFormats();
-        //CopyWithColorContext();
+        DumpAllFormats();
+        CopyWithColorContext();
         GC.Collect();
-        //GC.WaitForPendingFinalizers(); // this crashes .NET 8's ComObject (waiting for .NET 9...) see https://github.com/dotnet/runtime/issues/96901
+        GC.WaitForPendingFinalizers();
     }
 
     static void BuildAtlasWithCPU(int thumbSize = 96, int dimension = 20)
@@ -196,14 +205,15 @@ internal class Program
         dc.BeginDraw();
         dc.DrawImage(fx);
         dc.EndDraw();
-        return fx.GetValue<float[]>("HistogramOutput", null)!;
+        var bytes = fx.GetValue<byte[]>("HistogramOutput", null)!;
+        return MemoryMarshal.Cast<byte, float>(bytes).ToArray();
     }
 
     static void LoadFromIcon()
     {
         using var bmp = WicBitmapSource.Load("test.ico");
         bmp.Save("testicon.png");
-        Process.Start(new ProcessStartInfo("testicon.png") { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo("testicon.png") { UseShellExecute = true });
     }
 
     static void LoadAndScale(int? boxWidth = null, int? boxHeight = null)
@@ -212,7 +222,7 @@ internal class Program
         bmp.Scale(boxWidth, boxHeight);
         var name = boxWidth + "x" + boxHeight + ".jpg";
         bmp.Save(name);
-        Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
     }
 
     static void BuildTurbulences()
@@ -229,7 +239,7 @@ internal class Program
             rt.DrawImage(fx);
             rt.EndDraw();
             newBmp.Save($"noise{offset}.jpg");
-            Process.Start(new ProcessStartInfo($"noise{offset}.jpg") { UseShellExecute = true });
+            //Process.Start(new ProcessStartInfo($"noise{offset}.jpg") { UseShellExecute = true });
         }
     }
 
@@ -252,7 +262,7 @@ internal class Program
         rt.DrawImage(fx);
         rt.EndDraw();
         newBmp.Save("blur.jpg");
-        Process.Start(new ProcessStartInfo("blur.jpg") { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo("blur.jpg") { UseShellExecute = true });
     }
 
     static void RotateAndGrayscale()
@@ -269,7 +279,7 @@ internal class Program
         rt.DrawImage(fx);
         rt.EndDraw();
         newBmp.Save("gray.jpg");
-        Process.Start(new ProcessStartInfo("gray.jpg") { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo("gray.jpg") { UseShellExecute = true });
     }
 
     static void Posterize(uint numberOfColors)
@@ -289,7 +299,7 @@ internal class Program
         rt.EndDraw();
         var name = "posterize" + numberOfColors + ".jpg";
         newBmp.Save(name);
-        Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
     }
 
     static void DrawEllipse()
@@ -307,7 +317,7 @@ internal class Program
         rt.DrawEllipse(new D2D1_ELLIPSE(width / 2, height / 2, Math.Min(width, height) / 2), brush, 4);
         rt.EndDraw();
         memBmp.Save("ellipse.jpg");
-        Process.Start(new ProcessStartInfo("ellipse.jpg") { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo("ellipse.jpg") { UseShellExecute = true });
     }
 
     static void DrawText()
@@ -325,7 +335,7 @@ internal class Program
         rt.DrawText("Hello World!" + Environment.NewLine + "🤩😛😂", format, new D2D_RECT_F(10, 10, 200, 30), brush, D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
         rt.EndDraw();
         memBmp.Save("helloworld.jpg");
-        Process.Start(new ProcessStartInfo("helloworld.jpg") { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo("helloworld.jpg") { UseShellExecute = true });
     }
 
     static void DumpAllComponentsPossibleConversions()
@@ -427,7 +437,7 @@ internal class Program
         //bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat1bppIndexed, ditherType: WICBitmapDitherType.WICBitmapDitherTypeErrorDiffusion, paletteTranslate: WICBitmapPaletteType.WICBitmapPaletteTypeFixedBW);
         bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormatBlackWhite, ditherType: WICBitmapDitherType.WICBitmapDitherTypeDualSpiral8x8, paletteTranslate: WICBitmapPaletteType.WICBitmapPaletteTypeFixedHalftone256);
         bmp.Save("bw.bmp");
-        Process.Start(new ProcessStartInfo("bw.bmp") { UseShellExecute = true });
+        //Process.Start(new ProcessStartInfo("bw.bmp") { UseShellExecute = true });
     }
 
     static void ExtractGif()
@@ -515,7 +525,7 @@ internal class Program
     static void ToTiff(string path)
     {
         using var bmp = WicBitmapSource.Load(path);
-        //Dump(bmp.GetMetadataReader());
+        Dump(bmp.GetMetadataReader());
 
         for (var i = 0; i < 8; i++)
         {
