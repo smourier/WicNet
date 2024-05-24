@@ -20,9 +20,9 @@ internal class Program
 {
     static void Main()
     {
+        BuildBlur(20);
         BuildTurbulences();
         RotateAndGrayscale();
-        BuildBlur(20);
         Posterize(256);
         ToTiff("file_example_TIFF_1MB.tiff");
         LoadFromIcon();
