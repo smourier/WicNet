@@ -560,7 +560,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
         if (colorContexts?.Any() == true)
         {
-            frame.SetColorContexts(colorContexts.Select(c => c.ComObject.Object));
+            frame.SetColorContexts(colorContexts.Select(c => c.ComObject));
         }
 
         // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
