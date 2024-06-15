@@ -14,6 +14,11 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
+            {
+                Console.WriteLine(f);
+            }
+            return;
             BuildAtlasWithCPU();
             return;
             //DumpPossibleWicBitmapRenderTargetFormats();
@@ -429,7 +434,9 @@ namespace WicNet.Tests
             using var memBmp = new WicBitmapSource(thumbSize, thumbSize, WicPixelFormat.GUID_WICPixelFormat32bppBGR);
             using var dc = memBmp.CreateDeviceContext();
             using var fx = dc.CreateEffect(Direct2DEffects.CLSID_D2D1Histogram);
-            return GetHistogram(filePath, dc, fx);
+            var array = GetHistogram(filePath, dc, fx);
+            memBmp.Save("histo.png");
+            return array;
         }
 
         static float[] GetHistogram(string filePath, IComObject<ID2D1DeviceContext> dc, IComObject<ID2D1Effect> fx)
