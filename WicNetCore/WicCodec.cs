@@ -41,7 +41,7 @@ public abstract class WicCodec : WicImagingComponent
             return size;
         });
 
-        comObject.Object.DoesSupportAnimation(out bool b);
+        comObject.Object.DoesSupportAnimation(out var b);
         SupportsAnimation = b;
 
         comObject.Object.DoesSupportChromakey(out b);
