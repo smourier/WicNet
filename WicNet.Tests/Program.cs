@@ -14,10 +14,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            foreach (var f in GetHistogram("SamsungSGH-P270.jpg"))
-            {
-                Console.WriteLine(f);
-            }
+            BuildStraighten();
             return;
             BuildAtlasWithCPU();
             return;
@@ -508,6 +505,31 @@ namespace WicNet.Tests
             rt.EndDraw();
             newBmp.Save("blur.jpg");
             Process.Start(new ProcessStartInfo("blur.jpg") { UseShellExecute = true });
+        }
+
+        static void BuildStraighten()
+        {
+            using var bmp = WicBitmapSource.Load("SamsungSGH-P270.jpg");
+            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+            using var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            using var rt = newBmp.CreateDeviceContext();
+            using var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Straighten);
+            using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
+            fx.SetInput(cb);
+            fx.SetValue((int)D2D1_STRAIGHTEN_PROP.D2D1_STRAIGHTEN_PROP_ANGLE, 12.0f);
+            fx.SetValue((int)D2D1_STRAIGHTEN_PROP.D2D1_STRAIGHTEN_PROP_MAINTAIN_SIZE, false);
+            fx.SetValue((int)D2D1_STRAIGHTEN_PROP.D2D1_STRAIGHTEN_PROP_SCALE_MODE, D2D1_STRAIGHTEN_SCALE_MODE.D2D1_STRAIGHTEN_SCALE_MODE_LINEAR);
+
+            using (var img = fx.GetOutput())
+            {
+                var bounds = rt.GetImageLocalBounds(img);
+            }
+
+            rt.BeginDraw();
+            rt.DrawImage(fx);
+            rt.EndDraw();
+            newBmp.Save("straighten.jpg");
+            Process.Start(new ProcessStartInfo("straighten.jpg") { UseShellExecute = true });
         }
 
         static void RotateAndGrayscale()
