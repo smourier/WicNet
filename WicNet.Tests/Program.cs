@@ -14,6 +14,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            BuildCrop();
+            return;
             BuildStraighten();
             return;
             BuildAtlasWithCPU();
@@ -530,6 +532,24 @@ namespace WicNet.Tests
             rt.EndDraw();
             newBmp.Save("straighten.jpg");
             Process.Start(new ProcessStartInfo("straighten.jpg") { UseShellExecute = true });
+        }
+
+        static void BuildCrop()
+        {
+            using var bmp = WicBitmapSource.Load(@"SamsungSGH-P270.jpg");
+            bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
+            using var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            using var rt = newBmp.CreateDeviceContext();
+            using var fx = rt.CreateEffect(Direct2DEffects.CLSID_D2D1Crop);
+            using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
+            fx.SetInput(cb);
+            fx.SetValue((int)D2D1_CROP_PROP.D2D1_CROP_PROP_RECT, new D2D_VECTOR_4F(bmp.Width / 2, bmp.Height / 2, bmp.Width, bmp.Height));
+
+            rt.BeginDraw();
+            rt.DrawImage(fx);
+            rt.EndDraw();
+            newBmp.Save("crop.jpg");
+            Process.Start(new ProcessStartInfo("crop.jpg") { UseShellExecute = true });
         }
 
         static void RotateAndGrayscale()
