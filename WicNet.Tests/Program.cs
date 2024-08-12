@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
 using System.Linq;
+using System.Runtime.InteropServices;
 using DirectN;
 using WicNet.Utilities;
 
@@ -14,6 +15,8 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            LoadHeic();
+            return;
             BuildCrop();
             return;
             BuildStraighten();
@@ -63,6 +66,24 @@ namespace WicNet.Tests
             //RotateAndGrayscale();
             //CopyGif();
             //DrawEllipse();
+        }
+
+        static void LoadHeic()
+        {
+            var path = @"C:\Users\simon\Downloads\images\heic\chat.heic";
+            var decoder = WICImagingFactory.CreateDecoderFromFilename(path, guidVendor: new("E27AE9AE-D620-4AEB-AD02-E2AE03104234"));
+
+            var ctdec = decoder.Object as ICopyTransHeicDecoder;
+
+            //using var bmp = WicBitmapSource.Load(@"C:\Users\simon\Downloads\images\heic\chat.heic", guidVendor: new("E27AE9AE-D620-4AEB-AD02-E2AE03104234"));
+            //using var bmp = WicBitmapSource.Load(@"C:\Users\simon\Downloads\images\heic\chat.heic", guidVendor: new("E27AE9AE-D620-4AEB-AD02-E2AE03104234"));
+            //var d = WicDecoder.AllComponents.OfType<WicDecoder>().Where(e => e.SupportsFileExtension(".heict")).ToArray();
+        }
+
+        // see WWICHEICBitmapDecoder.cpp QueryInterface
+        [ComImport, InterfaceType(ComInterfaceType.InterfaceIsIUnknown), Guid("E27AE9AE-D620-4AEB-AD02-E2AE03104234")]
+        private interface ICopyTransHeicDecoder
+        {
         }
 
         static void TryVariousConversions()

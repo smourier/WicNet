@@ -430,21 +430,21 @@ namespace WicNet
             _comObject = clip;
         }
 
-        public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+        public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
         {
-            using (var decoder = WicBitmapDecoder.Load(filePath, options: options))
+            using (var decoder = WicBitmapDecoder.Load(filePath, guidVendor: guidVendor, options: options))
                 return decoder.GetFrame(frameIndex);
         }
 
-        public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+        public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
         {
-            using (var decoder = WicBitmapDecoder.Load(fileHandle, options: options))
+            using (var decoder = WicBitmapDecoder.Load(fileHandle, guidVendor: guidVendor, options: options))
                 return decoder.GetFrame(frameIndex);
         }
 
-        public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
+        public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
         {
-            using (var decoder = WicBitmapDecoder.Load(stream, options: options))
+            using (var decoder = WicBitmapDecoder.Load(stream, guidVendor: guidVendor, options: options))
                 return decoder.GetFrame(frameIndex);
         }
 

@@ -25,6 +25,7 @@ namespace WicNetExplorer.Model
         public string FriendlyName => _component.FriendlyName;
         public string Author => _component.Author;
         public string Version => _component.Version;
+        public Guid Vendor => _component.Vendor;
 
         [DisplayName("Arbitration Priority")]
         public int ArbitrationPriority => _component.ArbitrationPriority;

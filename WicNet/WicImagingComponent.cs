@@ -143,6 +143,11 @@ namespace WicNet
                     {
                         ArbitrationPriority = priority;
                     }
+
+                    if (key.GetValue(nameof(Vendor)) is string vendorText && Guid.TryParse(vendorText, out var vendor))
+                    {
+                        Vendor = vendor;
+                    }
                 }
             }
         }
@@ -155,6 +160,7 @@ namespace WicNet
         public string Version { get; }
         public string SpecVersion { get; }
         public int ArbitrationPriority { get; }
+        public Guid Vendor { get; }
         public virtual string ClsidName => GetClassName(Clsid);
 
         public override string ToString() => FriendlyName + " " + ClsidName;
