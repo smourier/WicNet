@@ -26,6 +26,9 @@ namespace WicNetExplorer.Model
         public string Author => _component.Author;
         public string Version => _component.Version;
 
+        [DisplayName("Arbitration Priority")]
+        public int ArbitrationPriority => _component.ArbitrationPriority;
+
         [DisplayName("Spec Version")]
         public string SpecVersion => _component.SpecVersion;
 

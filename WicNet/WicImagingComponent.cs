@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using DirectN;
+using Microsoft.Win32;
 using WicNet.Utilities;
 
 namespace WicNet
@@ -133,6 +134,17 @@ namespace WicNet
                 wrapper.Object.GetSpecVersion(capacity, s, out var size);
                 return size;
             });
+
+            using (var key = Registry.ClassesRoot.OpenSubKey(Path.Combine("CLSID", Clsid.ToString("B"))))
+            {
+                if (key != null)
+                {
+                    if (key.GetValue(nameof(ArbitrationPriority)) is int priority)
+                    {
+                        ArbitrationPriority = priority;
+                    }
+                }
+            }
         }
 
         public Guid Clsid { get; }
@@ -142,6 +154,7 @@ namespace WicNet
         public string Author { get; }
         public string Version { get; }
         public string SpecVersion { get; }
+        public int ArbitrationPriority { get; }
         public virtual string ClsidName => GetClassName(Clsid);
 
         public override string ToString() => FriendlyName + " " + ClsidName;
