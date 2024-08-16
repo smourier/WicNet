@@ -15,6 +15,24 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
+            foreach (var file in Directory.GetFiles(WicColorContext.ColorDirectory))
+            {
+                var name = Path.GetFileName(file);
+                if (!name.StartsWith("wsc"))
+                    continue;
+
+                var cc = new WicColorContext(file);
+                try
+                {
+                    var profile = cc.Profile;
+                    Console.WriteLine(name + ": " + profile.Profile);
+                }
+                catch (Exception e)
+                {
+                    //Console.WriteLine("ERROR " + Path.GetFileName(file) + " " + e.Message);
+                }
+            }
+            return;
             LoadHeic();
             return;
             BuildCrop();

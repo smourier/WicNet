@@ -28,10 +28,13 @@ namespace WicNetExplorer.Model
 
         [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]
-        public ColorProfileElementModel[] Elements => _profile.Elements.Select(e => new ColorProfileElementModel(e)).ToArray();
+        public ColorProfileElementModel[] Elements => _profile.Elements.Select(e => new ColorProfileElementModel(e)).OrderBy(e => e.Tag).ToArray();
 
         public int Size => _profile.Size;
         public string Version => _profile.VersionMajor + "." + _profile.VersionMinor;
+
+        [DisplayName("Local File Path")]
+        public string? FilePath { get; internal set; }
 
         [TypeConverter(typeof(StringFormatterArrayConverter))]
         [StringFormatter("{Length}")]
@@ -39,7 +42,7 @@ namespace WicNetExplorer.Model
 
         [DisplayName("Rendering Intent")]
         public int RenderingIntent => _profile.RenderingIntent;
-        public tagCIEXYZ Illuminant => _profile.Illuminant;
+        public string Illuminant => "X:" + _profile.Illuminant.ciexyzX + ",Y:" + _profile.Illuminant.ciexyzY + ",Z:" + _profile.Illuminant.ciexyzZ;
         public ColorProfileFlags Flags => _profile.Flags;
 
         [DisplayName("CMM Type")]
@@ -80,6 +83,16 @@ namespace WicNetExplorer.Model
         [StringFormatter("{Length}")]
         public LocalizedStringModel[] LocalizedStrings { get; set; }
 
-        public override string ToString() => _profile.ToString();
+        public override string ToString()
+        {
+            var str = _profile.ToString();
+            if (!string.IsNullOrWhiteSpace(str))
+                return str;
+
+            if (FilePath != null)
+                return FilePath;
+
+            return string.Empty;
+        }
     }
 }

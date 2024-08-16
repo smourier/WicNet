@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Drawing.Design;
 using DirectN;
-using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model
