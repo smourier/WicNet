@@ -10,19 +10,17 @@ namespace WicNetExplorer.Model
 {
     public class BitmapSourceModelEditor : UITypeEditor
     {
-        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) => UITypeEditorEditStyle.Modal;
-        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) => UITypeEditorEditStyle.Modal;
+        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
             if (value is WicBitmapSource bitmap)
             {
                 if (provider.GetService(typeof(IWindowsFormsEditorService)) is IWindowsFormsEditorService svc)
                 {
-                    using (var form = new BitmapSourceForm(bitmap))
-                    {
-                        form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
-                        form.ClientSize = bitmap.Size.ToSize();
-                        svc.ShowDialog(form);
-                    }
+                    using var form = new BitmapSourceForm(bitmap);
+                    form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                    form.ClientSize = bitmap.Size.ToSize();
+                    svc.ShowDialog(form);
                 }
             }
             return base.EditValue(context, provider, value);

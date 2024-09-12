@@ -250,8 +250,8 @@ namespace WicNetExplorer
             {
                 Text = Resources.Components
             };
-            ((Control)dlg.AcceptButton).Visible = false;
-            ((Control)dlg.CancelButton).Text = Resources.Close;
+            ((Control)dlg.AcceptButton!).Visible = false;
+            ((Control)dlg.CancelButton!).Text = Resources.Close;
             dlg.ShowDialog(this);
         }
 
@@ -261,8 +261,8 @@ namespace WicNetExplorer
             {
                 Text = Resources.DecodableExtensions
             };
-            ((Control)dlg.AcceptButton).Visible = false;
-            ((Control)dlg.CancelButton).Text = Resources.Close;
+            ((Control)dlg.AcceptButton!).Visible = false;
+            ((Control)dlg.CancelButton!).Text = Resources.Close;
             dlg.ShowDialog(this);
         }
 
@@ -272,8 +272,8 @@ namespace WicNetExplorer
             {
                 Text = Resources.EncodableExtensions
             };
-            ((Control)dlg.AcceptButton).Visible = false;
-            ((Control)dlg.CancelButton).Text = Resources.Close;
+            ((Control)dlg.AcceptButton!).Visible = false;
+            ((Control)dlg.CancelButton!).Text = Resources.Close;
             dlg.ShowDialog(this);
         }
 

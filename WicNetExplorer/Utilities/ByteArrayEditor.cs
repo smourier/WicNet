@@ -7,8 +7,8 @@ namespace WicNetExplorer.Utilities
 {
     public class ByteArrayEditor : UITypeEditor
     {
-        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) => UITypeEditorEditStyle.Modal;
-        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) => UITypeEditorEditStyle.Modal;
+        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
             if (value is IValueProvider valueProvider)
             {
@@ -21,7 +21,7 @@ namespace WicNetExplorer.Utilities
                 {
                     var form = new ByteArrayForm
                     {
-                        Text = context.PropertyDescriptor.DisplayName
+                        Text = context?.PropertyDescriptor?.DisplayName ?? string.Empty,
                     };
                     form.SetBytes(bytes);
                     svc.ShowDialog(form);

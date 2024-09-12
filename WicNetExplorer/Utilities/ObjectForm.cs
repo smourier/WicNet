@@ -13,8 +13,8 @@ namespace WicNetExplorer.Utilities
 
             if (closeMode)
             {
-                ((Control)AcceptButton).Visible = false;
-                ((Control)CancelButton).Text = Resources.Close;
+                ((Control)AcceptButton!).Visible = false;
+                ((Control)CancelButton!).Text = Resources.Close;
             }
         }
 
@@ -35,7 +35,7 @@ namespace WicNetExplorer.Utilities
         {
             var text = ToStringVisitor.Visit(propertyGridObject.SelectedObject, "  ");
             Clipboard.SetText(text);
-            this.ShowMessage(string.Format(Resources.CopiedToClipboard, text.Split(new[] { '\r', '\n' }, StringSplitOptions.RemoveEmptyEntries).Length));
+            this.ShowMessage(string.Format(Resources.CopiedToClipboard, text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Length));
         }
 
         private void ContextMenuStripGrid_Opening(object sender, System.ComponentModel.CancelEventArgs e)

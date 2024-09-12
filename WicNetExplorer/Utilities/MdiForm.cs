@@ -188,7 +188,7 @@ namespace WicNetExplorer.Utilities
             // emulate frame sizing & caption move
             if (m.Msg == MessageDecoder.WM_NCHITTEST)
             {
-                var screenLeftTop = Parent.PointToScreen(new Point(Left, Top));
+                var screenLeftTop = Parent!.PointToScreen(new Point(Left, Top));
                 var screenX = m.LParam.GET_X_LPARAM();
                 var screenY = m.LParam.GET_Y_LPARAM();
                 var clientX = screenX - screenLeftTop.X;

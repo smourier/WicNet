@@ -8,8 +8,8 @@ namespace WicNetExplorer.Utilities
 {
     public class ArrayDisplayEditor : UITypeEditor
     {
-        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext context) => UITypeEditorEditStyle.Modal;
-        public override object EditValue(ITypeDescriptorContext context, IServiceProvider provider, object value)
+        public override UITypeEditorEditStyle GetEditStyle(ITypeDescriptorContext? context) => UITypeEditorEditStyle.Modal;
+        public override object? EditValue(ITypeDescriptorContext? context, IServiceProvider provider, object? value)
         {
             if (value is IValueProvider valueProvider)
             {
