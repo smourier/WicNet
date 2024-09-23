@@ -13,9 +13,8 @@ namespace WicNetExplorer.Utilities
 {
     public static class Extensions
     {
-        public static object D3D11CreateDevice()
+        public static object D3D11CreateDevice(D3D11_CREATE_DEVICE_FLAG flags = D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT)
         {
-            var flags = D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT;
             var hr = D3D11CreateDevice(
                 null,
                  D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE,
