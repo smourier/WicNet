@@ -273,7 +273,7 @@ internal class Program
         bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
         using var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
         using var rt = newBmp.CreateDeviceContext();
-        using var fx = rt.CreateEffect(Constants.CLSID_D2D1Straighten);
+        using var fx = rt.CreateEffect(Constants.CLSID_D2D1Straighten)!;
         using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
         fx.SetInput(cb);
         fx.SetValue((int)D2D1_STRAIGHTEN_PROP.D2D1_STRAIGHTEN_PROP_ANGLE, 12.0f);
@@ -299,7 +299,7 @@ internal class Program
         using var newBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
         using var rt = newBmp.CreateDeviceContext();
         var breush = rt.CreateCheckerboardBrush(8);
-        using var fx = rt.CreateEffect(Constants.CLSID_D2D1Crop);
+        using var fx = rt.CreateEffect(Constants.CLSID_D2D1Crop)!;
         using var cb = rt.CreateBitmapFromWicBitmap(bmp.ComObject);
         fx.SetInput(cb);
         fx.SetValue((int)D2D1_CROP_PROP.D2D1_CROP_PROP_RECT, new D2D_VECTOR_4F(bmp.Width / 2, bmp.Height / 2, bmp.Width, bmp.Height));

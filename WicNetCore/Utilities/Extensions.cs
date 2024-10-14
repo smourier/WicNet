@@ -2,9 +2,6 @@
 
 public static partial class Extensions
 {
-    //[SupportedOSPlatform("windows")]
-    //public static D3DCOLORVALUE ToD3DCOLORVALUE(this Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
-
     [SupportedOSPlatform("windows6.1")]
     public static IComObject<ID2D1BitmapBrush> CreateCheckerboardBrush(this IComObject<ID2D1RenderTarget> renderTarget, float size) => CreateCheckerboardBrush(renderTarget?.Object!, size);
 
