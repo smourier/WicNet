@@ -44,6 +44,8 @@ public sealed class WicBitmapDecoder(IComObject<IWICBitmapDecoder> comObject) : 
         }
     }
 
+    public static WicBitmapDecoder Load(Guid guidContainerFormat, Guid? guidVendor = null) => new(WicImagingFactory.CreateDecoder(guidContainerFormat, guidVendor));
+
     public static WicBitmapDecoder Load(string filePath, Guid? guidVendor = null, FileAccess access = FileAccess.Read, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         ArgumentNullException.ThrowIfNull(filePath);
