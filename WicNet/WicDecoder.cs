@@ -1,6 +1,7 @@
 ﻿using System;
 using System.IO;
 using System.Linq;
+using DirectN;
 using WicNet.Utilities;
 
 namespace WicNet
@@ -11,6 +12,14 @@ namespace WicNet
             : base(comObject)
         {
         }
+
+        public WicBitmapDecoder CreateInstance() => WICImagingFactory.WithFactory(f =>
+        {
+            f.CreateComponentInfo(Clsid, out var info).ThrowOnError();
+            var decoderInfo = (IWICBitmapDecoderInfo)info;
+            decoderInfo.CreateInstance(out var decoder).ThrowOnError();
+            return new WicBitmapDecoder(decoder);
+        });
 
         // they are supposed to have the same container format
         public static WicDecoder FromEncoder(WicEncoder encoder) => encoder != null ? FromContainerFormatGuid(encoder.ContainerFormat) : null;

@@ -2,6 +2,14 @@
 
 public sealed class WicDecoder(IComObject<IWICBitmapDecoderInfo> comObject) : WicCodec(comObject)
 {
+    public WicBitmapDecoder CreateInstance() => WicImagingFactory.WithFactory(f =>
+    {
+        f.Object.CreateComponentInfo(Clsid, out var info).ThrowOnError();
+        var decoderInfo = (IWICBitmapDecoderInfo)info;
+        decoderInfo.CreateInstance(out var decoder).ThrowOnError();
+        return new WicBitmapDecoder(new ComObject<IWICBitmapDecoder>(decoder));
+    });
+
     // they are supposed to have the same container format
     public static WicDecoder? FromEncoder(WicEncoder encoder) => encoder != null ? FromContainerFormatGuid(encoder.ContainerFormat) : null;
 
