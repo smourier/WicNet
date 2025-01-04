@@ -37,7 +37,7 @@ namespace WicNetExplorer.Model
                 }
             }
 
-            foreach (var dd in DISPLAY_DEVICE.Active)
+            foreach (var dd in DISPLAY_DEVICE.All)
             {
                 DisplayDeviceModel ddModel;
                 if (dic.TryGetValue(dd.DeviceName, out var path))
