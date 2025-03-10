@@ -15,41 +15,6 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            var dir = "D:\\Aelyo\\Customers\\CopyTrans\\Tools\\ConsoleApp1\\bin\\Debug\\net9.0\\heics";
-            if (!Directory.Exists(dir))
-            {
-                Directory.CreateDirectory(dir);
-            }
-
-            using (var fac = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED))
-            using (var format = fac.CreateTextFormat("Segoe UI", 70))
-            using (var bmp = WicBitmapSource.Load("D:\\Aelyo\\Customers\\CopyTrans\\Tools\\ConsoleApp1\\bin\\Debug\\net9.0\\sample.heic"))
-            {
-                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGR);
-
-                for (var i = 0; i < 10000; i++)
-                {
-                    var name = "D:\\Aelyo\\Customers\\CopyTrans\\Tools\\ConsoleApp1\\bin\\Debug\\net9.0\\heics\\sample" + i + ".heic";
-                    var fi = new FileInfo(name);
-                    if (fi.Exists && fi.Length > 0)
-                        continue;
-
-                    using var memBmp = new WicBitmapSource(bmp.Width, bmp.Height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
-                    using (var rt = memBmp.CreateDeviceContext())
-                    using (var dbmp = rt.CreateBitmapFromWicBitmap(bmp.ComObject))
-                    using (var brush = rt.CreateSolidColorBrush(_D3DCOLORVALUE.White))
-                    {
-                        rt.BeginDraw();
-                        rt.DrawBitmap(dbmp);
-                        rt.DrawText("#" + i, format, new D2D_RECT_F(10, 10, 500, 80), brush);
-                        rt.EndDraw();
-                    }
-
-                    memBmp.Save(name);
-                    Console.WriteLine(i);
-                }
-            }
-            return;
             LoadHeic();
             return;
             BuildCrop();
