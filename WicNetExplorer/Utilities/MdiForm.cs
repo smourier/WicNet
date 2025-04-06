@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using DirectN;
@@ -46,6 +47,7 @@ namespace WicNetExplorer.Utilities
             ResumeLayout(false);
         }
 
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public bool IsActive { get; private set; }
         public Rectangle MdiBounds
         {

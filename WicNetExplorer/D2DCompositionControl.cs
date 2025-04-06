@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
 using System.Runtime.InteropServices;
@@ -67,9 +68,10 @@ namespace WicNetExplorer
         //  DXGI_FORMAT_R8G8B8A8_UNORM
         //  DXGI_FORMAT_A8_UNORM
         //  DXGI_FORMAT_B8G8R8A8_UNORM
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public virtual DXGI_FORMAT PixelFormat { get; set; }
 
-        [MemberNotNullWhen(true, "_target")]
+        [MemberNotNullWhen(true, nameof(_target))]
         protected virtual bool IsValidTarget => _target != null;
 
         public virtual void WithDeviceContext(Action<IComObject<ID2D1DeviceContext>> action)

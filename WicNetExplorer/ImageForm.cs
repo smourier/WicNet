@@ -42,6 +42,7 @@ namespace WicNetExplorer
 
         public ID2DControl? D2DControl => _d2d;
         public IComObject<ID2D1Bitmap1>? Bitmap => _bitmap;
+        [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
         public string? FileName { get; private set; }
 
         protected virtual void EnsureD2DControl()
@@ -594,10 +595,7 @@ namespace WicNetExplorer
                     fileName = fd.FileName;
                 }
 
-                var encoder = WicEncoder.FromFileExtension(Path.GetExtension(fileName));
-                if (encoder == null)
-                    throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
-
+                var encoder = WicEncoder.FromFileExtension(Path.GetExtension(fileName)) ?? throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
                 IOUtilities.FileDelete(fileName, true, false);
                 _d2d.WithDeviceContext(dc =>
                 {

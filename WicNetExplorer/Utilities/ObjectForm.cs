@@ -1,4 +1,5 @@
 ﻿using System;
+using System.ComponentModel;
 using System.Windows.Forms;
 
 namespace WicNetExplorer.Utilities
@@ -27,8 +28,8 @@ namespace WicNetExplorer.Utilities
             base.OnKeyDown(e);
         }
 
-        private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem.ExpandAllItems();
-        private void CollapseChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem.CollapseAllItems();
+        private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem?.ExpandAllItems();
+        private void CollapseChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem?.CollapseAllItems();
         private void ExpandAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.ExpandAllGridItems();
         private void CollapseAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.CollapseAllGridItems();
         private void ButtonCopyToClipboard_Click(object sender, EventArgs e)
@@ -38,7 +39,7 @@ namespace WicNetExplorer.Utilities
             this.ShowMessage(string.Format(Resources.CopiedToClipboard, text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Length));
         }
 
-        private void ContextMenuStripGrid_Opening(object sender, System.ComponentModel.CancelEventArgs e)
+        private void ContextMenuStripGrid_Opening(object sender, CancelEventArgs e)
         {
             expandChildrenToolStripMenuItem.Enabled = propertyGridObject.SelectedGridItem != null;
             collapseAllItemsToolStripMenuItem.Enabled = expandChildrenToolStripMenuItem.Enabled;

@@ -1,6 +1,4 @@
-﻿using System;
-using System.ComponentModel;
-using System.Linq;
+﻿using System.ComponentModel;
 using DirectN;
 using WicNetExplorer.Utilities;
 
@@ -13,9 +11,8 @@ namespace WicNetExplorer.Model
 
         public DisplayDeviceModel(DISPLAY_DEVICE device)
         {
-            ArgumentNullException.ThrowIfNull(device);
             _device = device;
-            Modes = _device.GetModes().ToArray();
+            Modes = [.. _device.GetModes()];
             StateFlags = _device.StateFlags.GetEnumName(nameof(DISPLAY_DEVICE));
         }
 
