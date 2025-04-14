@@ -1,10 +1,9 @@
 ﻿using System.Collections.Generic;
 
-namespace WicNetExplorer.Utilities
+namespace WicNetExplorer.Utilities;
+
+public class ToStringVisitorContext
 {
-    public class ToStringVisitorContext
-    {
-        public virtual ISet<object> VisitedObjects { get; } = new HashSet<object>();
-        public virtual bool ThrowOnGetValue { get; set; }
-    }
+    public virtual ISet<object> VisitedObjects { get; } = new HashSet<object>();
+    public virtual bool ThrowOnGetValue { get; set; }
 }

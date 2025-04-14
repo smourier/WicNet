@@ -1,14 +1,9 @@
 ﻿using System.ComponentModel;
 using WicNet;
 
-namespace WicNetExplorer.Model
+namespace WicNetExplorer.Model;
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class MetadataWriterModel(WicMetadataWriter handler) : MetadataHandlerModel(handler)
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class MetadataWriterModel : MetadataHandlerModel
-    {
-        public MetadataWriterModel(WicMetadataWriter handler)
-            : base(handler)
-        {
-        }
-    }
 }

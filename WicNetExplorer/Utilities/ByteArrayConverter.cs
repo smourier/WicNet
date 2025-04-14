@@ -3,30 +3,29 @@ using System.ComponentModel;
 using System.Globalization;
 using DirectN;
 
-namespace WicNetExplorer.Utilities
+namespace WicNetExplorer.Utilities;
+
+public class ByteArrayConverter : ArrayConverter
 {
-    public class ByteArrayConverter : ArrayConverter
+    public static object? ConvertTo(object? value)
     {
-        public static object? ConvertTo(TypeConverter? converter, ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType)
+        if (value is IValueProvider valueProvider)
         {
-            if (value is IValueProvider valueProvider)
-            {
-                value = valueProvider.Value;
-            }
-
-            if (value is byte[] bytes)
-            {
-                var max = Settings.Current.MaxArrayElementDisplayed;
-                if (bytes.Length > max)
-                    return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
-
-                return bytes.ToHexa();
-            }
-
-            return string.Empty;
+            value = valueProvider.Value;
         }
 
-        public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
-        public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => ConvertTo(this, context, culture, value, destinationType);
+        if (value is byte[] bytes)
+        {
+            var max = Settings.Current.MaxArrayElementDisplayed;
+            if (bytes.Length > max)
+                return bytes.ToHexa(max) + "... (size: " + bytes.Length + ")";
+
+            return bytes.ToHexa();
+        }
+
+        return string.Empty;
     }
+
+    public override bool CanConvertTo(ITypeDescriptorContext? context, Type? destinationType) => destinationType == typeof(string);
+    public override object? ConvertTo(ITypeDescriptorContext? context, CultureInfo? culture, object? value, Type destinationType) => ConvertTo(value);
 }

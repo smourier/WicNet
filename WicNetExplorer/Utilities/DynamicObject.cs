@@ -3,75 +3,68 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Linq;
 
-namespace WicNetExplorer.Utilities
+namespace WicNetExplorer.Utilities;
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class DynamicObject : CustomTypeDescriptor
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class DynamicObject : CustomTypeDescriptor
+    private readonly List<PropertyDescriptor> _descriptors = [];
+
+    public virtual void AddProperty(string name, object? value, Type? type = null, params Attribute[] attributes)
     {
-        private readonly List<PropertyDescriptor> _descriptors = new();
-
-        public virtual void AddProperty(string name, object? value, Type? type = null, params Attribute[] attributes)
+        ArgumentNullException.ThrowIfNull(name);
+        if (type == null)
         {
-            ArgumentNullException.ThrowIfNull(name);
-            if (type == null)
+            if (value == null)
             {
-                if (value == null)
-                {
-                    type = typeof(string);
-                }
-                else
-                {
-                    type = value.GetType();
-                }
+                type = typeof(string);
             }
-
-            var desc = new SimplePropertyDescriptor(name, type, attributes)
+            else
             {
-                Value = value
-            };
-            _descriptors.Add(desc);
+                type = value.GetType();
+            }
         }
 
-        public override string ToString() => _descriptors.Count.ToString();
-
-        public override PropertyDescriptorCollection GetProperties() => GetProperties(null);
-        public override PropertyDescriptorCollection GetProperties(Attribute[]? attributes) => new(_descriptors.ToArray());
-
-        private class SimplePropertyDescriptor : PropertyDescriptor
+        var desc = new SimplePropertyDescriptor(name, type, attributes)
         {
-            public SimplePropertyDescriptor(string name, Type type, Attribute[]? attrs = null)
-                : base(name, attrs)
-            {
-                PropertyType = type;
-            }
+            Value = value
+        };
+        _descriptors.Add(desc);
+    }
 
-            public object? Value { get; set; }
-            public override Type PropertyType { get; }
-            public override Type ComponentType => typeof(DynamicObject);
-            public override bool IsReadOnly
-            {
-                get
-                {
-                    var att = Attributes.OfType<ReadOnlyAttribute>().FirstOrDefault();
-                    if (att == null)
-                        return false;
+    public override string ToString() => _descriptors.Count.ToString();
 
-                    return att.IsReadOnly;
-                }
-            }
+    public override PropertyDescriptorCollection GetProperties() => GetProperties(null);
+    public override PropertyDescriptorCollection GetProperties(Attribute[]? attributes) => new([.. _descriptors]);
 
-            public override string ToString() => Name + " (" + PropertyType.Name + "): " + Value;
-            public override bool ShouldSerializeValue(object component) => false;
-            public override bool CanResetValue(object component) => false;
-            public override object? GetValue(object? component) => Value;
-            public override void ResetValue(object component)
+    private class SimplePropertyDescriptor(string name, Type type, Attribute[]? attrs = null) : PropertyDescriptor(name, attrs)
+    {
+        public object? Value { get; set; }
+        public override Type PropertyType { get; } = type;
+        public override Type ComponentType => typeof(DynamicObject);
+        public override bool IsReadOnly
+        {
+            get
             {
-            }
+                var att = Attributes.OfType<ReadOnlyAttribute>().FirstOrDefault();
+                if (att == null)
+                    return false;
 
-            public override void SetValue(object? component, object? value)
-            {
-                Value = value;
+                return att.IsReadOnly;
             }
+        }
+
+        public override string ToString() => Name + " (" + PropertyType.Name + "): " + Value;
+        public override bool ShouldSerializeValue(object component) => false;
+        public override bool CanResetValue(object component) => false;
+        public override object? GetValue(object? component) => Value;
+        public override void ResetValue(object component)
+        {
+        }
+
+        public override void SetValue(object? component, object? value)
+        {
+            Value = value;
         }
     }
 }

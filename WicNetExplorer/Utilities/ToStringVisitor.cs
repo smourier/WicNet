@@ -8,461 +8,460 @@ using System.Linq;
 using System.Reflection;
 using DirectN;
 
-namespace WicNetExplorer.Utilities
+namespace WicNetExplorer.Utilities;
+
+public partial class ToStringVisitor
 {
-    public partial class ToStringVisitor
+    private int? _indent = -1;
+
+    public ToStringVisitor(TextWriter writer, string? tabString = null)
     {
-        private int? _indent = -1;
+        ArgumentNullException.ThrowIfNull(writer);
+        tabString ??= IndentedTextWriter.DefaultTabString;
+        Writer = new IndentedTextWriter(writer, tabString);
+    }
 
-        public ToStringVisitor(TextWriter writer, string? tabString = null)
+    public IndentedTextWriter Writer { get; }
+
+    public static string Visit(object? value, string? tabString = null)
+    {
+        using var sw = new StringWriter();
+        var visitor = new ToStringVisitor(sw, tabString);
+        visitor.Visit(new ToStringVisitorContext(), value);
+        return sw.ToString();
+    }
+
+    public virtual void Visit(ToStringVisitorContext context, object? value, object? parent = null)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (value == null)
+            return;
+
+        if (context.VisitedObjects.Contains(value))
+            return;
+
+        context.VisitedObjects.Add(value);
+
+        if (IsValue(context, value))
         {
-            ArgumentNullException.ThrowIfNull(writer);
-            tabString ??= IndentedTextWriter.DefaultTabString;
-            Writer = new IndentedTextWriter(writer, tabString);
+            WriteValueAsString(value);
+            return;
         }
 
-        public IndentedTextWriter Writer { get; }
-
-        public static string Visit(object? value, string? tabString = null)
+        var enumerable = GetEnumerable(context, value);
+        if (enumerable != null)
         {
-            using var sw = new StringWriter();
-            var visitor = new ToStringVisitor(sw, tabString);
-            visitor.Visit(new ToStringVisitorContext(), value);
-            return sw.ToString();
-        }
-
-        public virtual void Visit(ToStringVisitorContext context, object? value, object? parent = null)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            if (value == null)
-                return;
-
-            if (context.VisitedObjects.Contains(value))
-                return;
-
-            context.VisitedObjects.Add(value);
-
-            if (IsValue(context, value))
-            {
-                WriteValueAsString(value);
-                return;
-            }
-
-            var enumerable = GetEnumerable(context, value);
-            if (enumerable != null)
-            {
-                var i = 0;
-                Indent++;
-                foreach (var item in enumerable)
-                {
-                    if (IsValue(context, item))
-                    {
-                        Writer.Write("[" + i + "]: ");
-                        WriteValueAsString(item);
-                    }
-                    else
-                    {
-                        Writer.WriteLine("[" + i + "]:");
-                        Visit(context, item, value);
-                    }
-                    i++;
-                }
-                Indent--;
-                return;
-            }
-
+            var i = 0;
             Indent++;
-
-            var anyMember = false;
-            foreach (var member in GetMembers(context, value))
+            foreach (var item in enumerable)
             {
-                object? memberValue;
-                try
+                if (IsValue(context, item))
                 {
-                    memberValue = member.GetValue(value);
-                }
-                catch
-                {
-                    if (context.ThrowOnGetValue)
-                        throw;
-
-                    continue;
-                }
-
-                if ((!member.WriteIfEmpty || !Settings.Current.CopyEmptyElementsToClipboard) && isValueEmpty())
-                    continue;
-
-                var name = member.DisplayName;
-                if (IsValue(context, memberValue))
-                {
-                    Writer.Write(name + ": ");
-                    WriteValueAsString(memberValue);
+                    Writer.Write("[" + i + "]: ");
+                    WriteValueAsString(item);
                 }
                 else
                 {
-                    Writer.WriteLine(name + ":");
-                    Visit(context, memberValue, value);
+                    Writer.WriteLine("[" + i + "]:");
+                    Visit(context, item, value);
                 }
-                anyMember = true;
-
-                bool isValueEmpty()
-                {
-                    if (memberValue == null)
-                        return true;
-
-                    if (memberValue is IEnumerable enumerable && !enumerable.Cast<object>().Any())
-                        return true;
-
-                    if (memberValue is ICustomTypeDescriptor desc && desc.GetProperties().Count == 0)
-                        return true;
-
-                    return false;
-                }
-            }
-
-            if (!anyMember)
-            {
-                WriteValueAsString(value);
+                i++;
             }
             Indent--;
+            return;
         }
 
-        // we need this because
-        // 1) IndentedTextWriter doesn't handle negative (start) indent values
-        // 2) IndentedTextWriter has a bug where it doesn't output the tab of the first line (as no writeline was ever called before)
-        private int Indent
-        {
-            get
-            {
-                if (_indent.HasValue)
-                    return _indent.Value;
+        Indent++;
 
-                return Writer.Indent;
-            }
-            set
+        var anyMember = false;
+        foreach (var member in GetMembers(context, value))
+        {
+            object? memberValue;
+            try
             {
-                if (value < 0)
-                {
-                    _indent = value;
-                    return;
-                }
-                _indent = null;
-                Writer.Indent = value;
+                memberValue = member.GetValue(value);
+            }
+            catch
+            {
+                if (context.ThrowOnGetValue)
+                    throw;
+
+                continue;
+            }
+
+            if ((!member.WriteIfEmpty || !Settings.Current.CopyEmptyElementsToClipboard) && isValueEmpty())
+                continue;
+
+            var name = member.DisplayName;
+            if (IsValue(context, memberValue))
+            {
+                Writer.Write(name + ": ");
+                WriteValueAsString(memberValue);
+            }
+            else
+            {
+                Writer.WriteLine(name + ":");
+                Visit(context, memberValue, value);
+            }
+            anyMember = true;
+
+            bool isValueEmpty()
+            {
+                if (memberValue == null)
+                    return true;
+
+                if (memberValue is IEnumerable enumerable && !enumerable.Cast<object>().Any())
+                    return true;
+
+                if (memberValue is ICustomTypeDescriptor desc && desc.GetProperties().Count == 0)
+                    return true;
+
+                return false;
             }
         }
 
-        protected virtual void WriteValueAsString(object? value)
+        if (!anyMember)
         {
-            if (value is IValueProvider valueProvider)
-            {
-                value = valueProvider.Value;
-            }
+            WriteValueAsString(value);
+        }
+        Indent--;
+    }
 
-            if (value == null)
+    // we need this because
+    // 1) IndentedTextWriter doesn't handle negative (start) indent values
+    // 2) IndentedTextWriter has a bug where it doesn't output the tab of the first line (as no writeline was ever called before)
+    private int Indent
+    {
+        get
+        {
+            if (_indent.HasValue)
+                return _indent.Value;
+
+            return Writer.Indent;
+        }
+        set
+        {
+            if (value < 0)
             {
-                Writer.WriteLine();
+                _indent = value;
                 return;
             }
+            _indent = null;
+            Writer.Indent = value;
+        }
+    }
 
-            if (value is byte[] bytes)
+    protected virtual void WriteValueAsString(object? value)
+    {
+        if (value is IValueProvider valueProvider)
+        {
+            value = valueProvider.Value;
+        }
+
+        if (value == null)
+        {
+            Writer.WriteLine();
+            return;
+        }
+
+        if (value is byte[] bytes)
+        {
+            var max = Math.Max(0, Settings.Current.MaxArrayElementToCopyToClipboard);
+            Writer.WriteLine(string.Format(Resources.ArrayOfCount, bytes.Length, typeof(byte).Name + "(s)"));
+            Writer.Indent++;
+            bytes.WriteHexaDump(Writer, max);
+
+            if (max < bytes.Length)
             {
-                var max = Math.Max(0, Settings.Current.MaxArrayElementToCopyToClipboard);
-                Writer.WriteLine(string.Format(Resources.ArrayOfCount, bytes.Length, typeof(byte).Name + "(s)"));
-                Writer.Indent++;
-                bytes.WriteHexaDump(Writer, max);
-
-                if (max < bytes.Length)
-                {
-                    Writer.Write("...");
-                }
-
-                Writer.Indent--;
-                Writer.WriteLine();
-                return;
+                Writer.Write("...");
             }
 
-            var enumerable = getEnumerable();
-            if (enumerable != null)
+            Writer.Indent--;
+            Writer.WriteLine();
+            return;
+        }
+
+        var enumerable = getEnumerable();
+        if (enumerable != null)
+        {
+            var max = Math.Max(0, Settings.Current.MaxArrayElementToCopyToClipboard);
+            var i = 0;
+            int? count = null;
+            if (enumerable is Array array && array.Rank == 1)
             {
-                var max = Math.Max(0, Settings.Current.MaxArrayElementToCopyToClipboard);
-                var i = 0;
-                int? count = null;
-                if (enumerable is Array array && array.Rank == 1)
-                {
-                    count = array.Length;
-                }
+                count = array.Length;
+            }
 
-                var written = 0;
-                const int chunkSize = 16;
-                foreach (var chunk in enumerable.OfType<object>().Chunk(chunkSize))
-                {
-                    if (chunk.Length == 0)
-                        break;
-
-                    if (i == 0)
-                    {
-                        if (count.HasValue)
-                        {
-                            Writer.WriteLine(string.Format(Resources.ArrayOfCount, count.Value, chunk.First().GetType().Name + "(s)"));
-                        }
-                        else
-                        {
-                            Writer.WriteLine(string.Format(Resources.ArrayOf, chunk.First().GetType().Name));
-                        }
-                        Writer.Indent++;
-                        if (max == 0)
-                            break;
-                    }
-
-                    var take = chunkSize;
-                    if (max > 0)
-                    {
-                        var left = max - written;
-                        if (left < take)
-                        {
-                            take = left;
-                        }
-                    }
-
-                    var s = string.Join(", ", chunk.Take(take));
-                    Writer.WriteLine(s);
-                    written += chunk.Length;
-                    i++;
-                }
+            var written = 0;
+            const int chunkSize = 16;
+            foreach (var chunk in enumerable.OfType<object>().Chunk(chunkSize))
+            {
+                if (chunk.Length == 0)
+                    break;
 
                 if (i == 0)
                 {
-                    Writer.WriteLine();
+                    if (count.HasValue)
+                    {
+                        Writer.WriteLine(string.Format(Resources.ArrayOfCount, count.Value, chunk.First().GetType().Name + "(s)"));
+                    }
+                    else
+                    {
+                        Writer.WriteLine(string.Format(Resources.ArrayOf, chunk.First().GetType().Name));
+                    }
+                    Writer.Indent++;
+                    if (max == 0)
+                        break;
                 }
-                Writer.Indent--;
-                return;
-            }
 
-            var svalue = GetValueDisplayString(value);
-            Writer.WriteLine(svalue);
-
-            IEnumerable? getEnumerable()
-            {
-                if (value is string || value is char[])
-                    return null;
-
-                return value as IEnumerable;
-            }
-        }
-
-        protected virtual string GetValueDisplayString(object? value)
-        {
-            if (value is IValueProvider valueProvider)
-            {
-                value = valueProvider.Value;
-            }
-            if (value == null)
-                return string.Empty;
-
-            return value.ToString()!;
-        }
-
-        protected virtual bool IsValue(ToStringVisitorContext context, object? value)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            if (value == null)
-                return true;
-
-            var tc = Type.GetTypeCode(value.GetType());
-            if (tc != TypeCode.Object)
-                return true;
-
-            if (value is byte[])
-                return true;
-
-            if (value is Guid)
-                return true;
-
-            if (value is TimeSpan)
-                return true;
-
-            if (value is DateTimeOffset)
-                return true;
-
-            var enumerable = value as IEnumerable;
-            if (enumerable == null && !HasAnyMember(context, value))
-                return true;
-
-            var sva = value.GetType().GetCustomAttribute<ToStringVisitorAttribute>();
-            if (sva != null)
-            {
-                if (sva.ForceIsValue)
-                    return true;
-            }
-
-            return false;
-        }
-
-        private bool HasAnyMember(ToStringVisitorContext context, object value) => GetMembers(context, value).Any();
-        protected virtual IEnumerable<Member> GetMembers(ToStringVisitorContext context, object value)
-        {
-            if (value == null)
-                yield break;
-
-            if (value is ICustomTypeDescriptor)
-            {
-                foreach (var desc in TypeDescriptor.GetProperties(value).OfType<PropertyDescriptor>())
+                var take = chunkSize;
+                if (max > 0)
                 {
-                    yield return new PropertyDescriptorMember(desc);
+                    var left = max - written;
+                    if (left < take)
+                    {
+                        take = left;
+                    }
                 }
-                yield break;
+
+                var s = string.Join(", ", chunk.Take(take));
+                Writer.WriteLine(s);
+                written += chunk.Length;
+                i++;
             }
 
-            foreach (var memberInfo in value.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(m => m.Name))
+            if (i == 0)
             {
-                if (!CanGetValue(context, memberInfo))
-                    continue;
-
-                yield return new MemberInfoMember(memberInfo);
+                Writer.WriteLine();
             }
+            Writer.Indent--;
+            return;
         }
 
-        protected virtual bool CanGetValue(ToStringVisitorContext context, MemberInfo info)
+        var svalue = GetValueDisplayString(value);
+        Writer.WriteLine(svalue);
+
+        IEnumerable? getEnumerable()
         {
-            ArgumentNullException.ThrowIfNull(context);
-            ArgumentNullException.ThrowIfNull(info);
-            var att = info.GetCustomAttribute<BrowsableAttribute>();
-            if (att != null && !att.Browsable)
-                return false;
-
-            var tsa = info.GetCustomAttribute<ToStringVisitorAttribute>();
-            if (tsa != null && tsa.Ignore)
-                return false;
-
-            if (info is PropertyInfo prop)
-                return prop.CanRead;
-
-            return true;
-        }
-
-        protected virtual IEnumerable? GetEnumerable(ToStringVisitorContext context, object value)
-        {
-            ArgumentNullException.ThrowIfNull(context);
-            if (value is string || value is byte[] || value is char[])
+            if (value is string || value is char[])
                 return null;
 
             return value as IEnumerable;
         }
+    }
 
-        protected class PropertyDescriptorMember : Member
+    protected virtual string GetValueDisplayString(object? value)
+    {
+        if (value is IValueProvider valueProvider)
         {
-            public PropertyDescriptorMember(PropertyDescriptor prop)
-            {
-                ArgumentNullException.ThrowIfNull(prop);
-                PropertyDescriptor = prop;
-            }
+            value = valueProvider.Value;
+        }
+        if (value == null)
+            return string.Empty;
 
-            public PropertyDescriptor PropertyDescriptor { get; }
-            public override string Name => PropertyDescriptor.Name;
-            public override string DisplayName
-            {
-                get
-                {
-                    var tsa = PropertyDescriptor.Attributes.OfType<ToStringVisitorAttribute>().FirstOrDefault();
-                    if (tsa != null && tsa.DisplayName != null)
-                        return tsa.DisplayName;
+        return value.ToString()!;
+    }
 
-                    var dn = PropertyDescriptor.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
-                    if (dn != null && dn.DisplayName != null)
-                        return dn.DisplayName;
+    protected virtual bool IsValue(ToStringVisitorContext context, object? value)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (value == null)
+            return true;
 
-                    return DisplayName;
-                }
-            }
+        var tc = Type.GetTypeCode(value.GetType());
+        if (tc != TypeCode.Object)
+            return true;
 
-            public override bool WriteIfEmpty
-            {
-                get
-                {
-                    var tsa = PropertyDescriptor.Attributes.OfType<ToStringVisitorAttribute>().FirstOrDefault();
-                    if (tsa != null)
-                        return !tsa.DontWriteIfEmpty;
+        if (value is byte[])
+            return true;
 
-                    return base.WriteIfEmpty;
-                }
-            }
+        if (value is Guid)
+            return true;
 
-            public override object? GetValue(object? instance) => PropertyDescriptor.GetValue(instance);
+        if (value is TimeSpan)
+            return true;
+
+        if (value is DateTimeOffset)
+            return true;
+
+        var enumerable = value as IEnumerable;
+        if (enumerable == null && !HasAnyMember(context, value))
+            return true;
+
+        var sva = value.GetType().GetCustomAttribute<ToStringVisitorAttribute>();
+        if (sva != null)
+        {
+            if (sva.ForceIsValue)
+                return true;
         }
 
-        protected class MemberInfoMember : Member
+        return false;
+    }
+
+    private bool HasAnyMember(ToStringVisitorContext context, object value) => GetMembers(context, value).Any();
+    protected virtual IEnumerable<Member> GetMembers(ToStringVisitorContext context, object value)
+    {
+        if (value == null)
+            yield break;
+
+        if (value is ICustomTypeDescriptor)
         {
-            public MemberInfoMember(MemberInfo info)
+            foreach (var desc in TypeDescriptor.GetProperties(value).OfType<PropertyDescriptor>())
             {
-                ArgumentNullException.ThrowIfNull(info);
-                MemberInfo = info;
+                yield return new PropertyDescriptorMember(desc);
             }
+            yield break;
+        }
 
-            public MemberInfo MemberInfo { get; }
-            public override string Name => MemberInfo.Name;
-            public override string DisplayName
+        foreach (var memberInfo in value.GetType().GetProperties(BindingFlags.Instance | BindingFlags.Public).OrderBy(m => m.Name))
+        {
+            if (!CanGetValue(context, memberInfo))
+                continue;
+
+            yield return new MemberInfoMember(memberInfo);
+        }
+    }
+
+    protected virtual bool CanGetValue(ToStringVisitorContext context, MemberInfo info)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        ArgumentNullException.ThrowIfNull(info);
+        var att = info.GetCustomAttribute<BrowsableAttribute>();
+        if (att != null && !att.Browsable)
+            return false;
+
+        var tsa = info.GetCustomAttribute<ToStringVisitorAttribute>();
+        if (tsa != null && tsa.Ignore)
+            return false;
+
+        if (info is PropertyInfo prop)
+            return prop.CanRead;
+
+        return true;
+    }
+
+    protected virtual IEnumerable? GetEnumerable(ToStringVisitorContext context, object value)
+    {
+        ArgumentNullException.ThrowIfNull(context);
+        if (value is string || value is byte[] || value is char[])
+            return null;
+
+        return value as IEnumerable;
+    }
+
+    protected class PropertyDescriptorMember : Member
+    {
+        public PropertyDescriptorMember(PropertyDescriptor prop)
+        {
+            ArgumentNullException.ThrowIfNull(prop);
+            PropertyDescriptor = prop;
+        }
+
+        public PropertyDescriptor PropertyDescriptor { get; }
+        public override string Name => PropertyDescriptor.Name;
+        public override string DisplayName
+        {
+            get
             {
-                get
-                {
-                    var tsa = MemberInfo.GetCustomAttribute<ToStringVisitorAttribute>();
-                    if (tsa != null && tsa.DisplayName != null)
-                        return tsa.DisplayName;
+                var tsa = PropertyDescriptor.Attributes.OfType<ToStringVisitorAttribute>().FirstOrDefault();
+                if (tsa != null && tsa.DisplayName != null)
+                    return tsa.DisplayName;
 
-                    var dn = MemberInfo.GetCustomAttribute<DisplayNameAttribute>();
-                    if (dn != null && dn.DisplayName != null)
-                        return dn.DisplayName;
+                var dn = PropertyDescriptor.Attributes.OfType<DisplayNameAttribute>().FirstOrDefault();
+                if (dn != null && dn.DisplayName != null)
+                    return dn.DisplayName;
 
-                    if (MemberInfo is FieldInfo)
-                    {
-                        // DisplayNameAttribute is not usable for fields so we use DescriptionAttribute
-                        var da = MemberInfo.GetCustomAttribute<DescriptionAttribute>();
-                        if (da != null && da.Description != null)
-                            return da.Description;
-                    }
-
-                    return base.DisplayName;
-                }
-            }
-
-            public override bool WriteIfEmpty
-            {
-                get
-                {
-                    var tsa = MemberInfo.GetCustomAttribute<ToStringVisitorAttribute>();
-                    if (tsa != null)
-                        return !tsa.DontWriteIfEmpty;
-
-                    return base.WriteIfEmpty;
-                }
-            }
-
-            public override object? GetValue(object? instance)
-            {
-                if (MemberInfo is PropertyInfo pi)
-                {
-                    ArgumentNullException.ThrowIfNull(instance);
-                    return pi.GetValue(instance);
-                }
-
-                if (MemberInfo is FieldInfo fi)
-                {
-                    ArgumentNullException.ThrowIfNull(instance);
-                    return fi.GetValue(instance);
-                }
-
-                throw new NotImplementedException();
+                return DisplayName;
             }
         }
 
-        protected abstract class Member
+        public override bool WriteIfEmpty
         {
-            public abstract string Name { get; }
-            public virtual string DisplayName => Name.Decamelize();
+            get
+            {
+                var tsa = PropertyDescriptor.Attributes.OfType<ToStringVisitorAttribute>().FirstOrDefault();
+                if (tsa != null)
+                    return !tsa.DontWriteIfEmpty;
 
-            public virtual bool WriteIfEmpty => true;
-            public abstract object? GetValue(object? instance);
-
-            public override string ToString() => Name;
+                return base.WriteIfEmpty;
+            }
         }
+
+        public override object? GetValue(object? instance) => PropertyDescriptor.GetValue(instance);
+    }
+
+    protected class MemberInfoMember : Member
+    {
+        public MemberInfoMember(MemberInfo info)
+        {
+            ArgumentNullException.ThrowIfNull(info);
+            MemberInfo = info;
+        }
+
+        public MemberInfo MemberInfo { get; }
+        public override string Name => MemberInfo.Name;
+        public override string DisplayName
+        {
+            get
+            {
+                var tsa = MemberInfo.GetCustomAttribute<ToStringVisitorAttribute>();
+                if (tsa != null && tsa.DisplayName != null)
+                    return tsa.DisplayName;
+
+                var dn = MemberInfo.GetCustomAttribute<DisplayNameAttribute>();
+                if (dn != null && dn.DisplayName != null)
+                    return dn.DisplayName;
+
+                if (MemberInfo is FieldInfo)
+                {
+                    // DisplayNameAttribute is not usable for fields so we use DescriptionAttribute
+                    var da = MemberInfo.GetCustomAttribute<DescriptionAttribute>();
+                    if (da != null && da.Description != null)
+                        return da.Description;
+                }
+
+                return base.DisplayName;
+            }
+        }
+
+        public override bool WriteIfEmpty
+        {
+            get
+            {
+                var tsa = MemberInfo.GetCustomAttribute<ToStringVisitorAttribute>();
+                if (tsa != null)
+                    return !tsa.DontWriteIfEmpty;
+
+                return base.WriteIfEmpty;
+            }
+        }
+
+        public override object? GetValue(object? instance)
+        {
+            if (MemberInfo is PropertyInfo pi)
+            {
+                ArgumentNullException.ThrowIfNull(instance);
+                return pi.GetValue(instance);
+            }
+
+            if (MemberInfo is FieldInfo fi)
+            {
+                ArgumentNullException.ThrowIfNull(instance);
+                return fi.GetValue(instance);
+            }
+
+            throw new NotImplementedException();
+        }
+    }
+
+    protected abstract class Member
+    {
+        public abstract string Name { get; }
+        public virtual string DisplayName => Name.Decamelize();
+
+        public virtual bool WriteIfEmpty => true;
+        public abstract object? GetValue(object? instance);
+
+        public override string ToString() => Name;
     }
 }

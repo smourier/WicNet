@@ -1,7 +1,6 @@
-﻿namespace WicNetExplorer.Utilities
+﻿namespace WicNetExplorer.Utilities;
+
+public class CollectionEditorNoType : CollectionEditor
 {
-    public class CollectionEditorNoType : CollectionEditor
-    {
-        public override bool HideTypeColumn => true;
-    }
+    public override bool HideTypeColumn => true;
 }

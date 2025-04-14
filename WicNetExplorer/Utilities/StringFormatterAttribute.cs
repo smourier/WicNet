@@ -1,17 +1,11 @@
 ﻿using System;
 
-namespace WicNetExplorer.Utilities
-{
-    [AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
-    public sealed class StringFormatterAttribute : Attribute
-    {
-        public StringFormatterAttribute(string format)
-        {
-            Format = format;
-        }
+namespace WicNetExplorer.Utilities;
 
-        public string Format { get; set; }
-        public bool ThrowOnError { get; set; }
-        public Type? ResourcesType { get; set; }
-    }
+[AttributeUsage(AttributeTargets.Property, AllowMultiple = false)]
+public sealed class StringFormatterAttribute(string format) : Attribute
+{
+    public string Format { get; set; } = format;
+    public bool ThrowOnError { get; set; }
+    public Type? ResourcesType { get; set; }
 }

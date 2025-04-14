@@ -1,7 +1,6 @@
-﻿namespace WicNetExplorer.Utilities
+﻿namespace WicNetExplorer.Utilities;
+
+public interface IValueProvider
 {
-    public interface IValueProvider
-    {
-        object? Value { get; }
-    }
+    object? Value { get; }
 }

@@ -15,7 +15,7 @@ namespace WicNetExplorer.Model
         {
             ArgumentNullException.ThrowIfNull(handler);
             _handler = handler;
-            ContainerFormats = _handler.ContainerFormats.ToArray();
+            ContainerFormats = [.. _handler.ContainerFormats];
         }
 
         public Guid Guid => _handler.Guid;

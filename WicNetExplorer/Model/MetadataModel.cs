@@ -5,73 +5,72 @@ using System.Drawing.Design;
 using WicNet;
 using WicNetExplorer.Utilities;
 
-namespace WicNetExplorer.Model
+namespace WicNetExplorer.Model;
+
+[TypeConverter(typeof(ExpandableObjectConverter))]
+public class MetadataModel
 {
-    [TypeConverter(typeof(ExpandableObjectConverter))]
-    public class MetadataModel
+    private readonly WicMetadataQueryReader _reader;
+
+    public MetadataModel(WicMetadataQueryReader reader)
     {
-        private readonly WicMetadataQueryReader _reader;
+        ArgumentNullException.ThrowIfNull(reader);
+        _reader = reader;
 
-        public MetadataModel(WicMetadataQueryReader reader)
+        Values = new DynamicObject();
+        var children = new List<MetadataModel>();
+        var i = 0;
+        foreach (var kv in _reader.Enumerate())
         {
-            ArgumentNullException.ThrowIfNull(reader);
-            _reader = reader;
-
-            Values = new DynamicObject();
-            var children = new List<MetadataModel>();
-            var i = 0;
-            foreach (var kv in _reader.Enumerate())
+            if (kv.Value is WicMetadataQueryReader childReader)
             {
-                if (kv.Value is WicMetadataQueryReader childReader)
+                var child = new MetadataModel(childReader);
+                children.Add(child);
+            }
+            else
+            {
+                var atts = new List<Attribute>
                 {
-                    var child = new MetadataModel(childReader);
-                    children.Add(child);
+                    new DisplayNameAttribute(kv.Key.Key)
+                };
+
+                if (kv.Value is byte[])
+                {
+                    atts.Add(new TypeConverterAttribute(typeof(ByteArrayExpandableConverter)));
+                    atts.Add(new EditorAttribute(typeof(ByteArrayEditor), typeof(UITypeEditor)));
+                }
+                else if (kv.Value is Array array && array.Rank == 1)
+                {
+                    atts.Add(new TypeConverterAttribute(typeof(ArrayDisplayExpandableConverter)));
+                    atts.Add(new EditorAttribute(typeof(ArrayDisplayEditor), typeof(UITypeEditor)));
                 }
                 else
                 {
-                    var atts = new List<Attribute>
-                    {
-                        new DisplayNameAttribute(kv.Key.Key)
-                    };
-
-                    if (kv.Value is byte[])
-                    {
-                        atts.Add(new TypeConverterAttribute(typeof(ByteArrayExpandableConverter)));
-                        atts.Add(new EditorAttribute(typeof(ByteArrayEditor), typeof(UITypeEditor)));
-                    }
-                    else if (kv.Value is Array array && array.Rank == 1)
-                    {
-                        atts.Add(new TypeConverterAttribute(typeof(ArrayDisplayExpandableConverter)));
-                        atts.Add(new EditorAttribute(typeof(ArrayDisplayEditor), typeof(UITypeEditor)));
-                    }
-                    else
-                    {
-                        atts.Add(new ReadOnlyAttribute(true));
-                    }
-
-                    Values.AddProperty("prop" + i++, new MetadataKeyValueModel(kv), null, atts.ToArray());
+                    atts.Add(new ReadOnlyAttribute(true));
                 }
+
+                Values.AddProperty("prop" + i++, new MetadataKeyValueModel(kv), null, [.. atts]);
             }
-            Children = children.ToArray();
         }
-
-        public string Location => _reader.Location;
-        [DisplayName("Friendly Name")]
-        public string Name => _reader.HandlerFriendlyName;
-
-        [DisplayName("Container Format")]
-        public Guid ContainerFormat => _reader.ContainerFormat;
-
-        [DisplayName("Container Format Name")]
-        public string ContainerFormatName => _reader.ContainerFormatName;
-
-        [ToStringVisitor(DontWriteIfEmpty = true)]
-        public DynamicObject Values { get; }
-
-        [TypeConverter(typeof(StringFormatterArrayConverter))]
-        [StringFormatter("{Length}")]
-        [ToStringVisitor(DontWriteIfEmpty = true)]
-        public MetadataModel[] Children { get; }
-        public override string ToString() => Name;
+        Children = [.. children];
     }
+
+    public string Location => _reader.Location;
+    [DisplayName("Friendly Name")]
+    public string Name => _reader.HandlerFriendlyName;
+
+    [DisplayName("Container Format")]
+    public Guid ContainerFormat => _reader.ContainerFormat;
+
+    [DisplayName("Container Format Name")]
+    public string ContainerFormatName => _reader.ContainerFormatName;
+
+    [ToStringVisitor(DontWriteIfEmpty = true)]
+    public DynamicObject Values { get; }
+
+    [TypeConverter(typeof(StringFormatterArrayConverter))]
+    [StringFormatter("{Length}")]
+    [ToStringVisitor(DontWriteIfEmpty = true)]
+    public MetadataModel[] Children { get; }
+    public override string ToString() => Name;
 }

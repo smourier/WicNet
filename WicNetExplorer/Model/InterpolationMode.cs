@@ -1,14 +1,13 @@
 ﻿using DirectN;
 
-namespace WicNetExplorer.Model
+namespace WicNetExplorer.Model;
+
+// *must* match WICBitmapInterpolationMode
+public enum InterpolationMode
 {
-    // *must* match WICBitmapInterpolationMode
-    public enum InterpolationMode
-    {
-        NearestNeighbor = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor,
-        Linear = WICBitmapInterpolationMode.WICBitmapInterpolationModeLinear,
-        Cubic = WICBitmapInterpolationMode.WICBitmapInterpolationModeCubic,
-        Fant = WICBitmapInterpolationMode.WICBitmapInterpolationModeFant,
-        HighQualityCubic = WICBitmapInterpolationMode.WICBitmapInterpolationModeHighQualityCubic,
-    }
+    NearestNeighbor = WICBitmapInterpolationMode.WICBitmapInterpolationModeNearestNeighbor,
+    Linear = WICBitmapInterpolationMode.WICBitmapInterpolationModeLinear,
+    Cubic = WICBitmapInterpolationMode.WICBitmapInterpolationModeCubic,
+    Fant = WICBitmapInterpolationMode.WICBitmapInterpolationModeFant,
+    HighQualityCubic = WICBitmapInterpolationMode.WICBitmapInterpolationModeHighQualityCubic,
 }

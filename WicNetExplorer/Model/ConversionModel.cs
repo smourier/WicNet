@@ -1,19 +1,12 @@
 ﻿using System;
 using WicNet;
 
-namespace WicNetExplorer.Model
+namespace WicNetExplorer.Model;
+
+public class ConversionModel(Guid from, Guid to)
 {
-    public class ConversionModel
-    {
-        public ConversionModel(Guid from, Guid to)
-        {
-            From = new PixelFormatModel(WicPixelFormat.FromClsid(from));
-            To = new PixelFormatModel(WicPixelFormat.FromClsid(to));
-        }
+    public PixelFormatModel From { get; } = new PixelFormatModel(WicPixelFormat.FromClsid(from));
+    public PixelFormatModel To { get; } = new PixelFormatModel(WicPixelFormat.FromClsid(to));
 
-        public PixelFormatModel From { get; }
-        public PixelFormatModel To { get; }
-
-        public override string ToString() => From + " => " + To;
-    }
+    public override string ToString() => From + " => " + To;
 }

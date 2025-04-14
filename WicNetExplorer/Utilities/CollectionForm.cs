@@ -3,93 +3,92 @@ using System.Collections;
 using System.ComponentModel;
 using System.Windows.Forms;
 
-namespace WicNetExplorer.Utilities
+namespace WicNetExplorer.Utilities;
+
+public partial class CollectionForm : Form
 {
-    public partial class CollectionForm : Form
+    private readonly IEnumerable _enumerable;
+
+    public CollectionForm(IEnumerable enumerable, bool hideTypeColumn = false)
     {
-        private readonly IEnumerable _enumerable;
+        ArgumentNullException.ThrowIfNull(enumerable);
+        _enumerable = enumerable;
+        InitializeComponent();
+        Icon = Resources.WicNetIcon;
 
-        public CollectionForm(IEnumerable enumerable, bool hideTypeColumn = false)
+        listViewMain.SuspendLayout();
+        foreach (var instance in enumerable)
         {
-            ArgumentNullException.ThrowIfNull(enumerable);
-            _enumerable = enumerable;
-            InitializeComponent();
-            Icon = Resources.WicNetIcon;
+            if (instance == null)
+                continue;
 
-            listViewMain.SuspendLayout();
-            foreach (var instance in enumerable)
+            string? type = null;
+            string? name = null;
+            object? value = null;
+            if (instance is ICollectionFormItem display)
             {
-                if (instance == null)
-                    continue;
-
-                string? type = null;
-                string? name = null;
-                object? value = null;
-                if (instance is ICollectionFormItem display)
-                {
-                    type = display.TypeName;
-                    name = display.Name;
-                    value = display.Value;
-                }
-
-                type ??= instance.GetType().Name?.Decamelize();
-                name ??= instance.ToString() ?? string.Empty;
-                value ??= instance;
-
-                ListViewItem item;
-                if (hideTypeColumn)
-                {
-                    item = listViewMain.Items.Add(name);
-                }
-                else
-                {
-                    item = listViewMain.Items.Add(type);
-                }
-
-                item.Tag = value;
-                item.SubItems.Add(name);
+                type = display.TypeName;
+                name = display.Name;
+                value = display.Value;
             }
 
+            type ??= instance.GetType().Name?.Decamelize();
+            name ??= instance.ToString() ?? string.Empty;
+            value ??= instance;
+
+            ListViewItem item;
             if (hideTypeColumn)
             {
-                listViewMain.Columns.Remove(columnHeaderType);
+                item = listViewMain.Items.Add(name);
             }
-
-            listViewMain.ResumeLayout();
-        }
-
-        protected override void OnKeyDown(KeyEventArgs e)
-        {
-            if (e.KeyCode == Keys.Escape)
+            else
             {
-                Close();
+                item = listViewMain.Items.Add(type);
             }
-            base.OnKeyDown(e);
+
+            item.Tag = value;
+            item.SubItems.Add(name);
         }
 
-        private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem?.ExpandAllItems();
-        private void CollapseChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem?.CollapseAllItems();
-        private void ExpandAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.ExpandAllGridItems();
-        private void CollapseAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.CollapseAllGridItems();
-        private void ButtonCopyToClipboard_Click(object sender, EventArgs e)
+        if (hideTypeColumn)
         {
-            var text = ToStringVisitor.Visit(_enumerable, "  ");
-            Clipboard.SetText(text);
-            this.ShowMessage(string.Format(Resources.CopiedToClipboard, text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Length));
+            listViewMain.Columns.Remove(columnHeaderType);
         }
 
-        private void ContextMenuStripGrid_Opening(object sender, CancelEventArgs e)
+        listViewMain.ResumeLayout();
+    }
+
+    protected override void OnKeyDown(KeyEventArgs e)
+    {
+        if (e.KeyCode == Keys.Escape)
         {
-            expandChildrenToolStripMenuItem.Enabled = propertyGridObject.SelectedGridItem != null;
-            collapseAllItemsToolStripMenuItem.Enabled = expandChildrenToolStripMenuItem.Enabled;
+            Close();
         }
+        base.OnKeyDown(e);
+    }
 
-        private void ListViewMain_SelectedIndexChanged(object sender, EventArgs e)
-        {
-            if (listViewMain.SelectedItems.Count == 0)
-                return;
+    private void ExpandChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem?.ExpandAllItems();
+    private void CollapseChildrenToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.SelectedGridItem?.CollapseAllItems();
+    private void ExpandAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.ExpandAllGridItems();
+    private void CollapseAllItemsToolStripMenuItem_Click(object sender, EventArgs e) => propertyGridObject.CollapseAllGridItems();
+    private void ButtonCopyToClipboard_Click(object sender, EventArgs e)
+    {
+        var text = ToStringVisitor.Visit(_enumerable, "  ");
+        Clipboard.SetText(text);
+        this.ShowMessage(string.Format(Resources.CopiedToClipboard, text.Split(['\r', '\n'], StringSplitOptions.RemoveEmptyEntries).Length));
+    }
 
-            propertyGridObject.SelectedObject = listViewMain.SelectedItems[0].Tag;
-        }
+    private void ContextMenuStripGrid_Opening(object sender, CancelEventArgs e)
+    {
+        expandChildrenToolStripMenuItem.Enabled = propertyGridObject.SelectedGridItem != null;
+        collapseAllItemsToolStripMenuItem.Enabled = expandChildrenToolStripMenuItem.Enabled;
+    }
+
+    private void ListViewMain_SelectedIndexChanged(object sender, EventArgs e)
+    {
+        if (listViewMain.SelectedItems.Count == 0)
+            return;
+
+        propertyGridObject.SelectedObject = listViewMain.SelectedItems[0].Tag;
     }
 }

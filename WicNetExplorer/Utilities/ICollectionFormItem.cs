@@ -1,9 +1,8 @@
-﻿namespace WicNetExplorer.Utilities
+﻿namespace WicNetExplorer.Utilities;
+
+public interface ICollectionFormItem
 {
-    public interface ICollectionFormItem
-    {
-        string? TypeName { get; }
-        string Name { get; }
-        object Value { get; }
-    }
+    string? TypeName { get; }
+    string Name { get; }
+    object Value { get; }
 }

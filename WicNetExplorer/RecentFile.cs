@@ -1,12 +1,11 @@
 ﻿using System;
 
-namespace WicNetExplorer
-{
-    public class RecentFile
-    {
-        public string? FilePath { get; set; }
-        public DateTime LastAccessTime { get; set; } = DateTime.Now;
+namespace WicNetExplorer;
 
-        public override string ToString() => LastAccessTime + " " + FilePath;
-    }
+public class RecentFile
+{
+    public string? FilePath { get; set; }
+    public DateTime LastAccessTime { get; set; } = DateTime.Now;
+
+    public override string ToString() => LastAccessTime + " " + FilePath;
 }
