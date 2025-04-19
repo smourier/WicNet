@@ -11,6 +11,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<None Update="dices.png">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="file_example_TIFF_1MB.tiff">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

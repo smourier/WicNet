@@ -15,7 +15,7 @@ namespace WicNet.Tests
     {
         static void Main(string[] args)
         {
-            LoadHeic();
+            LoadPngAndSaveAsTransparentBmp();
             return;
             BuildCrop();
             return;
@@ -68,16 +68,16 @@ namespace WicNet.Tests
             //DrawEllipse();
         }
 
-        static void LoadHeic()
+        static void LoadPngAndSaveAsTransparentBmp()
         {
-            var path = @"C:\Users\simon\Downloads\images\heic\chat.heic";
-            var decoder = WICImagingFactory.CreateDecoderFromFilename(path, guidVendor: new("E27AE9AE-D620-4AEB-AD02-E2AE03104234"));
-
-            var ctdec = decoder.Object as ICopyTransHeicDecoder;
-
-            //using var bmp = WicBitmapSource.Load(@"C:\Users\simon\Downloads\images\heic\chat.heic", guidVendor: new("E27AE9AE-D620-4AEB-AD02-E2AE03104234"));
-            //using var bmp = WicBitmapSource.Load(@"C:\Users\simon\Downloads\images\heic\chat.heic", guidVendor: new("E27AE9AE-D620-4AEB-AD02-E2AE03104234"));
-            //var d = WicDecoder.AllComponents.OfType<WicDecoder>().Where(e => e.SupportsFileExtension(".heict")).ToArray();
+            using var bmp = WicBitmapSource.Load("dices.png");
+            var name = "dices2.bmp";
+            var options = new Dictionary<string, object>
+            {
+                ["EnableV5Header32bppBGRA"] = true
+            };
+            bmp.Save(name, encoderOptions: options);
+            Process.Start(new ProcessStartInfo(name) { UseShellExecute = true });
         }
 
         // see WWICHEICBitmapDecoder.cpp QueryInterface
