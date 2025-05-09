@@ -204,9 +204,9 @@ namespace WicNet.Tests
                     continue;
                 }
 
-                foreach (var dxgiFormat in Enum.GetValues(typeof(DXGI_FORMAT)).OfType<DXGI_FORMAT>())
+                foreach (var dxgiFormat in Enum.GetValues<DXGI_FORMAT>().OfType<DXGI_FORMAT>())
                 {
-                    foreach (var alpha in Enum.GetValues(typeof(D2D1_ALPHA_MODE)).OfType<D2D1_ALPHA_MODE>())
+                    foreach (var alpha in Enum.GetValues<D2D1_ALPHA_MODE>().OfType<D2D1_ALPHA_MODE>())
                     {
                         if (alpha == D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_FORCE_DWORD)
                             continue;
