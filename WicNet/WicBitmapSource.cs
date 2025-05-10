@@ -24,6 +24,7 @@ namespace WicNet
         }
 
         public IComObject<IWICBitmapSource> ComObject => _comObject;
+        public int DecoderFrameCount { get; internal set; } = 1;
         public WicIntSize Size => new WicIntSize(Width, Height);
         public WICRect Bounds => new WICRect(0, 0, Width, Height);
         public int DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat.BitsPerPixel);
@@ -433,19 +434,31 @@ namespace WicNet
         public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
         {
             using (var decoder = WicBitmapDecoder.Load(filePath, guidVendor: guidVendor, options: options))
-                return decoder.GetFrame(frameIndex);
+            {
+                var frame = decoder.GetFrame(frameIndex);
+                frame.DecoderFrameCount = decoder.FrameCount;
+                return frame;
+            }
         }
 
         public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
         {
             using (var decoder = WicBitmapDecoder.Load(fileHandle, guidVendor: guidVendor, options: options))
-                return decoder.GetFrame(frameIndex);
+            {
+                var frame = decoder.GetFrame(frameIndex);
+                frame.DecoderFrameCount = decoder.FrameCount;
+                return frame;
+            }
         }
 
         public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
         {
             using (var decoder = WicBitmapDecoder.Load(stream, guidVendor: guidVendor, options: options))
-                return decoder.GetFrame(frameIndex);
+            {
+                var frame = decoder.GetFrame(frameIndex);
+                frame.DecoderFrameCount = decoder.FrameCount;
+                return frame;
+            }
         }
 
         public IComObject<ID2D1RenderTarget> CreateRenderTarget(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateRenderTarget<ID2D1RenderTarget>(renderTargetProperties);

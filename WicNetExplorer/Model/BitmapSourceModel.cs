@@ -17,6 +17,7 @@ public class BitmapSourceModel : IDisposable
         ArgumentNullException.ThrowIfNull(source);
         Size = source.Size;
         Stride = source.Stride;
+        FrameCount = source.DecoderFrameCount;
         PixelFormat = new PixelFormatModel(source.WicPixelFormat);
         DpiX = source.DpiX;
         DpiY = source.DpiY;
@@ -50,6 +51,9 @@ public class BitmapSourceModel : IDisposable
     [TypeConverter(typeof(StringFormatterArrayConverter))]
     [StringFormatter("{Length}")]
     public ColorContextModel[] ColorContexts { get; } = [];
+
+    [DisplayName("Frame Count")]
+    public int FrameCount { get; }
 
     [DisplayName("Dpi X")]
     public double DpiX { get; }

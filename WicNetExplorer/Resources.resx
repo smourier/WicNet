@@ -150,6 +150,9 @@
   <data name="CopiedToClipboard" xml:space="preserve">
     <value>{0} line(s) were copied to the clipboard.</value>
   </data>
+  <data name="Current" xml:space="preserve">
+    <value>Current #{0}</value>
+  </data>
   <data name="DecodableExtensions" xml:space="preserve">
     <value>Wic Decodable Extensions</value>
   </data>
@@ -161,6 +164,9 @@
   </data>
   <data name="Error" xml:space="preserve">
     <value>Error</value>
+  </data>
+  <data name="Frames" xml:space="preserve">
+    <value>{0} frames</value>
   </data>
   <data name="Metadata" xml:space="preserve">
     <value>Metadata</value>
@@ -180,6 +186,9 @@
   <data name="Pages" xml:space="preserve">
     <value>{0} page(s)</value>
   </data>
+  <data name="Play" xml:space="preserve">
+    <value>Play</value>
+  </data>
   <data name="Preferences" xml:space="preserve">
     <value>Preferences</value>
   </data>
@@ -191,6 +200,9 @@
   </data>
   <data name="SaveNotSupported" xml:space="preserve">
     <value>Saving this type of image is not supported.</value>
+  </data>
+  <data name="Stop" xml:space="preserve">
+    <value>Stop</value>
   </data>
   <data name="SysInfo" xml:space="preserve">
     <value>System Information</value>

@@ -19,6 +19,8 @@ namespace WicNetExplorer
         private const bool _honorColorContextsDefault = true;
         private const bool _pdfIgnoreHighContrast = false;
         private const bool _useBackgroundColorForSvgTransparency = false;
+        private const bool _enablePaging = true;
+        private const int _defaultAnimationDelay = 100;
 
         public const string FileName = "settings.json";
 
@@ -119,6 +121,14 @@ namespace WicNetExplorer
         [DefaultValue(_useBackgroundColorForSvgTransparency)]
         [DisplayName("Use Background Color For Svg Transparency")]
         public bool UseBackgroundColorForSvgTransparency { get => GetPropertyValue(_useBackgroundColorForSvgTransparency); set { SetPropertyValue(value); } }
+
+        [DefaultValue(_enablePaging)]
+        [DisplayName("Enable Paging (if available)")]
+        public bool EnablePaging { get => GetPropertyValue(_enablePaging); set { SetPropertyValue(value); } }
+
+        [DefaultValue(_defaultAnimationDelay)]
+        [DisplayName("Default Animation Delay (in ms, for WEBP)")]
+        public int DefaultAnimationDelay { get => GetPropertyValue(_defaultAnimationDelay); set { SetPropertyValue(value); } }
 
         private Dictionary<string, DateTime> GetRecentFiles()
         {

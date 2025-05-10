@@ -5,7 +5,7 @@ public sealed class WicBitmapDecoder(IComObject<IWICBitmapDecoder> comObject) : 
     public uint FrameCount => NativeObject.GetFrameCount();
     public Guid ContainerFormat => NativeObject.GetContainerFormat();
 
-    public WicBitmapSource GetFrame(uint index = 0) => new(NativeObject.GetFrame(index));
+    public WicBitmapSource GetFrame(uint index = 0) => new(NativeObject.GetFrame(index)) { DecoderFrameCount = FrameCount };
 
     public WicBitmapSource? GetPreview()
     {
@@ -40,7 +40,9 @@ public sealed class WicBitmapDecoder(IComObject<IWICBitmapDecoder> comObject) : 
     {
         for (uint i = 0; i < FrameCount; i++)
         {
-            yield return GetFrame(i);
+            var frame = GetFrame(i);
+            frame.DecoderFrameCount = FrameCount;
+            yield return frame;
         }
     }
 

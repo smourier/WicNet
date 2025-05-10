@@ -14,6 +14,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     {
     }
 
+    public uint DecoderFrameCount { get; internal set; } = 1;
     public D2D_SIZE_U Size => new(Width, Height);
     public D2D_RECT_U Bounds => new() { right = Width, bottom = Height };
     public uint DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat?.BitsPerPixel ?? 0);
@@ -401,19 +402,25 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     public static WicBitmapSource Load(string filePath, uint frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         using var decoder = WicBitmapDecoder.Load(filePath, options: options);
-        return decoder.GetFrame(frameIndex);
+        var frame = decoder.GetFrame(frameIndex);
+        frame.DecoderFrameCount = decoder.FrameCount;
+        return frame;
     }
 
     public static WicBitmapSource Load(nuint fileHandle, uint frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         using var decoder = WicBitmapDecoder.Load(fileHandle, options: options);
-        return decoder.GetFrame(frameIndex);
+        var frame = decoder.GetFrame(frameIndex);
+        frame.DecoderFrameCount = decoder.FrameCount;
+        return frame;
     }
 
     public static WicBitmapSource Load(Stream stream, uint frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)
     {
         using var decoder = WicBitmapDecoder.Load(stream, options: options);
-        return decoder.GetFrame(frameIndex);
+        var frame = decoder.GetFrame(frameIndex);
+        frame.DecoderFrameCount = decoder.FrameCount;
+        return frame;
     }
 
     [SupportedOSPlatform("windows6.1")]

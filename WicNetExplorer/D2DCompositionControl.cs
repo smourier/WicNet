@@ -20,7 +20,11 @@ public class D2DCompositionControl : Control, ID2DControl
 {
     // device independent resources
     private static readonly Lazy<IDispatcherQueueController> _dispatcherQueueController = new(() => DispatcherQueueController.Create());
-    private static readonly Lazy<object> _d3d11Device = new(() => Utilities.Extensions.D3D11CreateDevice());
+    private static readonly Lazy<object> _d3d11Device = new(() => Utilities.Extensions.D3D11CreateDevice(
+#if DEBUG
+         D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT
+#endif
+        ));
     private static readonly Lazy<IComObject<ID2D1Factory1>> _d2dFactory = new(() => D2D1Functions.D2D1CreateFactory<ID2D1Factory1>());
     private static readonly Lazy<CompositionGraphicsDevice> _graphicsDevice = new(CreateCompositionGraphicsDevice);
 

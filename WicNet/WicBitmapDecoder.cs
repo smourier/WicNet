@@ -21,7 +21,7 @@ namespace WicNet
         public int FrameCount => _comObject.GetFrameCount();
         public Guid ContainerFormat => _comObject.GetContainerFormat();
 
-        public WicBitmapSource GetFrame(int index = 0) => new WicBitmapSource(_comObject.GetFrame(index));
+        public WicBitmapSource GetFrame(int index = 0) => new WicBitmapSource(_comObject.GetFrame(index)) { DecoderFrameCount = FrameCount };
 
         public WicBitmapSource GetPreview()
         {
@@ -56,7 +56,9 @@ namespace WicNet
         {
             for (var i = 0; i < FrameCount; i++)
             {
-                yield return GetFrame(i);
+                var frame = GetFrame(i);
+                frame.DecoderFrameCount = FrameCount;
+                yield return frame;
             }
         }
 

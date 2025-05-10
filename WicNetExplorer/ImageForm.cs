@@ -6,6 +6,7 @@ using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DirectN;
@@ -20,6 +21,7 @@ namespace WicNetExplorer;
 
 public partial class ImageForm : MdiForm
 {
+    private static readonly Lock _lock = new();
     private IComObject<ID2D1Bitmap1>? _bitmap;
     private IComObject<ID2D1BitmapBrush>? _backgroundBrush;
     private WicBitmapSource? _bitmapSource;
@@ -32,7 +34,11 @@ public partial class ImageForm : MdiForm
     private IPdfRendererNative? _pdfRendererNative;
     private Button? _nextPage;
     private Button? _previousPage;
+    private Button? _play;
     private int _currentPage;
+    private int _decoderFrameCount = 1; // for animated images
+    private int _animationDelay;
+    private bool _playingAnimation;
 
     public ImageForm()
     {
@@ -41,6 +47,7 @@ public partial class ImageForm : MdiForm
     }
 
     public ID2DControl? D2DControl => _d2d;
+    public bool PlayingAnimation => _playingAnimation;
     public IComObject<ID2D1Bitmap1>? Bitmap => _bitmap;
     [DesignerSerializationVisibility(DesignerSerializationVisibility.Hidden)]
     public string? FileName { get; private set; }
@@ -157,82 +164,83 @@ public partial class ImageForm : MdiForm
         if (_d2d == null)
             throw new InvalidProgramException();
 
-        var ctl = (Control)_d2d;
-        IComObject<ID2D1ColorContext>? ctx = null;
-        if (_bitmapSource != null)
+        lock (_lock)
         {
-            if (_bitmap == null)
+            var ctl = (Control)_d2d;
+            IComObject<ID2D1ColorContext>? ctx = null;
+            if (_bitmapSource != null && !_bitmapSource.ComObject.IsDisposed)
             {
-                var pf = deviceContext.GetPixelFormat().format;
-                if (_colorContext != null || pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
+                if (_bitmap == null || _bitmap.IsDisposed)
                 {
-                    _colorManagementEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1ColorManagement);
-                    _scaleEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1Scale);
-                    _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_INTERPOLATION_MODE, D2D1_SCALE_INTERPOLATION_MODE.D2D1_SCALE_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC);
-
-                    if (pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
+                    var pf = deviceContext.GetPixelFormat().format;
+                    if ((_colorContext != null && !_colorContext.IsDisposed) || pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
                     {
-                        using var scRGB = deviceContext.As<ID2D1DeviceContext5>().CreateColorContextFromDxgiColorSpace(DXGI_COLOR_SPACE_TYPE.DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709);
-                        _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_DESTINATION_COLOR_CONTEXT, scRGB);
+                        _colorManagementEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1ColorManagement);
+                        _scaleEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1Scale);
+                        _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_INTERPOLATION_MODE, D2D1_SCALE_INTERPOLATION_MODE.D2D1_SCALE_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC);
+
+                        if (pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
+                        {
+                            using var scRGB = deviceContext.As<ID2D1DeviceContext5>().CreateColorContextFromDxgiColorSpace(DXGI_COLOR_SPACE_TYPE.DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709);
+                            _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_DESTINATION_COLOR_CONTEXT, scRGB);
+                        }
+
+                        if (_colorContext == null || _colorContext.IsDisposed)
+                        {
+                            var isFloat = _bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat;
+                            ctx = deviceContext.CreateColorContext(isFloat ? D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SCRGB : D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SRGB);
+                        }
+                        else
+                        {
+                            ctx = deviceContext.CreateColorContextFromWicColorContext(_colorContext);
+                        }
+
+                        _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_QUALITY, D2D1_COLORMANAGEMENT_QUALITY.D2D1_COLORMANAGEMENT_QUALITY_BEST);
+                        _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_SOURCE_COLOR_CONTEXT, ctx);
                     }
 
-                    if (_colorContext == null)
+                    // check max Direct2D bitmap size
+                    var maxSize = deviceContext.Object.GetMaximumBitmapSize();
+                    if (_bitmapSource.Width > maxSize || _bitmapSource.Height > maxSize)
                     {
-                        var isFloat = _bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat;
-                        ctx = deviceContext.CreateColorContext(isFloat ? D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SCRGB : D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SRGB);
-                    }
-                    else
-                    {
-                        ctx = deviceContext.CreateColorContextFromWicColorContext(_colorContext);
+                        var scalingMode = (WICBitmapInterpolationMode)Settings.Current.ScalingInterpolationMode;
+                        var format = _bitmapSource.PixelFormat;
+                        _bitmapSource.Scale((int)maxSize, scalingMode);
+                        if (_bitmapSource.PixelFormat != format)
+                        {
+                            _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+                        }
                     }
 
-                    _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_QUALITY, D2D1_COLORMANAGEMENT_QUALITY.D2D1_COLORMANAGEMENT_QUALITY_BEST);
-                    _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_SOURCE_COLOR_CONTEXT, ctx);
+                    _bitmap = deviceContext.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
+                    _colorContext.SafeDispose();
+                    _colorContext = null;
                 }
+            }
 
-                // check max Direct2D bitmap size
-                var maxSize = deviceContext.Object.GetMaximumBitmapSize();
-                if (_bitmapSource.Width > maxSize || _bitmapSource.Height > maxSize)
+            if (_bitmap != null && !_bitmap.IsDisposed)
+            {
+                DrawBackground(deviceContext);
+
+                // keep proportions
+                var size = _bitmap.GetSize();
+                var factor = size.GetScaleFactor(ctl.Width, ctl.Height);
+                var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
+
+                if (_colorManagementEffect != null && !_colorManagementEffect.IsDisposed)
                 {
-                    var scalingMode = (WICBitmapInterpolationMode)Settings.Current.ScalingInterpolationMode;
-                    var format = _bitmapSource.PixelFormat;
-                    _bitmapSource.Scale((int)maxSize, scalingMode);
-                    if (_bitmapSource.PixelFormat != format)
-                    {
-                        _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
-                    }
+                    _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_SCALE, factor.ToD2D_VECTOR_2F());
+                    _scaleEffect.SetInput(_bitmap);
+                    _colorManagementEffect.SetInput(_scaleEffect);
+                    deviceContext.DrawImage(_colorManagementEffect);
                 }
-
-                _bitmap = deviceContext.CreateBitmapFromWicBitmap(_bitmapSource.ComObject);
-                _bitmapSource.Dispose();
-                _bitmapSource = null;
-                _colorContext.SafeDispose();
-                _colorContext = null;
+                else
+                {
+                    deviceContext.DrawBitmap(_bitmap, 1, D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC, rc);
+                }
             }
+            ctx.SafeDispose();
         }
-
-        if (_bitmap != null)
-        {
-            DrawBackground(deviceContext);
-
-            // keep proportions
-            var size = _bitmap.GetSize();
-            var factor = size.GetScaleFactor(ctl.Width, ctl.Height);
-            var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
-
-            if (_colorManagementEffect != null)
-            {
-                _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_SCALE, factor.ToD2D_VECTOR_2F());
-                _scaleEffect.SetInput(_bitmap);
-                _colorManagementEffect.SetInput(_scaleEffect);
-                deviceContext.DrawImage(_colorManagementEffect);
-            }
-            else
-            {
-                deviceContext.DrawBitmap(_bitmap, 1, D2D1_INTERPOLATION_MODE.D2D1_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC, rc);
-            }
-        }
-        ctx.SafeDispose();
     }
 
     protected virtual void DrawBackground(IComObject<ID2D1DeviceContext> deviceContext)
@@ -332,6 +340,7 @@ public partial class ImageForm : MdiForm
     protected override void OnResize(EventArgs e)
     {
         base.OnResize(e);
+
         if (_svgDocument != null)
         {
             _svgDocument.Object.SetViewportSize(new D2D_SIZE_F(Width, Height));
@@ -347,6 +356,7 @@ public partial class ImageForm : MdiForm
             DisposeContextIndependentResources();
             _nextPage?.Dispose();
             _previousPage?.Dispose();
+            _play?.Dispose();
             components?.Dispose();
             _d2d?.Dispose();
         }
@@ -366,15 +376,22 @@ public partial class ImageForm : MdiForm
         if (_previousPage != null)
         {
             _previousPage.Height = buttonHeight;
-            _previousPage.Location = new Point(Padding.Left * 2, Padding.Bottom + buttonHeight);
+            _previousPage.Location = new Point(Padding.Left * 2, Padding.Bottom + buttonHeight + 5);
             _previousPage.BringToFront();
         }
 
         if (_nextPage != null)
         {
             _nextPage.Height = buttonHeight;
-            _nextPage.Location = new Point(Padding.Left * 3 + _previousPage!.Width, Padding.Bottom + buttonHeight);
+            _nextPage.Location = new Point(Padding.Left * 3 + _previousPage!.Width, Padding.Bottom + buttonHeight + 5);
             _nextPage.BringToFront();
+        }
+
+        if (_play != null)
+        {
+            _play.Height = buttonHeight;
+            _play.Location = new Point(Padding.Left * 4 + _previousPage!.Width + _nextPage!.Width, Padding.Bottom + buttonHeight + 5);
+            _play.BringToFront();
         }
     }
 
@@ -387,7 +404,7 @@ public partial class ImageForm : MdiForm
         if (Extensions.IsPdfDocumentSupported() && Extensions.IsPdf(fileName))
             return LoadPdfFile(fileName);
 
-        return LoadBitmapFile(fileName);
+        return LoadBitmapFile(fileName, 0);
     }
 
     protected virtual bool LoadSvgFile(string fileName)
@@ -417,7 +434,20 @@ public partial class ImageForm : MdiForm
         _pdfDocument = await PdfDocument.LoadFromFileAsync(file);
 
         Text = fileName + " - " + string.Format(Resources.Pages, _pdfDocument.PageCount);
-        if (_pdfDocument.PageCount > 1)
+        if (_pdfDocument.PageCount > 1 && Settings.Current.EnablePaging)
+        {
+            AddPageButtons(UpdatePdfPage);
+        }
+
+        _d2d?.Redraw();
+
+        // some race condition prevents new text with pages count to be displayed
+        Invalidate();
+    }
+
+    protected virtual void AddPageButtons(Action<int> updatePage, Action? playImage = null)
+    {
+        if (updatePage != null)
         {
             _nextPage = new Button
             {
@@ -426,7 +456,7 @@ public partial class ImageForm : MdiForm
                 FlatStyle = FlatStyle.Flat,
             };
 
-            _nextPage.Click += (s, e) => UpdatePage(1);
+            _nextPage.Click += (s, e) => updatePage(1);
             Controls.Add(_nextPage);
 
             _previousPage = new Button
@@ -436,30 +466,120 @@ public partial class ImageForm : MdiForm
                 FlatStyle = FlatStyle.Flat,
             };
 
-            _previousPage.Click += (s, e) => UpdatePage(-1);
+            _previousPage.Click += (s, e) => updatePage(-1);
             Controls.Add(_previousPage);
-            SetCaptionButtons();
         }
 
-        _d2d?.Redraw();
+        if (playImage != null)
+        {
+            _play = new Button
+            {
+                Text = Resources.Play,
+                AutoSize = true,
+                FlatStyle = FlatStyle.Flat,
+            };
+
+            _play.Click += (s, e) => playImage();
+            Controls.Add(_play);
+        }
+        SetCaptionButtons();
     }
 
-    protected virtual void UpdatePage(int delta)
+    protected virtual void UpdatePdfPage(int delta)
     {
         if (delta == 0 || _pdfDocument == null || !Extensions.IsPdfDocumentSupported())
             return;
 
         var tentative = delta + _currentPage;
-        if (tentative < 0 || tentative >= _pdfDocument.PageCount)
-            return;
+        if (tentative < 0)
+        {
+            tentative = (int)(_pdfDocument.PageCount - 1);
+        }
+        else if (tentative >= _pdfDocument.PageCount)
+        {
+            tentative = 0;
+        }
 
         _currentPage = tentative;
         _nextPage!.Enabled = _currentPage < _pdfDocument.PageCount - 1;
         _previousPage!.Enabled = _currentPage > 0;
         _d2d?.Redraw();
+
+        Text = FileName + " - " + string.Format(Resources.Pages, _pdfDocument.PageCount) + " - " + string.Format(Resources.Current, _currentPage);
+        Invalidate();
     }
 
-    protected virtual bool LoadBitmapFile(string fileName)
+    protected virtual WicBitmapSource LoadBitmapFrame(WicBitmapDecoder decoder, int frameIndex)
+    {
+        ArgumentNullException.ThrowIfNull(decoder);
+
+        var bitmapSource = decoder.GetFrame(frameIndex);
+
+        // metadata must be read before it's converted or rotated
+        var orientation = Settings.Current.HonorOrientation ? bitmapSource.GetOrientation() : null;
+
+        // read GIF animation delay, if any
+        using var reader = bitmapSource.GetMetadataReader();
+        if (reader != null && reader.TryGetMetadataByName<int>("/grctlext/Delay", out var delay, out _))
+        {
+            _animationDelay = delay * 10;
+        }
+        else
+        {
+            // note WIC WEBP decoder doesn't support decoding this from metadata, so we use a default value
+            _animationDelay = Settings.Current.DefaultAnimationDelay;
+        }
+
+        if (bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
+        {
+            bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat128bppRGBAFloat);
+            bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat64bppPRGBAHalf);
+        }
+        else
+        {
+            bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+        }
+
+        // rotate after conversion
+        if (orientation.HasValue)
+        {
+            // note: WIC is clockwise, while metadata is counter-clockwise...
+            switch (orientation.Value)
+            {
+                case PHOTO_ORIENTATION.FLIPHORIZONTAL:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                    break;
+
+                case PHOTO_ORIENTATION.ROTATE180:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate180);
+                    break;
+
+                case PHOTO_ORIENTATION.FLIPVERTICAL:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformFlipVertical);
+                    break;
+
+                case PHOTO_ORIENTATION.TRANSPOSE:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                    break;
+
+                case PHOTO_ORIENTATION.ROTATE270:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
+                    break;
+
+                case PHOTO_ORIENTATION.TRANSVERSE:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                    break;
+
+                case PHOTO_ORIENTATION.ROTATE90:
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270);
+                    break;
+            }
+        }
+
+        return bitmapSource;
+    }
+
+    protected virtual bool LoadBitmapFile(string fileName, int frameIndex)
     {
         ArgumentNullException.ThrowIfNull(fileName);
 
@@ -467,7 +587,10 @@ public partial class ImageForm : MdiForm
         DisposeContextIndependentResources();
         try
         {
-            _bitmapSource = WicBitmapSource.Load(fileName);
+            using var decoder = WicBitmapDecoder.Load(fileName);
+            {
+                _bitmapSource = LoadBitmapFrame(decoder, frameIndex);
+            }
         }
         catch (Exception e)
         {
@@ -481,57 +604,19 @@ public partial class ImageForm : MdiForm
             _colorContext = best?.ComObject;
         }
 
-        var orientation = Settings.Current.HonorOrientation ? _bitmapSource.GetOrientation() : null;
+        EnsureD2DControl();
 
-        if (_bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
+        _decoderFrameCount = _bitmapSource.DecoderFrameCount;
+        if (_decoderFrameCount > 1 && Settings.Current.EnablePaging)
         {
-            _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat128bppRGBAFloat);
-            _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat64bppPRGBAHalf);
+            Text = fileName + " - " + string.Format(Resources.Frames, _decoderFrameCount);
         }
         else
         {
-            _bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+            Text = fileName;
         }
 
-        // rotate after conversion
-        if (orientation.HasValue)
-        {
-            // note: WIC is clockwise, while metadata is counter-clockwise...
-            switch (orientation.Value)
-            {
-                case PHOTO_ORIENTATION.FLIPHORIZONTAL:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
-                    break;
-
-                case PHOTO_ORIENTATION.ROTATE180:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate180);
-                    break;
-
-                case PHOTO_ORIENTATION.FLIPVERTICAL:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformFlipVertical);
-                    break;
-
-                case PHOTO_ORIENTATION.TRANSPOSE:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
-                    break;
-
-                case PHOTO_ORIENTATION.ROTATE270:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate90);
-                    break;
-
-                case PHOTO_ORIENTATION.TRANSVERSE:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
-                    break;
-
-                case PHOTO_ORIENTATION.ROTATE90:
-                    _bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270);
-                    break;
-            }
-        }
-
-        EnsureD2DControl();
-
-        Text = fileName;
+        Invalidate();
         FileName = fileName;
 
         if (_bitmapSource.Width > 0 && _bitmapSource.Height > 0)
@@ -548,7 +633,107 @@ public partial class ImageForm : MdiForm
             }
             MdiResizeClient(newSize);
         }
+
+        if (_decoderFrameCount > 1 && Settings.Current.EnablePaging)
+        {
+            AddPageButtons(UpdateBitmapPage, ToggleBitmapPlay);
+        }
         return true;
+    }
+
+    protected virtual void ToggleBitmapPlay()
+    {
+        if (_decoderFrameCount <= 1 || FileName == null || _d2d == null)
+            return;
+
+        if (_playingAnimation)
+        {
+            _playingAnimation = false;
+            _play!.Text = Resources.Play;
+            _nextPage!.Enabled = true;
+            _previousPage!.Enabled = true;
+            return;
+        }
+
+        _play!.Text = Resources.Stop;
+        _nextPage!.Enabled = false;
+        _previousPage!.Enabled = false;
+
+        _ = Task.Run(() =>
+        {
+            _playingAnimation = true;
+            var honorColorContexts = Settings.Current.HonorColorContexts;
+            var decoder = WicBitmapDecoder.Load(FileName);
+            var frames = new (WicBitmapSource bmp, IComObject<IWICColorContext>? color)[decoder.FrameCount];
+            for (var i = 0; i < decoder.FrameCount; i++)
+            {
+                frames[i] = new() { bmp = LoadBitmapFrame(decoder, i) };
+
+                if (honorColorContexts)
+                {
+                    var best = frames[i].bmp.GetBestColorContext();
+                    frames[i].color = best?.ComObject;
+                }
+            }
+
+            while (_playingAnimation)
+            {
+                for (var i = 0; i < decoder.FrameCount; i++)
+                {
+                    _bitmapSource = frames[i].bmp;
+                    _bitmap?.Dispose();
+                    _bitmap = null;
+
+                    _colorContext?.Dispose();
+                    _colorContext = frames[i].color;
+
+                    _colorManagementEffect?.Dispose();
+                    _colorManagementEffect = null;
+
+                    _scaleEffect?.Dispose();
+                    _scaleEffect = null;
+
+                    BeginInvoke(() =>
+                    {
+                        _d2d?.Redraw();
+                        Text = FileName + " - " + string.Format(Resources.Frames, _decoderFrameCount) + " - " + string.Format(Resources.Current, i);
+                        Invalidate();
+                    });
+                    Thread.Sleep(_animationDelay);
+                }
+            }
+
+            foreach (var (bmp, color) in frames)
+            {
+                bmp?.Dispose();
+                color?.Dispose();
+            }
+        });
+    }
+
+    protected virtual void UpdateBitmapPage(int delta)
+    {
+        if (delta == 0 || _decoderFrameCount <= 1 || FileName == null)
+            return;
+
+        var tentative = delta + _currentPage;
+        if (tentative < 0)
+        {
+            tentative = _decoderFrameCount - 1;
+        }
+        else if (tentative >= _decoderFrameCount)
+        {
+            tentative = 0;
+        }
+
+        _currentPage = tentative;
+        _nextPage!.Enabled = _currentPage < _decoderFrameCount - 1;
+        _previousPage!.Enabled = _currentPage > 0;
+
+        LoadBitmapFile(FileName, _currentPage);
+        _d2d?.Redraw();
+        Text = FileName + " - " + string.Format(Resources.Frames, _decoderFrameCount) + " - " + string.Format(Resources.Current, _currentPage);
+        Invalidate();
     }
 
     public void SaveFile() => SaveFile(false);

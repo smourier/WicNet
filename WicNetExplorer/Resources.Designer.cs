@@ -160,6 +160,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Current #{0}.
+        /// </summary>
+        internal static string Current {
+            get {
+                return ResourceManager.GetString("Current", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Wic Decodable Extensions.
         /// </summary>
         internal static string DecodableExtensions {
@@ -192,6 +201,15 @@ namespace WicNetExplorer {
         internal static string Error {
             get {
                 return ResourceManager.GetString("Error", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to {0} frames.
+        /// </summary>
+        internal static string Frames {
+            get {
+                return ResourceManager.GetString("Frames", resourceCulture);
             }
         }
         
@@ -250,6 +268,15 @@ namespace WicNetExplorer {
         }
         
         /// <summary>
+        ///   Looks up a localized string similar to Play.
+        /// </summary>
+        internal static string Play {
+            get {
+                return ResourceManager.GetString("Play", resourceCulture);
+            }
+        }
+        
+        /// <summary>
         ///   Looks up a localized string similar to Preferences.
         /// </summary>
         internal static string Preferences {
@@ -282,6 +309,15 @@ namespace WicNetExplorer {
         internal static string SaveNotSupported {
             get {
                 return ResourceManager.GetString("SaveNotSupported", resourceCulture);
+            }
+        }
+        
+        /// <summary>
+        ///   Looks up a localized string similar to Stop.
+        /// </summary>
+        internal static string Stop {
+            get {
+                return ResourceManager.GetString("Stop", resourceCulture);
             }
         }
         
