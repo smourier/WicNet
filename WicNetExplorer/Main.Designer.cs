@@ -284,6 +284,7 @@ partial class Main
         // 
         // Main
         // 
+        AllowDrop = true;
         resources.ApplyResources(this, "$this");
         AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
         Controls.Add(menuStripMain);

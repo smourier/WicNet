@@ -23,7 +23,7 @@ public partial class Main : Form
         gCCollectToolStripMenuItem.Visible = false;
 #endif
 
-        Task.Run(() => Settings.Current.CleanRecentFiles());
+        Task.Run(Settings.Current.CleanRecentFiles);
     }
 
     public ImageForm? ActiveImageForm => ActiveMdiChild as ImageForm;
@@ -48,6 +48,30 @@ public partial class Main : Form
         {
             form.Left = form.Padding.Top;
             form.Top = form.Left;
+        }
+    }
+
+    protected override void OnDragOver(DragEventArgs drgevent)
+    {
+        base.OnDragOver(drgevent);
+        drgevent.Effect = DragDropEffects.Move;
+    }
+
+    protected override void OnDragDrop(DragEventArgs drgevent)
+    {
+        base.OnDragDrop(drgevent);
+        if (drgevent.Data?.GetDataPresent(DataFormats.FileDrop) == true)
+        {
+            if (drgevent.Data.GetData(DataFormats.FileDrop) is string[] files && files.Length > 0)
+            {
+                foreach (var file in files)
+                {
+                    if (IOUtilities.PathIsFile(file))
+                    {
+                        OpenFile(file);
+                    }
+                }
+            }
         }
     }
 
@@ -246,7 +270,7 @@ public partial class Main : Form
 
     private void ShowWicComponentsToolStripMenuItem_Click(object sender, EventArgs e)
     {
-        var dlg = new CollectionForm(WicImagingComponent.AllComponents.Select(c => ImagingComponentModel.From(c)).OrderBy(e => e.GetType().Name).ThenBy(e => e.FriendlyName))
+        var dlg = new CollectionForm(WicImagingComponent.AllComponents.Select(ImagingComponentModel.From).OrderBy(e => e.GetType().Name).ThenBy(e => e.FriendlyName))
         {
             Text = Resources.Components
         };

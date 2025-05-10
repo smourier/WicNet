@@ -308,10 +308,7 @@ public partial class ImageForm : MdiForm
         if (!IOUtilities.PathIsFile(fileName))
             return null;
 
-        var imageForm = new ImageForm
-        {
-            MdiParent = parent
-        };
+        var imageForm = new ImageForm { MdiParent = parent };
         if (!imageForm.LoadFile(fileName))
         {
             imageForm.Close();
@@ -338,10 +335,7 @@ public partial class ImageForm : MdiForm
         if (_svgDocument != null)
         {
             _svgDocument.Object.SetViewportSize(new D2D_SIZE_F(Width, Height));
-            _d2d?.WithDeviceContext(dc =>
-            {
-                DoDraw(dc);
-            });
+            _d2d?.WithDeviceContext(DoDraw);
         }
     }
 
@@ -446,6 +440,8 @@ public partial class ImageForm : MdiForm
             Controls.Add(_previousPage);
             SetCaptionButtons();
         }
+
+        _d2d?.Redraw();
     }
 
     protected virtual void UpdatePage(int delta)

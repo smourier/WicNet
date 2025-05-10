@@ -1,5 +1,6 @@
 ﻿using System;
 using System.ComponentModel;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Threading;
 
@@ -20,7 +21,7 @@ namespace WicNet.Utilities
                 throw new Win32Exception(hr);
         }
 
-        public bool WriteMessageEvent(string text, byte level = 0, long keywords = 0) => EventWriteString(_handle, level, keywords, text) == 0;
+        public bool WriteMessageEvent(string text, byte level = 0, long keywords = 0, [CallerMemberName] string method = null) => EventWriteString(_handle, level, keywords, method + ": " + text) == 0;
 
         public void Dispose()
         {
