@@ -20,6 +20,8 @@ internal class Program
 {
     static void Main()
     {
+        BuildTransparentBitmap(300, 100);
+        return;
         BuildCrop();
         BuildStraighten();
         BuildBlur(20);
@@ -87,6 +89,21 @@ internal class Program
         });
 
         memBmp.Save("atlascpu.jpg");
+    }
+
+    static void BuildTransparentBitmap(uint width, uint height)
+    {
+        using var fac = DWriteFunctions.DWriteCreateFactory(DWRITE_FACTORY_TYPE.DWRITE_FACTORY_TYPE_SHARED);
+        using var format = fac.CreateTextFormat("Segoe UI", 20);
+        using var bmp = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+        using var dc = bmp.CreateDeviceContext();
+        using var brush = dc.CreateSolidColorBrush(D3DCOLORVALUE.Blue);
+        dc.BeginDraw();
+        dc.DrawText("Hello World!" + Environment.NewLine + "🤩😛😂", format, new D2D_RECT_F(10, 10, 200, 30), brush, D2D1_DRAW_TEXT_OPTIONS.D2D1_DRAW_TEXT_OPTIONS_ENABLE_COLOR_FONT);
+        dc.EndDraw();
+        bmp.Save("transparent.png");
+        bmp.Dispose();
+        Process.Start(new ProcessStartInfo("transparent.png") { UseShellExecute = true });
     }
 
     static void BuildAtlasWithGPU(int thumbSize = 96, int dimension = 20)
