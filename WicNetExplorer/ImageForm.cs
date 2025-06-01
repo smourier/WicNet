@@ -567,7 +567,7 @@ public partial class ImageForm : MdiForm
                     break;
 
                 case PHOTO_ORIENTATION.TRANSVERSE:
-                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipHorizontal);
+                    bitmapSource.FlipRotate(WICBitmapTransformOptions.WICBitmapTransformRotate270 | WICBitmapTransformOptions.WICBitmapTransformFlipVertical);
                     break;
 
                 case PHOTO_ORIENTATION.ROTATE90:
