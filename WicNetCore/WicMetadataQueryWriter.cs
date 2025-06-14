@@ -84,7 +84,7 @@
                 return false;
             }
 
-            return Conversions.TryChangeType(obj, out value);
+            return WicMetadataQueryReader.TryChangeType(obj, out value);
         }
 
         public bool TryGetMetadataByName(string name, out object? value, out VARENUM type)

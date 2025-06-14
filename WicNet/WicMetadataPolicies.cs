@@ -34,7 +34,7 @@ namespace WicNet
                     var dn = dna.ConstructorArguments.FirstOrDefault().Value as string;
                     if (dn == null || dn.IndexOf('.') < 0)
                         continue;
-                    
+
                     try
                     {
                         var value = prop.GetValue(this);
@@ -92,10 +92,16 @@ namespace WicNet
         [DisplayName("System.GPS.DOP")] public double? GPSDOP => Reader.GetMetadataByName<double?>("System.GPS.DOP");
         [DisplayName("System.GPS.ImgDirection")] public double? GPSImgDirection => Reader.GetMetadataByName<double?>("System.GPS.ImgDirection");
         [DisplayName("System.GPS.ImgDirectionRef")] public string GPSImgDirectionRef => Reader.GetMetadataByName<string>("System.GPS.ImgDirectionRef");
-        [DisplayName("System.GPS.Latitude")] public IReadOnlyList<double> GPSLatitude => Reader.GetMetadataByName<IReadOnlyList<double>>("System.GPS.Latitude");
+        [DisplayName("System.GPS.Latitude")] public IReadOnlyList<ulong> GPSLatitude => Reader.GetMetadataByName<IReadOnlyList<ulong>>("System.GPS.Latitude");
+        [DisplayName("System.GPS.LatitudeDecimal")] public double GPSLatitudeDecimal => Reader.GetMetadataByName<double>("System.GPS.LatitudeDecimal");
         [DisplayName("System.GPS.LatitudeRef")] public string GPSLatitudeRef => Reader.GetMetadataByName<string>("System.GPS.LatitudeRef");
-        [DisplayName("System.GPS.Longitude")] public IReadOnlyList<double> GPSLongitude => Reader.GetMetadataByName<IReadOnlyList<double>>("System.GPS.Longitude");
+        [DisplayName("System.GPS.LatitudeDenominator")] public IReadOnlyList<uint> GPSLatitudeDenominator => Reader.GetMetadataByName<IReadOnlyList<uint>>("System.GPS.LatitudeDenominator");
+        [DisplayName("System.GPS.LatitudeNumerator")] public IReadOnlyList<uint> GPSLatitudeNumerator => Reader.GetMetadataByName<IReadOnlyList<uint>>("System.GPS.LatitudeNumerator");
+        [DisplayName("System.GPS.Longitude")] public IReadOnlyList<ulong> GPSLongitude => Reader.GetMetadataByName<IReadOnlyList<ulong>>("System.GPS.Longitude");
+        [DisplayName("System.GPS.LongitudeDecimal")] public double GPSLongitudeDecimal => Reader.GetMetadataByName<double>("System.GPS.LongitudeDecimal");
         [DisplayName("System.GPS.LongitudeRef")] public string GPSLongitudeRef => Reader.GetMetadataByName<string>("System.GPS.LongitudeRef");
+        [DisplayName("System.GPS.LongitudeDenominator")] public IReadOnlyList<uint> GPSLongitudeDenominator => Reader.GetMetadataByName<IReadOnlyList<uint>>("System.GPS.LongitudeDenominator");
+        [DisplayName("System.GPS.LongitudeNumerator")] public IReadOnlyList<uint> GPSLongitudeNumerator => Reader.GetMetadataByName<IReadOnlyList<uint>>("System.GPS.LongitudeNumerator");
         [DisplayName("System.GPS.MapDatum")] public string GPSMapDatum => Reader.GetMetadataByName<string>("System.GPS.MapDatum");
         [DisplayName("System.GPS.MeasureMode")] public string GPSMeasureMode => Reader.GetMetadataByName<string>("System.GPS.MeasureMode");
         [DisplayName("System.GPS.ProcessingMethod")] public string GPSProcessingMethod => Reader.GetMetadataByName<string>("System.GPS.ProcessingMethod");

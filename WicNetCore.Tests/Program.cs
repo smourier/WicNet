@@ -1,10 +1,12 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.Globalization;
 using System.IO;
 using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
+using System.Threading;
 using DirectN;
 using DirectN.Extensions;
 using DirectN.Extensions.Com;
@@ -20,8 +22,9 @@ internal class Program
 {
     static void Main()
     {
-        BuildTransparentBitmap(300, 100);
+        DumpApp1Gps("ski.jpg");
         return;
+        BuildTransparentBitmap(300, 100);
         BuildCrop();
         BuildStraighten();
         BuildBlur(20);
@@ -46,6 +49,59 @@ internal class Program
         CopyWithColorContext();
         GC.Collect();
         GC.WaitForPendingFinalizers();
+    }
+
+    static void DumpApp1Gps(string path)
+    {
+        using var bmp = WicBitmapSource.Load(path);
+        using var reader = bmp.GetMetadataReader()!;
+        var obj = reader.GetMetadataByName<object>("/app1/{ushort=0}/{ushort=34853}");
+        if (obj is not IWICMetadataQueryReader)
+            return;
+
+        using var gpsReader = new ComObject<IWICMetadataQueryReader>(obj);
+        // https://learn.microsoft.com/en-us/windows/win32/wic/-wic-native-image-format-metadata-queries#gps-metadata
+        using var r = new WicMetadataQueryReader(gpsReader);
+
+        // https://learn.microsoft.com/en-us/windows/win32/wic/-wic-photoprop-system-gps-altituderef
+        var altitudeRef = r.GetMetadataByName<byte>("/{ushort=5}") == 0 ? "+" : "-";
+
+        var altitude = r.GetMetadataByName<IReadOnlyList<uint>>("/{ushort=6}")!;
+        Console.WriteLine($"GPS Altitude: {altitudeRef} {altitude[0]} / {altitude[1]}");
+
+        Thread.CurrentThread.CurrentCulture = CultureInfo.InvariantCulture; // force '.' as decimal separator
+
+        var latitudeRef = r.GetMetadataByName<string>("/{ushort=1}");
+        var latitudeArray = r.GetMetadataByName<IReadOnlyList<ulong>>("/{ushort=2}")!;
+        var longitudeRef = r.GetMetadataByName<string>("/{ushort=3}");
+        var longitudeArray = r.GetMetadataByName<IReadOnlyList<ulong>>("/{ushort=4}")!;
+
+        var latitude = Dms.From(latitudeArray);
+        var longitude = Dms.From(longitudeArray);
+        Console.WriteLine($"GPS (DD): {latitudeRef}/{longitudeRef} {latitude.DecimalDegrees},{longitude.DecimalDegrees}");
+        Console.WriteLine($"GPS (DMS): {latitude} {latitudeRef} {longitude} {longitudeRef}");
+    }
+
+    public class Dms(double degrees, double minutes, double seconds)
+    {
+        public double Degrees => degrees;
+        public double Minutes => minutes;
+        public double Seconds => seconds;
+        public double DecimalDegrees => (degrees * 3600 + minutes * 60 + seconds) / 3600;
+
+        public override string ToString() => $"{degrees}° {minutes}' {seconds}\"";
+
+        // https://learn.microsoft.com/en-us/windows/win32/properties/props-system-gps-latitude
+        public static Dms From(IReadOnlyList<ulong> array)
+        {
+            var degreesArray = WicMetadataQueryReader.ChangeType<IReadOnlyList<uint>>(array[0])!;
+            var minutesArray = WicMetadataQueryReader.ChangeType<IReadOnlyList<uint>>(array[1])!;
+            var secondsArray = WicMetadataQueryReader.ChangeType<IReadOnlyList<uint>>(array[2])!;
+            var degrees = degreesArray[0] / (double)degreesArray[1];
+            var minutes = minutesArray[0] / (double)minutesArray[1];
+            var seconds = secondsArray[0] / (double)secondsArray[1];
+            return new Dms(degrees, minutes, seconds);
+        }
     }
 
     static void BuildAtlasWithCPU(int thumbSize = 96, int dimension = 20)

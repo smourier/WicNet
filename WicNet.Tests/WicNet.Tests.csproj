@@ -29,6 +29,9 @@
 		<None Update="SamsungSGH-P270.jpg">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<None Update="ski.jpg">
+		  <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 		<None Update="source.gif">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

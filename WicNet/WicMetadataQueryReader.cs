@@ -63,6 +63,70 @@ namespace WicNet
 
         public override string ToString() => ContainerFormatName + Location;
 
+        public static T ChangeType<T>(object input, T defaultValue = default) => ChangeType(input, null, defaultValue);
+        public static T ChangeType<T>(object input, IFormatProvider provider, T defaultValue = default)
+        {
+            if (!TryChangeType(input, provider, out T value))
+                return defaultValue;
+
+            return value;
+        }
+
+        public static object ChangeObjectType(object input, Type conversionType, IFormatProvider provider, object defaultValue)
+        {
+            if (!TryChangeObjectType(input, conversionType, provider, out var value))
+                return defaultValue;
+
+            return value;
+        }
+
+        public static bool TryChangeType<T>(object input, out T value) => TryChangeType(input, null, out value);
+        public static bool TryChangeType<T>(object input, IFormatProvider provider, out T value)
+        {
+            if (!TryChangeObjectType(input, typeof(T), provider, out var value2))
+            {
+                value = default;
+                return false;
+            }
+
+            value = (T)value2;
+            return true;
+        }
+
+        public static bool TryChangeObjectType(object input, Type conversionType, IFormatProvider provider, out object value)
+        {
+            if (conversionType == null)
+                throw new ArgumentNullException(nameof(conversionType));
+
+            // support rationals
+            if (input is ulong ul)
+            {
+                if (conversionType == typeof(uint[]) || conversionType == typeof(IReadOnlyList<uint>) ||
+                    conversionType == typeof(IEnumerable<uint>) || conversionType == typeof(IReadOnlyCollection<uint>))
+                {
+                    var array = new uint[2];
+                    array[0] = (uint)(ul & 0xFFFFFFFF);
+                    array[1] = (uint)(ul >> 32);
+                    value = array;
+                    return true;
+                }
+
+                if (conversionType == typeof(IList<uint>) || conversionType == typeof(List<uint>) ||
+                    conversionType == typeof(ICollection<uint>))
+                {
+                    var list = new List<uint>(2)
+                    {
+                        (uint)(ul & 0xFFFFFFFF),
+                        (uint)(ul >> 32)
+                    };
+                    value = list;
+                    return true;
+                }
+            }
+
+            return Conversions.TryChangeType(input, conversionType, provider, out value);
+        }
+
         public T GetMetadataByName<T>(string name, T defaultValue = default) => GetMetadataByName<T>(name, out _, defaultValue);
         public T GetMetadataByName<T>(string name, out PropertyType type, T defaultValue = default)
         {
@@ -88,7 +152,7 @@ namespace WicNet
                 return false;
             }
 
-            return Conversions.TryChangeType(obj, out value);
+            return TryChangeType(obj, out value);
         }
 
         public bool TryGetMetadataByName(string name, out object value, out PropertyType type)

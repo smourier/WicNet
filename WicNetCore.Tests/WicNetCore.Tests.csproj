@@ -56,4 +56,10 @@
 		</Reference>
 	</ItemGroup>
 
+	<ItemGroup>
+	  <None Update="ski.jpg">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	  </None>
+	</ItemGroup>
+
 </Project>
