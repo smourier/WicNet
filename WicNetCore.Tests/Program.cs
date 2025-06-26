@@ -18,6 +18,7 @@ using WicNet.Utilities;
 
 namespace WicNetCore.Tests;
 
+#pragma warning disable CS0162 // Unreachable code detected
 internal class Program
 {
     static void Main()
@@ -807,4 +808,4 @@ internal class Program
     }
 
 }
-
+#pragma warning restore CS0162 // Unreachable code detected

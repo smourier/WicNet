@@ -432,10 +432,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     [SupportedOSPlatform("windows6.1")]
     public IComObject<T> CreateRenderTarget<T>(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget
     {
-        var bitmap = AsBitmap();
-        if (bitmap == null)
-            throw new InvalidOperationException();
-
+        var bitmap = AsBitmap() ?? throw new InvalidOperationException();
         Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, typeof(ID2D1Factory).GUID, 0, out var unk).ThrowOnError();
         using var fac = DirectN.Extensions.Com.ComObject.FromPointer<ID2D1Factory>(unk)!;
         var props = renderTargetProperties ?? new D2D1_RENDER_TARGET_PROPERTIES();
@@ -503,10 +500,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         Guid format;
         if (!encoderContainerFormat.HasValue)
         {
-            var encoder = WicEncoder.FromFileExtension(Path.GetExtension(filePath));
-            if (encoder == null)
-                throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
-
+            var encoder = WicEncoder.FromFileExtension(Path.GetExtension(filePath)) ?? throw new WicNetException("WIC0003: Cannot determine encoder from file path.");
             format = encoder.ContainerFormat;
         }
         else

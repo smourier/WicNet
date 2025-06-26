@@ -24,13 +24,13 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
     public IReadOnlyList<Guid> PixelFormats { get; }
     public IReadOnlyList<WicPixelFormat> PixelFormatsList => _pixelFormatsList.Value;
 
-    private IComObject<IWICFormatConverterInfo> CreateComObject() => WicImagingFactory.WithFactory(f =>
+    private ComObject<IWICFormatConverterInfo> CreateComObject() => WicImagingFactory.WithFactory(f =>
     {
         f.Object.CreateComponentInfo(Clsid, out var info).ThrowOnError();
         return new ComObject<IWICFormatConverterInfo>(info);
     });
 
-    private IReadOnlyList<WicPixelFormat> GetPixelFormatsList()
+    private ReadOnlyCollection<WicPixelFormat> GetPixelFormatsList()
     {
         var list = new List<WicPixelFormat>();
         foreach (var pf in PixelFormats)

@@ -1,6 +1,7 @@
 ﻿namespace WicNet;
 
 [TypeConverter(typeof(ExpandableObjectConverter))]
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
 public class WicMetadataPolicies
 {
     public WicMetadataPolicies(WicMetadataQueryReader reader)
@@ -24,8 +25,7 @@ public class WicMetadataPolicies
                 if (dna == null)
                     continue;
 
-                var dn = dna.ConstructorArguments.FirstOrDefault().Value as string;
-                if (dn == null || dn.IndexOf('.') < 0)
+                if (dna.ConstructorArguments.FirstOrDefault().Value is not string dn || dn.IndexOf('.') < 0)
                     continue;
 
                 try

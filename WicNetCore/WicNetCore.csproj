@@ -6,6 +6,7 @@
 		<PublishAot>true</PublishAot>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
+		<RootNamespace>WicNet</RootNamespace>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,6 +24,7 @@
 		<Using Include="System.Collections" />
 		<Using Include="System.Collections.Concurrent" />
 		<Using Include="System.Collections.Generic" />
+		<Using Include="System.Collections.ObjectModel" />
 		<Using Include="System.Diagnostics" />
 		<Using Include="System.Diagnostics.CodeAnalysis" />
 		<Using Include="System.Globalization" />

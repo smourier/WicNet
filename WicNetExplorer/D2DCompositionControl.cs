@@ -62,10 +62,7 @@ public class D2DCompositionControl : Control, ID2DControl
 
     public event EventHandler<D2DDrawEventArgs>? Draw;
 
-    public D2DCompositionControl()
-    {
-        PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
-    }
+    public D2DCompositionControl() => PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R8G8B8A8_UNORM;
 
     // possible formats are
     //  DXGI_FORMAT_R16G16B16A16_FLOAT

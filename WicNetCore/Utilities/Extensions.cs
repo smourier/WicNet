@@ -10,7 +10,7 @@ public static partial class Extensions
     {
         ArgumentNullException.ThrowIfNull(renderTarget);
         color ??= new D3DCOLORVALUE(0xFFBFBFBF);
-        IComObject<ID2D1Bitmap> bmp;
+        ComObject<ID2D1Bitmap> bmp;
 
         unsafe
         {

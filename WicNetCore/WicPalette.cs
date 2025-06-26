@@ -5,10 +5,7 @@ public sealed class WicPalette : InterlockedComObject<IWICPalette>
     private readonly Lazy<IReadOnlyList<WicColor>> _colors;
 
     public WicPalette(IComObject<IWICPalette> palette)
-        : base(palette)
-    {
-        _colors = new Lazy<IReadOnlyList<WicColor>>(GetColors, true);
-    }
+        : base(palette) => _colors = new Lazy<IReadOnlyList<WicColor>>(GetColors, true);
 
     public WicPalette(WICBitmapPaletteType type, bool addTransparentColor = false)
         : this(From(type, addTransparentColor))
@@ -121,7 +118,7 @@ public sealed class WicPalette : InterlockedComObject<IWICPalette>
 
         var colors = new uint[count];
         NativeObject.GetColors(count, colors, out _).ThrowOnError();
-        return colors.Select(c => WicColor.FromArgb(c)).ToArray();
+        return [.. colors.Select(c => WicColor.FromArgb(c))];
     }
 
     public WicPalette CopyColors() => new(Colors);

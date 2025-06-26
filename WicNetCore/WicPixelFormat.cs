@@ -64,7 +64,7 @@ public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparab
         return ChannelCount.CompareTo(other.ChannelCount);
     }
 
-    private IReadOnlyList<WicPixelFormat> GetPossibleTargetFormats()
+    private ReadOnlyCollection<WicPixelFormat> GetPossibleTargetFormats()
     {
         var list = new List<WicPixelFormat>();
         var formats = AllComponents.OfType<WicPixelFormat>().ToArray();

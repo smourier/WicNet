@@ -1,10 +1,5 @@
-﻿namespace WicNet
+﻿namespace WicNet;
+
+public sealed class WicMetadataReader(object comObject) : WicMetadataHandler(comObject)
 {
-    public sealed class WicMetadataReader : WicMetadataHandler
-    {
-        public WicMetadataReader(object comObject)
-            : base(comObject)
-        {
-        }
-    }
 }

@@ -1,26 +1,15 @@
 ﻿using System;
 using DirectN;
 
-namespace WicNet
+namespace WicNet;
+
+public class WicMetadataKeyValue(WicMetadataKey key, object value, PropertyType type)
 {
-    public class WicMetadataKeyValue
-    {
-        public WicMetadataKeyValue(WicMetadataKey key, object value, PropertyType type)
-        {
-            if (key == null)
-                throw new ArgumentNullException(nameof(key));
+    public WicMetadataKey Key { get; } = key ?? throw new ArgumentNullException(nameof(key));
+    public object Value { get; } = value;
 
-            Key = key;
-            Value = value;
-            Type = type;
-        }
+    // keeping the exact type is important for example to differentiate between VT_BLOB and VT_UI1 | VT_VECTOR
+    public PropertyType Type { get; } = type;
 
-        public WicMetadataKey Key { get; }
-        public object Value { get; }
-
-        // keeping the exact type is important for example to differentiate between VT_BLOB and VT_UI1 | VT_VECTOR
-        public PropertyType Type { get; }
-
-        public override string ToString() => Key + ": " + Value + " (" + Type + ")";
-    }
+    public override string ToString() => Key + ": " + Value + " (" + Type + ")";
 }

@@ -86,7 +86,7 @@ public abstract class WicCodec : WicImagingComponent
 
     public IReadOnlyList<WicPixelFormat> PixelFormatsList => _pixelFormatsList.Value;
 
-    private IReadOnlyList<WicPixelFormat> GetPixelFormatsList()
+    private ReadOnlyCollection<WicPixelFormat> GetPixelFormatsList()
     {
         var list = new List<WicPixelFormat>();
         foreach (var pf in PixelFormats)
@@ -99,7 +99,7 @@ public abstract class WicCodec : WicImagingComponent
         }
 
         list.Sort();
-        return list;
+        return list.AsReadOnly();
     }
 
     public override string ToString() => base.ToString() + " " + ContainerFormatName;

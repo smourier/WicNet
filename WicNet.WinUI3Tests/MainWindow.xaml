@@ -18,7 +18,7 @@
             MinHeight="30"
             HorizontalAlignment="Center"
             VerticalAlignment="Center"
-            Click="myButton_Click">
+            Click="MyButton_Click">
             Browse an image...
         </Button>
         <Image x:Name="myImage" Grid.Row="1" />
