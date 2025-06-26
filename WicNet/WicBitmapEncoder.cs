@@ -34,11 +34,9 @@ public sealed class WicBitmapEncoder(object comObject) : IDisposable
     public static WicBitmapEncoder Load(Guid guidContainerFormat, Guid? guidVendor = null) => WICImagingFactory.WithFactory(f =>
     {
         // TODO: simplify on next DirectN version
-        using (var guid = new ComMemory(guidVendor))
-        {
-            f.CreateEncoder(guidContainerFormat, guid.Pointer, out var encoder).ThrowOnError();
-            return new WicBitmapEncoder(new ComObject<IWICBitmapEncoder>(encoder));
-        }
+        using var guid = new ComMemory(guidVendor);
+        f.CreateEncoder(guidContainerFormat, guid.Pointer, out var encoder).ThrowOnError();
+        return new WicBitmapEncoder(new ComObject<IWICBitmapEncoder>(encoder));
     });
 
     public void Dispose() => _comObject.SafeDispose();

@@ -11,44 +11,42 @@ public abstract class WicMetadataHandler : WicImagingComponent
     protected WicMetadataHandler(object comObject)
         : base(comObject)
     {
-        using (var info = new ComObjectWrapper<IWICMetadataHandlerInfo>(comObject))
+        using var info = new ComObjectWrapper<IWICMetadataHandlerInfo>(comObject);
+        info.Object.GetMetadataFormat(out Guid guid);
+        Guid = guid;
+
+        DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
         {
-            info.Object.GetMetadataFormat(out Guid guid);
-            Guid = guid;
+            info.Object.GetDeviceManufacturer(capacity, s, out var size);
+            return size;
+        });
 
-            DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
-            {
-                info.Object.GetDeviceManufacturer(capacity, s, out var size);
-                return size;
-            });
+        DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
+        {
+            info.Object.GetDeviceModels(capacity, s, out var size);
+            return size;
+        });
 
-            DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
+        info.Object.GetContainerFormats(0, null, out var count);
+        if (count > 0)
+        {
+            var guids = new Guid[count];
+            if (info.Object.GetContainerFormats((int)count, guids, out _) == 0)
             {
-                info.Object.GetDeviceModels(capacity, s, out var size);
-                return size;
-            });
-
-            info.Object.GetContainerFormats(0, null, out var count);
-            if (count > 0)
-            {
-                var guids = new Guid[count];
-                if (info.Object.GetContainerFormats((int)count, guids, out _) == 0)
-                {
-                    ContainerFormats = guids;
-                }
+                ContainerFormats = guids;
             }
-
-            ContainerFormats ??= [];
-
-            info.Object.DoesRequireFullStream(out var b);
-            RequiresFullStream = b;
-
-            info.Object.DoesSupportPadding(out b);
-            SupportsPadding = b;
-
-            info.Object.DoesRequireFixedSize(out b);
-            RequiresFixedSize = b;
         }
+
+        ContainerFormats ??= [];
+
+        info.Object.DoesRequireFullStream(out var b);
+        RequiresFullStream = b;
+
+        info.Object.DoesSupportPadding(out b);
+        SupportsPadding = b;
+
+        info.Object.DoesRequireFixedSize(out b);
+        RequiresFixedSize = b;
     }
 
     public Guid Guid { get; }

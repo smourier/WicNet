@@ -34,13 +34,11 @@ public static class WindowsUtilities
         try
         {
             // https://stackoverflow.com/questions/64785427/c-windows-api-how-to-retrieve-font-scaling-percentage
-            using (var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Accessibility", false))
+            using var key = Registry.CurrentUser.OpenSubKey(@"SOFTWARE\Microsoft\Accessibility", false);
+            if (key != null)
             {
-                if (key != null)
-                {
-                    if (Conversions.TryChangeType<int>(key.GetValue("TextScaleFactor"), out var factor) && factor > 0)
-                        return factor;
-                }
+                if (Conversions.TryChangeType<int>(key.GetValue("TextScaleFactor"), out var factor) && factor > 0)
+                    return factor;
             }
         }
         catch

@@ -11,18 +11,16 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
     public WicPixelFormatConverter(object comObject)
         : base(comObject)
     {
-        using (var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject))
+        using var info = new ComObjectWrapper<IWICFormatConverterInfo>(comObject);
+        info.Object.GetPixelFormats(0, null, out var len);
+        var pf = new Guid[len];
+        if (len > 0)
         {
-            info.Object.GetPixelFormats(0, null, out var len);
-            var pf = new Guid[len];
-            if (len > 0)
-            {
-                info.Object.GetPixelFormats((int)len, pf, out _);
-            }
-
-            PixelFormats = pf;
-            _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
+            info.Object.GetPixelFormats((int)len, pf, out _);
         }
+
+        PixelFormats = pf;
+        _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
     }
 
     public IReadOnlyList<Guid> PixelFormats { get; }
@@ -52,14 +50,12 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
 
     public bool CanConvert(Guid from, Guid to)
     {
-        using (var co = GetComObject())
-        using (var cvt = co.CreateInstance())
-        {
-            if (!cvt.Object.CanConvert(from, to, out var can).IsSuccess)
-                return false;
+        using var co = GetComObject();
+        using var cvt = co.CreateInstance();
+        if (!cvt.Object.CanConvert(from, to, out var can).IsSuccess)
+            return false;
 
-            return can;
-        }
+        return can;
     }
 
     public IComObject<IWICFormatConverter> Convert(WicBitmapSource source, Guid targetFormat, WICBitmapDitherType ditherType = WICBitmapDitherType.WICBitmapDitherTypeNone, WicPalette palette = null, double alphaThresholdPercent = 0, WICBitmapPaletteType paletteTranslate = WICBitmapPaletteType.WICBitmapPaletteTypeCustom)
@@ -75,11 +71,9 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
             pal = p.CopyColors();
         }
 
-        using (var co = GetComObject())
-        {
-            var cvt = co.CreateInstance();
-            cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
-            return cvt;
-        }
+        using var co = GetComObject();
+        var cvt = co.CreateInstance();
+        cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object, alphaThresholdPercent, paletteTranslate).ThrowOnError();
+        return cvt;
     }
 }

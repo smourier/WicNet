@@ -8,22 +8,20 @@ public sealed class WicBitmapLock
 {
     public WicBitmapLock(object comObject)
     {
-        using (var wrapper = new ComObjectWrapper<IWICBitmapLock>(comObject))
-        {
-            wrapper.Object.GetDataPointer(out var size, out var ptr);
-            DataSize = size;
-            DataPointer = ptr;
+        using var wrapper = new ComObjectWrapper<IWICBitmapLock>(comObject);
+        wrapper.Object.GetDataPointer(out var size, out var ptr);
+        DataSize = size;
+        DataPointer = ptr;
 
-            wrapper.Object.GetPixelFormat(out var format);
-            PixelFormat = WicImagingComponent.FromClsid<WicPixelFormat>(format);
+        wrapper.Object.GetPixelFormat(out var format);
+        PixelFormat = WicImagingComponent.FromClsid<WicPixelFormat>(format);
 
-            wrapper.Object.GetSize(out var width, out var height);
-            Width = (int)width;
-            Height = (int)height;
+        wrapper.Object.GetSize(out var width, out var height);
+        Width = (int)width;
+        Height = (int)height;
 
-            wrapper.Object.GetStride(out var stride);
-            Stride = (int)stride;
-        }
+        wrapper.Object.GetStride(out var stride);
+        Stride = (int)stride;
     }
 
     public IntPtr DataPointer { get; }

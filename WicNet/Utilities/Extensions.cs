@@ -25,14 +25,12 @@ public static class Extensions
         IComObject<ID2D1Bitmap> bmp;
         using (var rt = renderTarget.CreateCompatibleRenderTarget(new D2D_SIZE_F(size * 2, size * 2)))
         {
-            using (var colorBrush = rt.CreateSolidColorBrush(color.Value))
-            {
-                rt.BeginDraw();
-                rt.FillRectangle(D2D_RECT_F.Sized(0, 0, size, size), colorBrush);
-                rt.FillRectangle(D2D_RECT_F.Sized(size, size, size, size), colorBrush);
-                rt.EndDraw();
-                bmp = rt.GetBitmap();
-            }
+            using var colorBrush = rt.CreateSolidColorBrush(color.Value);
+            rt.BeginDraw();
+            rt.FillRectangle(D2D_RECT_F.Sized(0, 0, size, size), colorBrush);
+            rt.FillRectangle(D2D_RECT_F.Sized(size, size, size, size), colorBrush);
+            rt.EndDraw();
+            bmp = rt.GetBitmap();
         }
 
         renderTarget.CreateBitmapBrush(bmp.Object, IntPtr.Zero, IntPtr.Zero, out var brush).ThrowOnError();
@@ -72,10 +70,8 @@ public static class Extensions
                 }
                 else
                 {
-                    using (var pv = new PropVariant(kv.Value, kv.Type))
-                    {
-                        var hr = writer.SetMetadataByName(kv.Key.Key, pv.Detached).ThrowOnError();
-                    }
+                    using var pv = new PropVariant(kv.Value, kv.Type);
+                    var hr = writer.SetMetadataByName(kv.Key.Key, pv.Detached).ThrowOnError();
                 }
             }
         });

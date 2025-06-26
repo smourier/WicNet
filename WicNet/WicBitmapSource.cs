@@ -282,10 +282,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
             Width = width,
             Height = height
         };
-        using (var mem = new ComMemory(rect))
-        {
-            _comObject.Object.CopyPixels(mem.Pointer, (uint)stride.Value, bufferSize, buffer).ThrowOnError();
-        }
+        using var mem = new ComMemory(rect);
+        _comObject.Object.CopyPixels(mem.Pointer, (uint)stride.Value, bufferSize, buffer).ThrowOnError();
     }
 
     public byte[] CopyPixels(int? stride = null) => CopyPixels(0, 0, Width, Height, stride);
@@ -424,32 +422,26 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
     public static WicBitmapSource Load(string filePath, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
     {
-        using (var decoder = WicBitmapDecoder.Load(filePath, guidVendor: guidVendor, options: options))
-        {
-            var frame = decoder.GetFrame(frameIndex);
-            frame.DecoderFrameCount = decoder.FrameCount;
-            return frame;
-        }
+        using var decoder = WicBitmapDecoder.Load(filePath, guidVendor: guidVendor, options: options);
+        var frame = decoder.GetFrame(frameIndex);
+        frame.DecoderFrameCount = decoder.FrameCount;
+        return frame;
     }
 
     public static WicBitmapSource Load(IntPtr fileHandle, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
     {
-        using (var decoder = WicBitmapDecoder.Load(fileHandle, guidVendor: guidVendor, options: options))
-        {
-            var frame = decoder.GetFrame(frameIndex);
-            frame.DecoderFrameCount = decoder.FrameCount;
-            return frame;
-        }
+        using var decoder = WicBitmapDecoder.Load(fileHandle, guidVendor: guidVendor, options: options);
+        var frame = decoder.GetFrame(frameIndex);
+        frame.DecoderFrameCount = decoder.FrameCount;
+        return frame;
     }
 
     public static WicBitmapSource Load(Stream stream, int frameIndex = 0, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand, Guid? guidVendor = null)
     {
-        using (var decoder = WicBitmapDecoder.Load(stream, guidVendor: guidVendor, options: options))
-        {
-            var frame = decoder.GetFrame(frameIndex);
-            frame.DecoderFrameCount = decoder.FrameCount;
-            return frame;
-        }
+        using var decoder = WicBitmapDecoder.Load(stream, guidVendor: guidVendor, options: options);
+        var frame = decoder.GetFrame(frameIndex);
+        frame.DecoderFrameCount = decoder.FrameCount;
+        return frame;
     }
 
     public IComObject<ID2D1RenderTarget> CreateRenderTarget(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) => CreateRenderTarget<ID2D1RenderTarget>(renderTargetProperties);
@@ -457,8 +449,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
     public IComObject<T> CreateRenderTarget<T>(D2D1_RENDER_TARGET_PROPERTIES? renderTargetProperties = null) where T : ID2D1RenderTarget
     {
         var bitmap = AsBitmap();
-        using (var fac = D2D1Functions.D2D1CreateFactory())
-            return fac.CreateWicBitmapRenderTarget<T>(bitmap, renderTargetProperties);
+        using var fac = D2D1Functions.D2D1CreateFactory();
+        return fac.CreateWicBitmapRenderTarget<T>(bitmap, renderTargetProperties);
     }
 
     public void WithLock(WICBitmapLockFlags flags, Action<WicBitmapLock> action, WICRect? rect = null)
@@ -466,8 +458,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (action == null)
             throw new ArgumentNullException(nameof(action));
 
-        using (var lck = CheckBitmap().Lock(flags, rect))
-            action(new WicBitmapLock(lck));
+        using var lck = CheckBitmap().Lock(flags, rect);
+        action(new WicBitmapLock(lck));
     }
 
     public T WithLock<T>(WICBitmapLockFlags flags, Func<WicBitmapLock, T> func, WICRect? rect = null)
@@ -475,8 +467,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (func == null)
             throw new ArgumentNullException(nameof(func));
 
-        using (var lck = CheckBitmap().Lock(flags, rect))
-            return func(new WicBitmapLock(lck));
+        using var lck = CheckBitmap().Lock(flags, rect);
+        return func(new WicBitmapLock(lck));
     }
 
     public IComObject<IWICBitmap> AsBitmap(bool throwOnError = true) => _comObject.AsComObject<IWICBitmap>(throwOnError);
@@ -532,8 +524,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
             format = encoderContainerFormat.Value;
         }
 
-        using (var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite))
-            Save(file, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle, colorContexts);
+        using var file = new FileStream(filePath, FileMode.Create, FileAccess.Write, FileShare.ReadWrite);
+        Save(file, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle, colorContexts);
     }
 
     public void Save(
@@ -551,56 +543,50 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (stream == null)
             throw new ArgumentNullException(nameof(stream));
 
-        using (var encoder = WICImagingFactory.CreateEncoder(encoderContainerFormat))
+        using var encoder = WICImagingFactory.CreateEncoder(encoderContainerFormat);
+        var mis = new ManagedIStream(stream);
+        encoder.Initialize(mis, cacheOptions);
+
+        if (encoderPalette != null)
         {
-            var mis = new ManagedIStream(stream);
-            encoder.Initialize(mis, cacheOptions);
-
-            if (encoderPalette != null)
-            {
-                // gifs...
-                encoder.SetPalette(encoderPalette.ComObject);
-            }
-
-            using (var frame = encoder.CreateNewFrame())
-            {
-                if (encoderOptions != null)
-                {
-                    frame.Bag.Write(encoderOptions);
-                }
-
-                frame.Initialize();
-
-                if (metadata?.Any() == true)
-                {
-                    using (var writer = frame.GetMetadataQueryWriter())
-                    {
-                        writer.EncodeMetadata(metadata);
-                    }
-                }
-
-                if (pixelFormat.HasValue)
-                {
-                    frame.SetPixelFormat(pixelFormat.Value);
-                }
-
-                if (framePalette != null)
-                {
-                    frame.Encode.SetPalette(framePalette.ComObject);
-                }
-
-                if (colorContexts?.Any() == true)
-                {
-                    frame.SetColorContexts(colorContexts.Select(c => c.ComObject.Object));
-                }
-
-                // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
-                // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
-                frame.WriteSource(_comObject, sourceRectangle);
-                frame.Commit();
-                encoder.Commit();
-            }
+            // gifs...
+            encoder.SetPalette(encoderPalette.ComObject);
         }
+
+        using var frame = encoder.CreateNewFrame();
+        if (encoderOptions != null)
+        {
+            frame.Bag.Write(encoderOptions);
+        }
+
+        frame.Initialize();
+
+        if (metadata?.Any() == true)
+        {
+            using var writer = frame.GetMetadataQueryWriter();
+            writer.EncodeMetadata(metadata);
+        }
+
+        if (pixelFormat.HasValue)
+        {
+            frame.SetPixelFormat(pixelFormat.Value);
+        }
+
+        if (framePalette != null)
+        {
+            frame.Encode.SetPalette(framePalette.ComObject);
+        }
+
+        if (colorContexts?.Any() == true)
+        {
+            frame.SetColorContexts(colorContexts.Select(c => c.ComObject.Object));
+        }
+
+        // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set
+        // "WIC error 0x88982F45. The bitmap palette is unavailable" here means for example we're saving a file that doesn't support palette (even if we called SetPalette before, it may be useless)
+        frame.WriteSource(_comObject, sourceRectangle);
+        frame.Commit();
+        encoder.Commit();
     }
 
     public void Dispose()

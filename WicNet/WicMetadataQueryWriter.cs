@@ -101,12 +101,10 @@ public sealed class WicMetadataQueryWriter(object comObject) : IDisposable
             return false;
         }
 
-        using (var pv = detached.Attach())
-        {
-            value = pv.Value;
-            type = pv.VarType;
-            return true;
-        }
+        using var pv = detached.Attach();
+        value = pv.Value;
+        type = pv.VarType;
+        return true;
     }
 
     public void Dispose() => _comObject.SafeDispose();

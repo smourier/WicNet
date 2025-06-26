@@ -149,11 +149,9 @@ public sealed class UnmanagedMemoryStream : Stream, IStream
     {
         if (plibNewPosition == IntPtr.Zero)
         {
-            using (var mem = new ComMemory(Marshal.SizeOf<long>()))
-            {
-                NativeStream.Seek(dlibMove, dwOrigin, mem.Pointer);
-                _position = Marshal.ReadInt64(mem.Pointer);
-            }
+            using var mem = new ComMemory(Marshal.SizeOf<long>());
+            NativeStream.Seek(dlibMove, dwOrigin, mem.Pointer);
+            _position = Marshal.ReadInt64(mem.Pointer);
         }
         else
         {
@@ -168,11 +166,9 @@ public sealed class UnmanagedMemoryStream : Stream, IStream
         int read;
         if (pcbRead == IntPtr.Zero)
         {
-            using (var mem = new ComMemory(Marshal.SizeOf<int>()))
-            {
-                NativeStream.Read(pv, cb, mem.Pointer);
-                read = Marshal.ReadInt32(mem.Pointer);
-            }
+            using var mem = new ComMemory(Marshal.SizeOf<int>());
+            NativeStream.Read(pv, cb, mem.Pointer);
+            read = Marshal.ReadInt32(mem.Pointer);
         }
         else
         {
@@ -188,11 +184,9 @@ public sealed class UnmanagedMemoryStream : Stream, IStream
         int written;
         if (pcbWritten == IntPtr.Zero)
         {
-            using (var mem = new ComMemory(Marshal.SizeOf<int>()))
-            {
-                NativeStream.Write(pv, cb, mem.Pointer);
-                written = Marshal.ReadInt32(mem.Pointer);
-            }
+            using var mem = new ComMemory(Marshal.SizeOf<int>());
+            NativeStream.Write(pv, cb, mem.Pointer);
+            written = Marshal.ReadInt32(mem.Pointer);
         }
         else
         {

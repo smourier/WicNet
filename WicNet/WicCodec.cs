@@ -14,68 +14,66 @@ public abstract class WicCodec : WicImagingComponent
     protected WicCodec(object comObject)
         : base(comObject)
     {
-        using (var info = new ComObjectWrapper<IWICBitmapCodecInfo>(comObject).ComObject)
+        using var info = new ComObjectWrapper<IWICBitmapCodecInfo>(comObject).ComObject;
+        _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
+        info.Object.GetContainerFormat(out Guid guid);
+        ContainerFormat = guid;
+
+        FileExtensions = Utilities.Extensions.GetString((s, capacity) =>
         {
-            _pixelFormatsList = new Lazy<IReadOnlyList<WicPixelFormat>>(GetPixelFormatsList, true);
-            info.Object.GetContainerFormat(out Guid guid);
-            ContainerFormat = guid;
+            info.Object.GetFileExtensions(capacity, s, out var size);
+            return size;
+        });
 
-            FileExtensions = Utilities.Extensions.GetString((s, capacity) =>
-            {
-                info.Object.GetFileExtensions(capacity, s, out var size);
-                return size;
-            });
+        ColorManagementVersion = Utilities.Extensions.GetString((s, capacity) =>
+        {
+            info.Object.GetColorManagementVersion(capacity, s, out var size);
+            return size;
+        });
 
-            ColorManagementVersion = Utilities.Extensions.GetString((s, capacity) =>
-            {
-                info.Object.GetColorManagementVersion(capacity, s, out var size);
-                return size;
-            });
+        DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
+        {
+            info.Object.GetDeviceManufacturer(capacity, s, out var size);
+            return size;
+        });
 
-            DeviceManufacturer = Utilities.Extensions.GetString((s, capacity) =>
-            {
-                info.Object.GetDeviceManufacturer(capacity, s, out var size);
-                return size;
-            });
+        DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
+        {
+            info.Object.GetDeviceModels(capacity, s, out var size);
+            return size;
+        });
 
-            DeviceModels = Utilities.Extensions.GetString((s, capacity) =>
-            {
-                info.Object.GetDeviceModels(capacity, s, out var size);
-                return size;
-            });
+        MimeTypes = Utilities.Extensions.GetString((s, capacity) =>
+        {
+            info.Object.GetMimeTypes(capacity, s, out var size);
+            return size;
+        });
 
-            MimeTypes = Utilities.Extensions.GetString((s, capacity) =>
-            {
-                info.Object.GetMimeTypes(capacity, s, out var size);
-                return size;
-            });
+        info.Object.DoesSupportAnimation(out bool b);
+        SupportsAnimation = b;
 
-            info.Object.DoesSupportAnimation(out bool b);
-            SupportsAnimation = b;
+        info.Object.DoesSupportChromakey(out b);
+        SupportsChromakey = b;
 
-            info.Object.DoesSupportChromakey(out b);
-            SupportsChromakey = b;
+        info.Object.DoesSupportLossless(out b);
+        SupportsLossless = b;
 
-            info.Object.DoesSupportLossless(out b);
-            SupportsLossless = b;
+        info.Object.DoesSupportMultiframe(out b);
+        SupportsMultiframe = b;
 
-            info.Object.DoesSupportMultiframe(out b);
-            SupportsMultiframe = b;
+        FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
+        MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
 
-            FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
-            MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
-
-            info.Object.GetPixelFormats(0, null, out var len);
-            if (len > 0)
-            {
-                var pf = new Guid[len];
-                info.Object.GetPixelFormats((int)len, pf, out _).ThrowOnError();
-                PixelFormats = pf;
-            }
-            else
-            {
-                PixelFormats = [];
-            }
+        info.Object.GetPixelFormats(0, null, out var len);
+        if (len > 0)
+        {
+            var pf = new Guid[len];
+            info.Object.GetPixelFormats((int)len, pf, out _).ThrowOnError();
+            PixelFormats = pf;
+        }
+        else
+        {
+            PixelFormats = [];
         }
     }
 

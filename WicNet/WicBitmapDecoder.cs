@@ -60,11 +60,9 @@ public sealed class WicBitmapDecoder(object comObject) : IDisposable, IEnumerabl
     public static WicBitmapDecoder Load(Guid guidContainerFormat, Guid? guidVendor = null) => WICImagingFactory.WithFactory(f =>
     {
         // TODO: simplify on next DirectN version
-        using (var guid = new ComMemory(guidVendor))
-        {
-            f.CreateDecoder(guidContainerFormat, guid.Pointer, out var decoder).ThrowOnError();
-            return new WicBitmapDecoder(new ComObject<IWICBitmapDecoder>(decoder));
-        }
+        using var guid = new ComMemory(guidVendor);
+        f.CreateDecoder(guidContainerFormat, guid.Pointer, out var decoder).ThrowOnError();
+        return new WicBitmapDecoder(new ComObject<IWICBitmapDecoder>(decoder));
     });
 
     public static WicBitmapDecoder Load(string filePath, Guid? guidVendor = null, FileAccess access = FileAccess.Read, WICDecodeOptions options = WICDecodeOptions.WICDecodeMetadataCacheOnDemand)

@@ -163,12 +163,10 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
             return false;
         }
 
-        using (var pv = detached.Attach())
-        {
-            value = pv.Value;
-            type = pv.VarType;
-            return true;
-        }
+        using var pv = detached.Attach();
+        value = pv.Value;
+        type = pv.VarType;
+        return true;
     }
 
     public IEnumerable<WicMetadataKeyValue> Enumerate(bool recursive = false)

@@ -135,19 +135,17 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
             return size;
         });
 
-        using (var key = Registry.ClassesRoot.OpenSubKey(Path.Combine("CLSID", Clsid.ToString("B"))))
+        using var key = Registry.ClassesRoot.OpenSubKey(Path.Combine("CLSID", Clsid.ToString("B")));
+        if (key != null)
         {
-            if (key != null)
+            if (key.GetValue(nameof(ArbitrationPriority)) is int priority)
             {
-                if (key.GetValue(nameof(ArbitrationPriority)) is int priority)
-                {
-                    ArbitrationPriority = priority;
-                }
+                ArbitrationPriority = priority;
+            }
 
-                if (key.GetValue(nameof(Vendor)) is string vendorText && Guid.TryParse(vendorText, out var vendor))
-                {
-                    Vendor = vendor;
-                }
+            if (key.GetValue(nameof(Vendor)) is string vendorText && Guid.TryParse(vendorText, out var vendor))
+            {
+                Vendor = vendor;
             }
         }
     }
