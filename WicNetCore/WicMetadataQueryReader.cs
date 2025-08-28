@@ -3,7 +3,7 @@
 public sealed class WicMetadataQueryReader(IComObject<IWICMetadataQueryReader> comObject) : InterlockedComObject<IWICMetadataQueryReader>(comObject), IEnumerable<WicMetadataKeyValue>
 {
     public string? HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(ContainerFormat);
-    public string ContainerFormatName => GetFormatName(ContainerFormat);
+    public string ContainerFormatName => ContainerFormat.GetName();
 
     public string? Location
     {
@@ -221,14 +221,6 @@ public sealed class WicMetadataQueryReader(IComObject<IWICMetadataQueryReader> c
                 yield return new WicMetadataKeyValue(new WicMetadataKey(ContainerFormat, name), value, type);
             }
         }
-    }
-
-    public static string GetFormatName(Guid guid)
-    {
-        if (typeof(WicMetadataQueryReader).TryGetGuidName(guid, out var name))
-            return name;
-
-        return typeof(WicCodec).GetGuidName(guid);
     }
 
     public static readonly Guid GUID_MetadataFormat8BIMIPTC = new("0010568c-0852-4e6a-b191-5c33ac5b0430");

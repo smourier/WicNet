@@ -35,7 +35,7 @@ public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparab
     public uint ChannelCount { get; }
     public uint BitsPerPixel { get; }
     public bool SupportsTransparency { get; }
-    public override string ClsidName => GetFormatName(Clsid);
+    public override string ClsidName => Clsid.GetName();
     public IReadOnlyList<WicPixelFormat> PossibleTargetFormats => _possibleTargetFormats.Value;
 
     public WicColorContext? GetColorContext() => WicImagingFactory.WithFactory(factory =>
@@ -88,8 +88,6 @@ public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparab
     public static bool operator <=(WicPixelFormat left, WicPixelFormat right) => left is null || left.CompareTo(right) <= 0;
     public static bool operator >(WicPixelFormat left, WicPixelFormat right) => left is not null && left.CompareTo(right) > 0;
     public static bool operator >=(WicPixelFormat left, WicPixelFormat right) => left is null ? right is null : left.CompareTo(right) >= 0;
-
-    public static string GetFormatName(Guid guid) => typeof(WicPixelFormat).GetGuidName(guid);
 
     public static readonly Guid GUID_WICPixelFormat112bpp6ChannelsAlpha = new("6fddc324-4e03-4bfe-b185-3d77768dc937");
     public static readonly Guid GUID_WICPixelFormat112bpp7Channels = new("6fddc324-4e03-4bfe-b185-3d77768dc92a");

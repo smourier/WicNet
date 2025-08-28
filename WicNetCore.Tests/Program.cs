@@ -23,8 +23,9 @@ internal class Program
 {
     static void Main()
     {
-        DumpApp1Gps("ski.jpg");
+        DumpAllComponents();
         return;
+        DumpApp1Gps("ski.jpg");
         BuildTransparentBitmap(300, 100);
         BuildCrop();
         BuildStraighten();
@@ -40,7 +41,6 @@ internal class Program
         BuildAtlasWithCPU();
         BuildAtlasWithGPU();
         DrawEllipse();
-        DumpAllComponents();
         DumpPossibleWicBitmapRenderTargetFormats();
         TryVariousConversions();
         CopyFile();

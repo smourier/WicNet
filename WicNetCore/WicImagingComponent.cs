@@ -6,6 +6,14 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
     private static readonly Lazy<HashSet<string>> _encoderExtensions = new(GetEncoderExtensions, true);
     private static readonly Lazy<HashSet<string>> _decoderExtensions = new(GetDecoderExtensions, true);
 
+    static WicImagingComponent()
+    {
+        GuidNames.AddClassGuids(typeof(WicImagingComponent));
+        GuidNames.AddClassGuids(typeof(WicCodec));
+        GuidNames.AddClassGuids(typeof(WicMetadataQueryReader));
+        GuidNames.AddClassGuids(typeof(WicPixelFormat));
+    }
+
     private static Dictionary<Guid, WicImagingComponent> LoadAllComponents()
     {
         var dic = new Dictionary<Guid, WicImagingComponent>();
@@ -135,7 +143,7 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
     public string? Author { get; }
     public string? Version { get; }
     public string? SpecVersion { get; }
-    public virtual string ClsidName => GetClassName(Clsid);
+    public virtual string ClsidName => Clsid.GetName();
 
     public override string ToString() => FriendlyName + " " + ClsidName;
     public override int GetHashCode() => Clsid.GetHashCode();
@@ -198,8 +206,6 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
         }
         return DecoderFileExtensions.Contains(ext);
     }
-
-    public static string GetClassName(Guid guid) => typeof(WicImagingComponent).GetGuidName(guid);
 
     public static readonly Guid CLSID_WICAdngDecoder = new("981d9411-909e-42a7-8f5d-a747ff052edb");
     public static readonly Guid CLSID_WICBmpDecoder = new("6b462062-7cbf-400d-9fdb-813dd10f2778");

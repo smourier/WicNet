@@ -3,7 +3,7 @@
 public sealed class WicMetadataQueryWriter(IComObject<IWICMetadataQueryWriter> comObject) : InterlockedComObject<IWICMetadataQueryWriter>(comObject)
 {
     public string? HandlerFriendlyName => WicMetadataHandler.FriendlyNameFromGuid(ContainerFormat);
-    public string ContainerFormatName => GetFormatName(ContainerFormat);
+    public string ContainerFormatName => ContainerFormat.GetName();
 
     public string? Location
     {
@@ -103,13 +103,5 @@ public sealed class WicMetadataQueryWriter(IComObject<IWICMetadataQueryWriter> c
         value = pv.Value;
         type = pv.VarType;
         return true;
-    }
-
-    public static string GetFormatName(Guid guid)
-    {
-        if (typeof(WicMetadataQueryReader).TryGetGuidName(guid, out var name))
-            return name;
-
-        return typeof(WicCodec).GetGuidName(guid);
     }
 }

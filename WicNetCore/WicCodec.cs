@@ -82,7 +82,7 @@ public abstract class WicCodec : WicImagingComponent
     public bool SupportsMultiframe { get; }
     public IReadOnlyList<string> FileExtensionsList { get; }
     public IReadOnlyList<string> MimeTypesList { get; }
-    public string ContainerFormatName => GetFormatName(ContainerFormat);
+    public string ContainerFormatName => ContainerFormat.GetName();
 
     public IReadOnlyList<WicPixelFormat> PixelFormatsList => _pixelFormatsList.Value;
 
@@ -122,8 +122,6 @@ public abstract class WicCodec : WicImagingComponent
     }
 
     public static T? FromContainerFormatGuid<T>(Guid guid) where T : WicCodec => AllComponents.OfType<T>().FirstOrDefault(c => c.ContainerFormat == guid);
-
-    public static string GetFormatName(Guid guid) => typeof(WicCodec).GetGuidName(guid);
 
     public static readonly Guid GUID_ContainerFormatAdng = new("f3ff6d0d-38c0-41c4-b1fe-1f3824f17b84");
     public static readonly Guid GUID_ContainerFormatBmp = new("0af1d87e-fcfe-4188-bdeb-a7906471cbe3");
