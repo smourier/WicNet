@@ -113,6 +113,18 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     }
 
     public Coordinates? GetCoordinates() => Coordinates.Get(this);
+    public PHOTO_ORIENTATION? GetOrientation()
+    {
+        using var reader = GetMetadataReader();
+        if (reader == null)
+            return null;
+
+        var orientation = new WicMetadataPolicies(reader).PhotoOrientation;
+        if (!orientation.HasValue)
+            return null;
+
+        return (PHOTO_ORIENTATION)orientation.Value;
+    }
 
     public WicBitmapSource? GetThumbnail()
     {
