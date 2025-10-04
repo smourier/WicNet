@@ -23,8 +23,9 @@ internal class Program
 {
     static void Main()
     {
-        DumpAllComponents();
+        DumpLocation("CopyrightInFotos-MdTest01a.jpg");
         return;
+        DumpAllComponents();
         DumpApp1Gps("ski.jpg");
         BuildTransparentBitmap(300, 100);
         BuildCrop();
@@ -52,10 +53,32 @@ internal class Program
         GC.WaitForPendingFinalizers();
     }
 
+    static void DumpLocation(string path)
+    {
+        using var bmp = WicBitmapSource.Load(path);
+        using var r = bmp.GetMetadataReader();
+        if (r == null)
+            return;
+
+        var c = r.GetMetadataByName<object>("/app13/irb/8bimiptc/iptc/{str=Country}");
+
+        var obj = r.GetMetadataByName<object>("/app13/irb/8bimiptc");
+        if (obj is not IWICMetadataQueryReader)
+            return;
+
+        using var qr = new ComObject<IWICMetadataQueryReader>(obj);
+        using var reader = new WicMetadataQueryReader(qr);
+
+        Dump(reader);
+    }
+
     static void DumpApp1Gps(string path)
     {
         using var bmp = WicBitmapSource.Load(path);
-        using var reader = bmp.GetMetadataReader()!;
+        using var reader = bmp.GetMetadataReader();
+        if (reader == null)
+            return;
+
         var obj = reader.GetMetadataByName<object>("/app1/{ushort=0}/{ushort=34853}");
         if (obj is not IWICMetadataQueryReader)
             return;

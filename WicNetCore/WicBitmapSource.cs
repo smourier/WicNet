@@ -112,6 +112,8 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         return sois;
     }
 
+    public Coordinates? GetCoordinates() => Coordinates.Get(this);
+
     public WicBitmapSource? GetThumbnail()
     {
         var bmp = (NativeObject as IWICBitmapFrameDecode)?.GetThumbnail();

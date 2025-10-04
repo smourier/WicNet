@@ -34,9 +34,14 @@ public sealed class WicMetadataQueryReader(IComObject<IWICMetadataQueryReader> c
             NativeObject.GetEnumerator(out var enumString);
             if (enumString != null)
             {
+                using var mem = new ComMemory(4);
                 var strings = new PWSTR[1];
-                while (enumString.Next(1, strings, 0) == 0)
+                while (enumString.Next(1, strings, mem.Pointer) == 0)
                 {
+                    var fetched = Marshal.ReadInt32(mem.Pointer);
+                    if (fetched == 0)
+                        break;
+
                     var str = strings[0].ToString();
                     if (str != null)
                     {

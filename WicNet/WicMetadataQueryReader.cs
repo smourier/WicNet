@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections;
 using System.Collections.Generic;
+using System.Runtime.InteropServices;
 using DirectN;
 
 namespace WicNet;
@@ -43,9 +44,14 @@ public sealed class WicMetadataQueryReader(object comObject) : IDisposable, IEnu
             _comObject.Object.GetEnumerator(out var enumString);
             if (enumString != null)
             {
+                using var mem = new ComMemory(4);
                 var strings = new string[1];
-                while (enumString.Next(1, strings, IntPtr.Zero) == 0)
+                while (enumString.Next(1, strings, mem.Pointer) == 0)
                 {
+                    var fetched = Marshal.ReadInt32(mem.Pointer);
+                    if (fetched == 0)
+                        break;
+
                     if (strings[0] != null)
                     {
                         list.Add(strings[0]);
