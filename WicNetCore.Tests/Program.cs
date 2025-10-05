@@ -23,7 +23,7 @@ internal class Program
 {
     static void Main()
     {
-        DumpLocation("CopyrightInFotos-MdTest01a.jpg");
+        DumpMetadata("england-london-bridge.jpg");
         return;
         DumpAllComponents();
         DumpApp1Gps("ski.jpg");
@@ -69,7 +69,7 @@ internal class Program
         using var qr = new ComObject<IWICMetadataQueryReader>(obj);
         using var reader = new WicMetadataQueryReader(qr);
 
-        Dump(reader);
+        DumpMetadata(reader);
     }
 
     static void DumpApp1Gps(string path)
@@ -589,7 +589,7 @@ internal class Program
         using var dec = WicBitmapDecoder.Load(path);
         Console.WriteLine("Frames: " + dec.FrameCount);
         var reader = dec.GetMetadataQueryReader();
-        Dump(reader);
+        DumpMetadata(reader);
         Console.WriteLine();
 
         var i = 1;
@@ -607,7 +607,7 @@ internal class Program
             frame.Save(Path.Combine(dir, name + "." + i + ext));
             reader = frame.GetMetadataReader();
             Console.WriteLine("Frame " + i + " metadata");
-            Dump(reader);
+            DumpMetadata(reader);
             Console.WriteLine();
             i++;
         }
@@ -617,7 +617,7 @@ internal class Program
     {
         using var dec = WicBitmapDecoder.Load(@"source.gif");
         var reader = dec.GetMetadataQueryReader();
-        Dump(reader);
+        DumpMetadata(reader);
         Console.WriteLine();
 
         foreach (var frame in dec)
@@ -625,7 +625,7 @@ internal class Program
             Console.WriteLine(frame.Size);
 
             reader = frame.GetMetadataReader();
-            Dump(reader);
+            DumpMetadata(reader);
             Console.WriteLine();
         }
 
@@ -668,7 +668,7 @@ internal class Program
     static void ToTiff(string path)
     {
         using var bmp = WicBitmapSource.Load(path);
-        Dump(bmp.GetMetadataReader());
+        DumpMetadata(bmp.GetMetadataReader());
 
         for (var i = 0; i < 8; i++)
         {
@@ -696,7 +696,15 @@ internal class Program
         }
     }
 
-    static void Dump(WicMetadataQueryReader? reader)
+    static void DumpMetadata(string path)
+    {
+        using var bmp = WicBitmapSource.Load(path);
+        using var r = bmp.GetMetadataReader();
+        DumpMetadata(r);
+    }
+
+
+    static void DumpMetadata(WicMetadataQueryReader? reader)
     {
         if (reader == null)
             return;
