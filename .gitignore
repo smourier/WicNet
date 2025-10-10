@@ -350,3 +350,4 @@ MigrationBackup/
 .ionide/
 /c.bat
 /cr.bat
+/WicNetCore/Resources/base.res
