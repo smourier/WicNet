@@ -23,8 +23,10 @@ internal class Program
 {
     static void Main()
     {
-        DumpMetadata("england-london-bridge.jpg");
+        IconWrite();
         return;
+        BuildTransparentBitmap(96, 96);
+        DumpMetadata("england -london-bridge.jpg");
         DumpAllComponents();
         DumpApp1Gps("ski.jpg");
         BuildTransparentBitmap(300, 100);
@@ -51,6 +53,47 @@ internal class Program
         CopyWithColorContext();
         GC.Collect();
         GC.WaitForPendingFinalizers();
+    }
+
+    static void IconWrite()
+    {
+        using (var bmp = WicBitmapSource.Load("england-london-bridge.jpg"))
+        {
+
+            // note these icons are not square
+            bmp.SaveAsIcon("test.ico");
+            bmp.SaveAsIcon("testall.ico", [16, 32, 48, 64, 128, 256]);
+            bmp.SaveAsResourceDll("testres.dll", [16, 32, 48, 64, 128, 256], 10, 1033, true);
+        }
+
+        var icons = IconUtilities.LoadIcons("testall.ico");
+        foreach (var icon in icons)
+        {
+            Console.WriteLine($"{icon.Width}x{icon.Height}");
+        }
+        icons.Dispose();
+
+        icons = IconUtilities.LoadIcons("testres.dll");
+        foreach (var icon in icons)
+        {
+            Console.WriteLine($"res {icon.Width}x{icon.Height}");
+        }
+        icons.Dispose();
+
+        using (var bmp = WicBitmapSource.Load("england-london-bridge.jpg"))
+        {
+            bmp.CenterClip(256, 256);
+            bmp.SaveAsIcon("testsquare.ico", [16, 32, 48, 64, 128, 256]);
+        }
+
+        var pdf = IconUtilities.LoadBestIconForExtension(".pdf")!;
+        pdf?.Save("pdficon.png");
+
+        var exts = IconUtilities.LoadIconsForExtension(".pdf");
+        Console.WriteLine(exts.Count);
+
+        var shellExts = IconUtilities.LoadIconsUsingShell("testres.dll", size: 256);
+        Console.WriteLine(shellExts.Count);
     }
 
     static void DumpLocation(string path)

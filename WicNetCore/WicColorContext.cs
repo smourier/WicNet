@@ -15,7 +15,7 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
             if (bytes == null || bytes.Length == 0)
                 return null;
 
-            return ColorProfile.FromMemory(ProfileBytes);
+            return ColorProfile.FromMemory(bytes);
         }, true);
     }
 

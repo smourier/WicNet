@@ -10,7 +10,20 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+	  <None Remove="Resources\base.ARM64.dll" />
+	  <None Remove="Resources\base.dll" />
+	  <None Remove="Resources\base.x64.dll" />
+	  <None Remove="Resources\base.x86.dll" />
+	</ItemGroup>
+
+	<ItemGroup>
 	  <Compile Include="..\WicNet\Properties\AssemblyVersionInfo.cs" Link="Properties\AssemblyVersionInfo.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <EmbeddedResource Include="Resources\base.arm64.dll" />
+	  <EmbeddedResource Include="Resources\base.x64.dll" />
+	  <EmbeddedResource Include="Resources\base.x86.dll" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -36,6 +49,7 @@
 		<Using Include="System.Runtime.Versioning" />
 		<Using Include="System.Text" />
 		<Using Include="System.Threading" />
+		<Using Include="System.Threading.Tasks" />
 		<Using Include="WicNet.Utilities" />
 	</ItemGroup>
 

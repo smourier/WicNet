@@ -82,7 +82,14 @@ public sealed class WicColorContext : IDisposable
             if (bytes == null || bytes.Length == 0)
                 return null;
 
-            return ColorProfile.FromMemory(ProfileBytes);
+            try
+            {
+                return ColorProfile.FromMemory(bytes);
+            }
+            catch
+            {
+                return null;
+            }
         }, true);
     }
 

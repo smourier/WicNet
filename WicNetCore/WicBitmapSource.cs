@@ -15,6 +15,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     }
 
     public uint DecoderFrameCount { get; internal set; } = 1;
+    public IconInformation? IconInformation { get; internal set; }
     public D2D_SIZE_U Size => new(Width, Height);
     public D2D_RECT_U Bounds => new() { right = Width, bottom = Height };
     public uint DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat?.BitsPerPixel ?? 0);
