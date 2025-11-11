@@ -7,6 +7,18 @@
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<RootNamespace>WicNet</RootNamespace>
+		<GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+		<Description>WIC, Direct2D and DWrite interop code.</Description>
+		<Title>WicNetCore</Title>
+		<Copyright>Copyright © 2021-2025 Simon Mourier. All rights reserved.</Copyright>
+		<PackageProjectUrl>https://github.com/smourier/WicNet</PackageProjectUrl>
+		<PackageIcon>WicNet.png</PackageIcon>
+		<RepositoryUrl>https://github.com/smourier/WicNet</RepositoryUrl>
+		<PackageTags>Windows Imaging Component C# .NET WIC PNG JPG JPEG GIF BMP D2D HEIC HEIF WinRT WinUi3 SoftwareBitmap</PackageTags>
+		<PackageLicenseFile>LICENSE</PackageLicenseFile>
+		<PackageReadmeFile>README.md</PackageReadmeFile>
+		<PackageId>WicNetCore</PackageId>
+		<Version>1.8.7</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -16,6 +28,20 @@
 	  <None Remove="Resources\base.x86.dll" />
 	</ItemGroup>
 
+	<ItemGroup>
+		<None Include="..\LICENSE">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+		<None Include="README.md">
+			<Pack>True</Pack>
+			<PackagePath></PackagePath>
+		</None>
+		<None Update="WicNet.png">
+			<Pack>True</Pack>
+			<PackagePath>\</PackagePath>
+		</None>
+	</ItemGroup>
 	<ItemGroup>
 	  <Compile Include="..\WicNet\Properties\AssemblyVersionInfo.cs" Link="Properties\AssemblyVersionInfo.cs" />
 	</ItemGroup>
