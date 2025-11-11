@@ -1,7 +1,9 @@
 # WicNet
 .NET interop classes for WIC (Windows Imaging Component) Direct2D, and DirectWrite, based on netstandard 2.0, with zero dependency (except for DirectN https://www.nuget.org/packages/DirectNStandard/)
 
-Nuget Package is available here: https://www.nuget.org/packages/WicNet
+WicNet Nuget package is available here: https://www.nuget.org/packages/WicNet
+
+WicNetCore .NET 9+ AOT-compatible package is available here: https://www.nuget.org/packages/WicNetCore
 
 Main projects are:
 * **WicNet** is the main library that you can use to program WIC in .NET. It's .NET standard based so compatible with .NET Framework and .NET Core 6+ projects.
@@ -109,5 +111,6 @@ The WinUI3Tests program demonstrates WicNet (and therefore WIC) interop with Win
         using var clone = bmp.Clone();
         return clone.WithSoftwareBitmap(true, ptr => SoftwareBitmap.FromAbi(ptr));
     }
+
 
 
