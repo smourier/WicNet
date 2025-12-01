@@ -150,14 +150,14 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         return list;
     }
 
-    public WicColorContext? GetBestColorContext()
+    public WicColorContext? GetBestColorContext() => GetBestColorContext(GetColorContexts());
+    public static WicColorContext? GetBestColorContext(IEnumerable<WicColorContext> contexts)
     {
-        var contexts = GetColorContexts();
-        if (contexts.Count == 0)
+        if (!contexts.Any())
             return null;
 
-        if (contexts.Count == 1)
-            return contexts[0];
+        if (contexts.Count() == 1)
+            return contexts.First();
 
         // https://stackoverflow.com/a/70215280/403671
         // get last not uncalibrated color context
@@ -171,7 +171,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
 
         // last resort
-        best ??= contexts[contexts.Count - 1];
+        best ??= contexts.Last();
         foreach (var context in contexts)
         {
             if (best?.Equals(context) == true)

@@ -130,19 +130,20 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         return list;
     }
 
-    public WicColorContext GetBestColorContext()
+    public WicColorContext GetBestColorContext() => GetBestColorContext(GetColorContexts());
+    public static WicColorContext GetBestColorContext(IEnumerable<WicColorContext> contexts)
     {
-        var contexts = GetColorContexts();
-        if (contexts.Count == 0)
+        var array = contexts.ToArray();
+        if (array.Length == 0)
             return null;
 
-        if (contexts.Count == 1)
-            return contexts[0];
+        if (array.Length == 1)
+            return array[0];
 
         // https://stackoverflow.com/a/70215280/403671
         // get last not uncalibrated color context
         WicColorContext best = null;
-        foreach (var ctx in contexts.Reverse())
+        foreach (var ctx in array.Reverse())
         {
             if (ctx.ExifColorSpace.HasValue && ctx.ExifColorSpace.Value == 0xFFFF)
                 continue;
@@ -151,8 +152,8 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         }
 
         // last resort
-        best ??= contexts[contexts.Count - 1];
-        contexts.Dispose([best]);
+        best ??= array[array.Length - 1];
+        array.Dispose([best]);
         return best;
     }
 

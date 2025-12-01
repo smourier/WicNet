@@ -509,11 +509,21 @@ public partial class ImageForm : MdiForm
         Invalidate();
     }
 
-    protected virtual WicBitmapSource LoadBitmapFrame(WicBitmapDecoder decoder, int frameIndex)
+    protected sealed class BitmapFrame(WicBitmapSource bitmapSource)
+    {
+        public WicBitmapSource BitmapSource { get; } = bitmapSource ?? throw new ArgumentNullException(nameof(bitmapSource));
+        public IList<WicColorContext> ColorContexts { get; } = [];
+    }
+
+    protected virtual BitmapFrame LoadBitmapFrame(WicBitmapDecoder decoder, int frameIndex)
     {
         ArgumentNullException.ThrowIfNull(decoder);
 
         var bitmapSource = decoder.GetFrame(frameIndex);
+        var frame = new BitmapFrame(bitmapSource);
+
+        // we must gather color contexts now as we may convert them later
+        frame.ColorContexts.AddRange(bitmapSource.GetColorContexts());
 
         // metadata must be read before it's converted or rotated
         var orientation = Settings.Current.HonorOrientation ? bitmapSource.GetOrientation() : null;
@@ -576,12 +586,15 @@ public partial class ImageForm : MdiForm
             }
         }
 
-        return bitmapSource;
+        return frame;
     }
 
     protected virtual bool LoadBitmapFile(string fileName, int frameIndex)
     {
         ArgumentNullException.ThrowIfNull(fileName);
+
+        var colorContexts = new List<WicColorContext>();
+        var honorColorContexts = Settings.Current.HonorColorContexts;
 
         DisposeContextDependentResources();
         DisposeContextIndependentResources();
@@ -589,19 +602,21 @@ public partial class ImageForm : MdiForm
         {
             using var decoder = WicBitmapDecoder.Load(fileName);
             {
-                _bitmapSource = LoadBitmapFrame(decoder, frameIndex);
+                var frame = LoadBitmapFrame(decoder, frameIndex);
+                _bitmapSource = frame.BitmapSource;
+
+                if (honorColorContexts)
+                {
+                    colorContexts.AddRange(frame.ColorContexts);
+                    var best = WicBitmapSource.GetBestColorContext(colorContexts);
+                    _colorContext = best?.ComObject;
+                }
             }
         }
         catch (Exception e)
         {
             this.ShowError(e.GetAllMessages());
             return false;
-        }
-
-        if (Settings.Current.HonorColorContexts)
-        {
-            var best = _bitmapSource.GetBestColorContext();
-            _colorContext = best?.ComObject;
         }
 
         EnsureD2DControl();
@@ -667,11 +682,12 @@ public partial class ImageForm : MdiForm
             var frames = new (WicBitmapSource bmp, IComObject<IWICColorContext>? color)[decoder.FrameCount];
             for (var i = 0; i < decoder.FrameCount; i++)
             {
-                frames[i] = new() { bmp = LoadBitmapFrame(decoder, i) };
+                var frame = LoadBitmapFrame(decoder, i);
+                frames[i] = new() { bmp = frame.BitmapSource };
 
                 if (honorColorContexts)
                 {
-                    var best = frames[i].bmp.GetBestColorContext();
+                    var best = WicBitmapSource.GetBestColorContext(frame.ColorContexts);
                     frames[i].color = best?.ComObject;
                 }
             }

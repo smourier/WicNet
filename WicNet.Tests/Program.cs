@@ -18,7 +18,38 @@ class Program
 {
     static void Main(string[] args)
     {
-        DumpApp1Gps(@"ski.jpg");
+        using var bmp = new WicBitmapSource(100, 100, WicPixelFormat.GUID_WICPixelFormat32bppPRGBA);
+        var color = _D3DCOLORVALUE.FromArgb(255, 255, 0, 0);
+
+        // print ScRGB equivalent (should match Float formats)
+        Console.WriteLine(color.ScA + " " + color.ScR + " " + color.ScG + " " + color.ScB);
+
+        using (var dc = bmp.CreateDeviceContext())
+        {
+            var b = bmp.ComObject.As<IWICBitmap>();
+            using (var lck = b.Lock(WICBitmapLockFlags.WICBitmapLockRead))
+            {
+                var bitmapProps = new D2D1_BITMAP_PROPERTIES1
+                {
+                    //bitmapOptions = D2D1_BITMAP_OPTIONS.D2D1_BITMAP_OPTIONS_GDI_COMPATIBLE,
+                    pixelFormat = new D2D1_PIXEL_FORMAT
+                    {
+                        format = DXGI_FORMAT.DXGI_FORMAT_B8G8R8A8_UNORM,
+                        alphaMode = D2D1_ALPHA_MODE.D2D1_ALPHA_MODE_STRAIGHT
+                    }
+                };
+                using ComMemory comMemory = bitmapProps.StructureToMemory();
+
+                var result = dc.Object.CreateSharedBitmap(typeof(IWICBitmapLock).GUID, lck.Object, 0, out var bitmap);
+            }
+
+            dc.BeginDraw();
+            dc.Clear(color);
+            dc.EndDraw();
+        }
+
+        bmp.Save("red.png");
+        //DumpApp1Gps(@"ski.jpg");
         return;
 
         LoadPngAndSaveAsTransparentBmp();
