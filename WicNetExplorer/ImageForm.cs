@@ -363,10 +363,10 @@ public partial class ImageForm : MdiForm
         base.Dispose(disposing);
     }
 
-    protected override void OnClosing(CancelEventArgs e)
+    protected override void OnFormClosing(FormClosingEventArgs e)
     {
         CloseFile();
-        base.OnClosing(e);
+        base.OnFormClosing(e);
     }
 
     protected override void SetCaptionButtons()

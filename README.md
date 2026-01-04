@@ -3,11 +3,11 @@
 
 WicNet Nuget package is available here: https://www.nuget.org/packages/WicNet
 
-WicNetCore .NET 9+ AOT-compatible package is available here: https://www.nuget.org/packages/WicNetCore
+WicNetCore .NET 10+ AOT-compatible package is available here: https://www.nuget.org/packages/WicNetCore
 
 Main projects are:
 * **WicNet** is the main library that you can use to program WIC in .NET. It's .NET standard based so compatible with .NET Framework and .NET Core 6+ projects.
-* **WicNetCore** is a .NET 9+ and AOT-friendly version of **WicNet**.
+* **WicNetCore** is a .NET 10+ and AOT-friendly version of **WicNet**.
 * **WicNetExplorer** is a Winforms-based GUI sample program that demonstrates how to use **WicNet**, see below for more information.
 * **WicNet.WinUI3Tests** is a simple project that demonstrates WIC and WinRT/WinUI3's imaging classes (notably `SoftwareBitmap`).
 
