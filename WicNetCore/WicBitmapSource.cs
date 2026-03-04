@@ -284,9 +284,6 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
     public unsafe void CopyPixels(int left, int top, uint width, uint height, uint bufferSize, nint buffer, uint? stride = null)
     {
-        if (stride.HasValue && stride.Value <= 0)
-            throw new ArgumentOutOfRangeException(nameof(stride));
-
         ArgumentOutOfRangeException.ThrowIfZero(buffer);
         stride ??= DefaultStride;
         var rect = new WICRect
@@ -302,9 +299,6 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     public byte[] CopyPixels(uint? stride = null) => CopyPixels(0, 0, Width, Height, stride);
     public byte[] CopyPixels(int left, int top, uint width, uint height, uint? stride = null)
     {
-        if (stride.HasValue && stride.Value <= width)
-            throw new ArgumentOutOfRangeException(nameof(stride));
-
         stride ??= DefaultStride;
         var size = height * stride.Value;
         var bytes = new byte[size];

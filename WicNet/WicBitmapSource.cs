@@ -269,9 +269,6 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         if (height < 0)
             throw new ArgumentOutOfRangeException(nameof(height));
 
-        if (stride.HasValue && stride.Value <= 0)
-            throw new ArgumentOutOfRangeException(nameof(stride));
-
         if (buffer == IntPtr.Zero)
             throw new ArgumentOutOfRangeException(nameof(buffer));
 
@@ -295,9 +292,6 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
 
         if (height < 0)
             throw new ArgumentOutOfRangeException(nameof(height));
-
-        if (stride.HasValue && stride.Value <= width)
-            throw new ArgumentOutOfRangeException(nameof(stride));
 
         stride ??= DefaultStride;
         var size = (uint)height * (uint)stride.Value;
