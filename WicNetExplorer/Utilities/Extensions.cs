@@ -1,70 +1,21 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Reflection;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using DirectN;
+using DirectN.Extensions.Com;
 using WicNet;
+using WinRT;
 
 namespace WicNetExplorer.Utilities;
 
 public static class Extensions
 {
-    public static object D3D11CreateDevice(D3D11_CREATE_DEVICE_FLAG flags = D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT)
-    {
-        var hr = D3D11CreateDevice(
-            null,
-             D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE,
-            IntPtr.Zero,
-            flags,
-            null,
-            0,
-            Constants.D3D11_SDK_VERSION,
-            out var device,
-            out var _,
-            IntPtr.Zero);
-
-        if (hr.IsSuccess)
-            return device;
-
-        var hr2 = D3D11CreateDevice(
-            null,
-             D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_WARP,
-            IntPtr.Zero,
-            flags,
-            null,
-            0,
-            Constants.D3D11_SDK_VERSION,
-            out device,
-            out var _,
-            IntPtr.Zero);
-        if (hr2.IsSuccess)
-            return device;
-
-        hr.ThrowOnError(true);
-        return device;
-    }
-
-    public static IPdfRendererNative? PdfCreateRenderer(IDXGIDevice device, bool throwOnError = true)
-    {
-        ArgumentNullException.ThrowIfNull(device);
-        PdfCreateRenderer(device, out var renderer).ThrowOnError(throwOnError);
-        return renderer;
-    }
-
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-    [DllImport("d3d11", ExactSpelling = true)]
-    private static extern HRESULT D3D11CreateDevice(/*IDXGIAdapter*/ [MarshalAs(UnmanagedType.IUnknown)] object? pAdapter, D3D_DRIVER_TYPE DriverType, IntPtr Software, D3D11_CREATE_DEVICE_FLAG Flags, [MarshalAs(UnmanagedType.LPArray, SizeParamIndex = 5)] D3D_FEATURE_LEVEL[]? pFeatureLevels, uint FeatureLevels, uint SDKVersion, /*ID3D11Device*/ [MarshalAs(UnmanagedType.IUnknown)] out object ppDevice, out D3D_FEATURE_LEVEL pFeatureLevel, /*out ID3D11DeviceContext*/ IntPtr ppImmediateContext);
-
-    [DllImport("windows.data.pdf", ExactSpelling = true)]
-    private static extern HRESULT PdfCreateRenderer(IDXGIDevice pDevice, out IPdfRendererNative ppRenderer);
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-#pragma warning restore IDE0079 // Remove unnecessary suppression
-
     public static void OpenUrl(Uri uri)
     {
         ArgumentNullException.ThrowIfNull(uri);
@@ -105,8 +56,24 @@ public static class Extensions
         return ext.EqualsIgnoreCase(".pdf");
     }
 
-    public static _D3DCOLORVALUE FromColor(this Windows.UI.Color color) => _D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
-    public static Windows.UI.Color ToColor(this _D3DCOLORVALUE color) => Windows.UI.Color.FromArgb(color.BA, color.BR, color.BG, color.BB);
+    // this is to replace WinRT's As<T> on C#/WinRT object which doesn't work well under AOT once published in release...
+    // throws "Target type is not a projected type: DirectN.ICompositorInterop" from WinRT.TypeExtensions.GetHelperType(Type)
+    [return: NotNullIfNotNull(nameof(winRTObject))]
+    public static IComObject<T>? AsComObject<T>(this object? winRTObject, CreateObjectFlags flags = CreateObjectFlags.UniqueInstance)
+    {
+        if (winRTObject == null)
+            return null;
+
+        var ptr = MarshalInspectable<object>.FromManaged(winRTObject);
+        var obj = ComObject.FromPointer<T>(ptr, flags);
+        return obj ?? throw new InvalidCastException($"Object of type '{winRTObject.GetType().FullName}' is not of type '{typeof(T).FullName}'.");
+    }
+
+    public static D3DCOLORVALUE FromColor(this Windows.UI.Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
+    public static Windows.UI.Color ToColor(this D3DCOLORVALUE color) => Windows.UI.Color.FromArgb(color.BA, color.BR, color.BG, color.BB);
+
+    public static D3DCOLORVALUE FromColor(this System.Drawing.Color color) => D3DCOLORVALUE.FromArgb(color.A, color.R, color.G, color.B);
+    public static System.Drawing.Color ToGdiColor(this D3DCOLORVALUE color) => System.Drawing.Color.FromArgb(color.BA, color.BR, color.BG, color.BB);
 
     public static PHOTO_ORIENTATION? GetOrientation(this WicBitmapSource source)
     {
@@ -124,10 +91,10 @@ public static class Extensions
         return (PHOTO_ORIENTATION)orientation.Value;
     }
 
-    public static Size ToSize(this WicIntSize size) => new((int)size.Width, (int)size.Height);
-    public static SizeF ToSizeF(this WicIntSize size) => new(size.Width, size.Height);
-    public static Size ToSize(this WicSize size) => new((int)size.Width, (int)size.Height);
-    public static SizeF ToSizeF(this WicSize size) => new((float)size.Width, (float)size.Height);
+    public static Size ToGdiSize(this D2D_SIZE_U size) => new((int)size.width, (int)size.height);
+    //public static SizeF ToSizeF(this D2D_SIZE_U size) => new(size.width, size.height);
+    //public static Size ToSize(this WicSize size) => new((int)size.Width, (int)size.Height);
+    //public static SizeF ToSizeF(this WicSize size) => new((float)size.Width, (float)size.Height);
 
     public static bool EqualsIgnoreCase(this string? thisString, string? text, bool trim = false)
     {

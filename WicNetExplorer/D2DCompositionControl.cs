@@ -2,11 +2,13 @@
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Numerics;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Windows.Forms;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
+using WicNetExplorer.Utilities;
 using Windows.Graphics;
 using Windows.Graphics.DirectX;
 using Windows.UI.Composition;
@@ -19,24 +21,27 @@ namespace WicNetExplorer;
 public class D2DCompositionControl : Control, ID2DControl
 {
     // device independent resources
-    private static readonly Lazy<IDispatcherQueueController> _dispatcherQueueController = new(() => DispatcherQueueController.Create());
-    private static readonly Lazy<object> _d3d11Device = new(() => Utilities.Extensions.D3D11CreateDevice(
+    private static readonly Lazy<IComObject<ID3D11Device>> _d3d11Device = new(() => D3D11Functions.D3D11CreateDevice(null, D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE,
 #if DEBUG
          D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT
+#else
+        D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT
 #endif
-        ));
+    ));
     private static readonly Lazy<IComObject<ID2D1Factory1>> _d2dFactory = new(() => D2D1Functions.D2D1CreateFactory<ID2D1Factory1>());
     private static readonly Lazy<CompositionGraphicsDevice> _graphicsDevice = new(CreateCompositionGraphicsDevice);
 
     private static CompositionGraphicsDevice CreateCompositionGraphicsDevice()
     {
-        _ = _dispatcherQueueController.Value;
-        var dev = new ComObject<IDXGIDevice>((IDXGIDevice)_d3d11Device.Value, false);
+        var dev = _d3d11Device.Value.As<IDXGIDevice>(throwOnError: true)!;
         using var d2dDevice = _d2dFactory.Value.CreateDevice(dev);
         var compositor = new Compositor();
         var interop = compositor.As<ICompositorInterop>();
-        interop.CreateGraphicsDevice(d2dDevice.Object, out var graphicsDevice);
-        return MarshalInterface<CompositionGraphicsDevice>.FromAbi(graphicsDevice);
+        return ComObject.WithComInstance(d2dDevice, unk =>
+        {
+            interop.CreateGraphicsDevice(unk, out var obj).ThrowOnError();
+            return MarshalInterface<CompositionGraphicsDevice>.FromAbi(obj);
+        });
     }
 
     internal static void DisposeResources()
@@ -48,7 +53,7 @@ public class D2DCompositionControl : Control, ID2DControl
 
         if (_d3d11Device.IsValueCreated)
         {
-            (_d3d11Device.Value as IDisposable)?.Dispose();
+            _d3d11Device.Value?.Dispose();
         }
 
         if (_graphicsDevice.IsValueCreated)
@@ -85,7 +90,7 @@ public class D2DCompositionControl : Control, ID2DControl
         if (size._width < 0.5f || size._height < 0.5f)
             return;
 
-        using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop>(_surface.As<ICompositionDrawingSurfaceInterop>());
+        using var surfaceInterop = _surface.AsComObject<ICompositionDrawingSurfaceInterop>();
         using var dc = surfaceInterop.BeginDraw<ID2D1DeviceContext>();
         action(dc);
 
@@ -109,12 +114,12 @@ public class D2DCompositionControl : Control, ID2DControl
         };
 
         using var tex = device.CreateTexture2D<ID3D11Texture2D>(desc);
-        using var surfaceInterop = new ComObject<ICompositionDrawingSurfaceInterop2>(_surface.As<ICompositionDrawingSurfaceInterop2>());
-        var hr = tex.WithComPointer(unk => surfaceInterop.Object.CopySurface(unk, 0, 0, IntPtr.Zero));
+        using var surfaceInterop = _surface.AsComObject<ICompositionDrawingSurfaceInterop2>();
+        var hr = ComObject.WithComInstance(tex, unk => surfaceInterop.Object.CopySurface(unk, 0, 0, 0));
         if (hr.IsError)
             return null;
 
-        var surface = new ComObject<IDXGISurface>(tex.As<IDXGISurface>(), false);
+        var surface = tex.As<IDXGISurface>(throwOnError: true)!;
         IComObject<ID2D1Bitmap1>? bmp = null;
         WithDeviceContext(dc =>
         {
@@ -165,15 +170,7 @@ public class D2DCompositionControl : Control, ID2DControl
 
         var interop = _graphicsDevice.Value.Compositor.As<ICompositorDesktopInterop>();
         interop.CreateDesktopWindowTarget(Handle, true, out var target).ThrowOnError();
-        var unk = Marshal.GetIUnknownForObject(target);
-        try
-        {
-            _target = MarshalInterface<DesktopWindowTarget>.FromAbi(unk);
-        }
-        finally
-        {
-            Marshal.Release(unk);
-        }
+        _target = MarshalInterface<DesktopWindowTarget>.FromAbi(target);
 
         var root = _graphicsDevice.Value.Compositor.CreateSpriteVisual();
         root.Size = new Vector2(Width, Height);

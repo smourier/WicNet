@@ -2,8 +2,11 @@
 using System.Drawing;
 using System.Windows.Forms;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
 using WicNet;
 using WicNet.Utilities;
+using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer;
 
@@ -25,9 +28,9 @@ public partial class BitmapSourceForm : Form
         {
             if (_bitmap == null)
             {
-                using var dc = e.DeviceContext.AsComObject<ID2D1DeviceContext>();
+                using var dc = e.DeviceContext.As<ID2D1DeviceContext>(throwOnError: true)!;
                 _bitmap = dc.CreateBitmapFromWicBitmap(BitmapSource.ComObject);
-                e.DeviceContext.Clear(_d2d.BackColor.ToD3DCOLORVALUE());
+                e.DeviceContext.Clear(_d2d.BackColor.FromColor());
             }
 
             if (_bitmap != null)

@@ -24,13 +24,13 @@ public class CodecModel : ImagingComponentModel
     public Guid ContainerFormat => _codec.ContainerFormat;
 
     [DisplayName("Color Management Version")]
-    public string ColorManagementVersion => _codec.ColorManagementVersion;
+    public string? ColorManagementVersion => _codec.ColorManagementVersion;
 
     [DisplayName("Device Manufacturer")]
-    public string DeviceManufacturer => _codec.DeviceManufacturer;
+    public string? DeviceManufacturer => _codec.DeviceManufacturer;
 
     [DisplayName("Device Models")]
-    public string DeviceModels => _codec.DeviceModels;
+    public string? DeviceModels => _codec.DeviceModels;
 
     [DisplayName("Supports Animation")]
     public bool SupportsAnimation => _codec.SupportsAnimation;

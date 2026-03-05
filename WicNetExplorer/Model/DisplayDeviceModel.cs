@@ -1,5 +1,6 @@
 ﻿using System.ComponentModel;
 using DirectN;
+using DirectN.Extensions.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model;
@@ -7,13 +8,13 @@ namespace WicNetExplorer.Model;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class DisplayDeviceModel
 {
-    private readonly DISPLAY_DEVICE _device;
+    private readonly DisplayDevice _device;
 
-    public DisplayDeviceModel(DISPLAY_DEVICE device)
+    public DisplayDeviceModel(DisplayDevice device)
     {
         _device = device;
         Modes = [.. _device.GetModes()];
-        StateFlags = _device.StateFlags.GetEnumName(nameof(DISPLAY_DEVICE));
+        StateFlags = _device.StateFlags.GetEnumName("DISPLAY_DEVICE");
     }
 
     public string Name => _device.DeviceName;
@@ -26,7 +27,7 @@ public class DisplayDeviceModel
     public string AdapterName => _device.DeviceString;
 
     [TypeConverter(typeof(ExpandableObjectConverter))]
-    public Monitor Monitor => _device.Monitor;
+    public Monitor? Monitor => _device.Monitor;
 
     [DisplayName("State Flags")]
     public string StateFlags { get; }
@@ -35,14 +36,14 @@ public class DisplayDeviceModel
     public bool IsPrimary => _device.IsPrimary;
 
     [DisplayName("Current Mode")]
-    public DEVMODE CurrentMode => _device.CurrentSettings;
+    public DEVMODEW CurrentMode => _device.CurrentSettings;
 
     [DisplayName("Registry Mode")]
-    public DEVMODE RegistryMode => _device.RegistrySettings;
+    public DEVMODEW RegistryMode => _device.RegistrySettings;
 
     [TypeConverter(typeof(StringFormatterArrayConverter))]
     [StringFormatter("{Length}")]
-    public DEVMODE[] Modes { get; }
+    public DEVMODEW[] Modes { get; }
 
     public override string ToString() => $"{Name}";
 }

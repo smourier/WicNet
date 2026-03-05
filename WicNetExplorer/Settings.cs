@@ -1,15 +1,17 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel;
+using System.Diagnostics.CodeAnalysis;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using DirectN;
+using DirectN.Extensions.Utilities;
 using WicNetExplorer.Model;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer;
 
+[DynamicallyAccessedMembers(DynamicallyAccessedMemberTypes.PublicProperties)]
 public class Settings : Serializable<Settings>
 {
     private const int _maxArrayElementDisplayedDefault = 32;
@@ -35,10 +37,10 @@ public class Settings : Serializable<Settings>
         ConfigurationFilePath = Path.Combine(path, FileName);
 
         // build settings
-        Current = Deserialize(ConfigurationFilePath)!;
+        Current = Deserialize(ConfigurationFilePath, JsonSourceGenerationContext.Default) ?? new();
 
         // force settings from cmdline
-        foreach (var arg in CommandLine.NamedArguments)
+        foreach (var arg in CommandLine.Current.NamedArguments)
         {
             var pi = Current.GetType().GetProperty(arg.Key);
             if (pi == null || !pi.CanWrite)
@@ -57,7 +59,7 @@ public class Settings : Serializable<Settings>
                 continue;
             }
 
-            if (Conversions.TryChangeType(arg.Value, pi.PropertyType, out var value))
+            if (Conversions.TryChangeObjectType(arg.Value, pi.PropertyType, out var value))
             {
                 try
                 {
@@ -71,7 +73,7 @@ public class Settings : Serializable<Settings>
         }
     }
 
-    public virtual void SerializeToConfiguration() => Serialize(ConfigurationFilePath);
+    public virtual void SerializeToConfiguration() => Serialize(ConfigurationFilePath, JsonSourceGenerationContext.Default);
     public static void BackupConfiguration() => Backup(ConfigurationFilePath);
 
     [DefaultValue(null)]

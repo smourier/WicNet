@@ -2,7 +2,7 @@
 using System.Linq;
 using System.Runtime.Versioning;
 using DirectN;
-using Windows.Devices.Display.Core;
+using DirectN.Extensions.Utilities;
 
 namespace WicNetExplorer.Model;
 
@@ -12,8 +12,8 @@ public class SystemInfoModel2 : SystemInfoModel
     public SystemInfoModel2()
     {
         var list = new List<DisplayDeviceModel>();
-        var dic = new Dictionary<string, DisplayPath>();
-        using var mgr = DisplayManager.Create(DisplayManagerOptions.None);
+        var dic = new Dictionary<string, Windows.Devices.Display.Core.DisplayPath>();
+        using var mgr = Windows.Devices.Display.Core.DisplayManager.Create(Windows.Devices.Display.Core.DisplayManagerOptions.None);
         var state = mgr.TryReadCurrentStateForAllTargets().State;
         foreach (var view in state.Views)
         {
@@ -27,8 +27,8 @@ public class SystemInfoModel2 : SystemInfoModel
                     var gdiDeviceName = DisplayConfig.GetGdiDeviceName(monitor.DisplayAdapterId.HighPart, monitor.DisplayAdapterId.LowPart, sourceId, false);
                     if (gdiDeviceName != null)
                     {
-                        var dd = DISPLAY_DEVICE.Active.FirstOrDefault(dd => dd.DeviceName == gdiDeviceName);
-                        if (dd.DeviceName != null)
+                        var dd = DisplayDevice.Active.FirstOrDefault(dd => dd.DeviceName == gdiDeviceName);
+                        if (dd?.DeviceName != null)
                         {
                             dic[gdiDeviceName] = path;
                         }
@@ -37,7 +37,7 @@ public class SystemInfoModel2 : SystemInfoModel
             }
         }
 
-        foreach (var dd in DISPLAY_DEVICE.All)
+        foreach (var dd in DisplayDevice.All)
         {
             DisplayDeviceModel ddModel;
             if (dic.TryGetValue(dd.DeviceName, out var path))

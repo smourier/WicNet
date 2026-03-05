@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Drawing.Design;
 using System.Linq;
-using DirectN;
+using DirectN.Extensions.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model;
@@ -30,7 +30,7 @@ public class ColorProfileModel
     [StringFormatter("{Length}")]
     public ColorProfileElementModel[] Elements => [.. _profile.Elements.Select(e => new ColorProfileElementModel(e)).OrderBy(e => e.Tag)];
 
-    public int Size => _profile.Size;
+    public uint Size => _profile.Size;
     public string Version => _profile.VersionMajor + "." + _profile.VersionMinor;
 
     [DisplayName("Local File Path")]
@@ -41,41 +41,41 @@ public class ColorProfileModel
     public ColorProfileAttribute[] Attributes => _profile.Attributes;
 
     [DisplayName("Rendering Intent")]
-    public int RenderingIntent => _profile.RenderingIntent;
+    public uint RenderingIntent => _profile.RenderingIntent;
     public string Illuminant => "X:" + _profile.Illuminant.ciexyzX + ",Y:" + _profile.Illuminant.ciexyzY + ",Z:" + _profile.Illuminant.ciexyzZ;
     public ColorProfileFlags Flags => _profile.Flags;
 
     [DisplayName("CMM Type")]
-    public string CmmType => _profile.CmmTypeString;
-    public string Class => _profile.ClassString;
+    public string? CmmType => _profile.CmmTypeString;
+    public string? Class => _profile.ClassString;
 
     [DisplayName("Data Color Space")]
-    public string DataColorSpace => _profile.DataColorSpaceString;
+    public string? DataColorSpace => _profile.DataColorSpaceString;
 
     [DisplayName("Model Description")]
-    public string ModelDescription => _profile.ModelDescription;
+    public string? ModelDescription => _profile.ModelDescription;
 
     [DisplayName("Connection Space")]
-    public string ConnectionSpace => _profile.ConnectionSpaceString;
-    public string Signature => _profile.SignatureString;
-    public string Platform => _profile.PlatformString;
-    public string Manufacturer => _profile.ManufacturerString;
-    public string Model => _profile.ModelString;
-    public string Creator => _profile.CreatorString;
-    public string Description => _profile.Description;
-    public string Copyright => _profile.Copyright;
+    public string? ConnectionSpace => _profile.ConnectionSpaceString;
+    public string? Signature => _profile.SignatureString;
+    public string? Platform => _profile.PlatformString;
+    public string? Manufacturer => _profile.ManufacturerString;
+    public string? Model => _profile.ModelString;
+    public string? Creator => _profile.CreatorString;
+    public string? Description => _profile.Description;
+    public string? Copyright => _profile.Copyright;
 
     [DisplayName("Viewing Condition")]
-    public string ViewingCondition => _profile.ViewingCondition;
+    public string? ViewingCondition => _profile.ViewingCondition;
 
     [DisplayName("Manufacturer Description")]
-    public string ManufacturerDescription => _profile.ManufacturerDescription;
+    public string? ManufacturerDescription => _profile.ManufacturerDescription;
 
     [DisplayName("Unicode Language Code")]
     public int UnicodeLanguageCode => _profile.UnicodeLanguageCode;
 
     [DisplayName("Registered Characterization")]
-    public string RegisteredCharacterization => _profile.RegisteredCharacterization;
+    public string? RegisteredCharacterization => _profile.RegisteredCharacterization;
 
     [DisplayName("Localized Strings")]
     [Editor(typeof(CollectionEditorNoType), typeof(UITypeEditor))]

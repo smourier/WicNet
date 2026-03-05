@@ -2,6 +2,8 @@
 using System.Threading;
 using System.Windows.Forms;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
 
 namespace WicNetExplorer;
 
@@ -45,7 +47,7 @@ public class D2DHwndRenderTargetControl : Control, ID2DControl
         using var fac = D2D1Functions.D2D1CreateFactory(D2D1_FACTORY_TYPE.D2D1_FACTORY_TYPE_SINGLE_THREADED, new D2D1_FACTORY_OPTIONS { debugLevel = level });
 
         _target = fac.CreateHwndRenderTarget(new D2D1_HWND_RENDER_TARGET_PROPERTIES { hwnd = Handle, pixelSize = new D2D_SIZE_U((uint)Width, (uint)Height) });
-        _dc = _target.AsComObject<ID2D1DeviceContext>(true);
+        _dc = _target.As<ID2D1DeviceContext>(throwOnError: true);
     }
 
     protected virtual void EnsureTarget()
@@ -61,7 +63,7 @@ public class D2DHwndRenderTargetControl : Control, ID2DControl
         if (IsValidTarget)
         {
             var d2dsize = new D2D_SIZE_U((uint)Width, (uint)Height);
-            var hr = _target!.Object.Resize(ref d2dsize);
+            var hr = _target!.Object.Resize(d2dsize);
             if (hr.IsError)
             {
                 ReleaseTarget();
@@ -89,7 +91,7 @@ public class D2DHwndRenderTargetControl : Control, ID2DControl
             finally
             {
                 var hr = _target.Object.EndDraw(IntPtr.Zero, IntPtr.Zero);
-                if (hr == HRESULTS.D2DERR_RECREATE_TARGET)
+                if (hr == Constants.D2DERR_RECREATE_TARGET)
                 {
                     ReleaseTarget();
                     Invalidate();

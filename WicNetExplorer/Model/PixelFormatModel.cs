@@ -28,6 +28,8 @@ public class PixelFormatModel : ImagingComponentModel
         _sourceConversions = new Lazy<PixelFormatModel[]>(GetSourceConversions);
     }
 
+    internal static PixelFormatModel? From(WicPixelFormat? format) => format != null ? new PixelFormatModel(format) : null;
+
     private PixelFormatModel[] GetTargetConversions()
     {
         var list = new HashSet<PixelFormatModel>();
@@ -35,7 +37,7 @@ public class PixelFormatModel : ImagingComponentModel
         {
             foreach (var cv in kv.Value)
             {
-                if (cv.From.Guid == Guid)
+                if (cv.To != null && cv.From?.Guid == Guid)
                 {
                     list.Add(cv.To);
                 }
@@ -51,7 +53,7 @@ public class PixelFormatModel : ImagingComponentModel
         {
             foreach (var cv in kv.Value)
             {
-                if (cv.To.Guid == Guid)
+                if (cv.From != null && cv.To?.Guid == Guid)
                 {
                     list.Add(cv.From);
                 }
@@ -69,10 +71,10 @@ public class PixelFormatModel : ImagingComponentModel
     public string NumericRepresentation => _format.NumericRepresentation.GetEnumName().Decamelize();
 
     [DisplayName("Channel Count")]
-    public int ChannelCount => _format.ChannelCount;
+    public uint ChannelCount => _format.ChannelCount;
 
     [DisplayName("Bits Per Pixel")]
-    public int BitsPerPixel => _format.BitsPerPixel;
+    public uint BitsPerPixel => _format.BitsPerPixel;
 
     [DisplayName("Supports Transparency")]
     public bool SupportsTransparency => _format.SupportsTransparency;

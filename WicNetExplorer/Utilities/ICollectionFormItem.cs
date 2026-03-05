@@ -4,5 +4,5 @@ public interface ICollectionFormItem
 {
     string? TypeName { get; }
     string Name { get; }
-    object Value { get; }
+    object? Value { get; }
 }

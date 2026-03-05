@@ -2,6 +2,7 @@
 using System.ComponentModel;
 using System.Runtime.Versioning;
 using DirectN;
+using DirectN.Extensions.Utilities;
 using WicNetExplorer.Utilities;
 using Windows.Devices.Display;
 using Windows.Foundation;
@@ -26,16 +27,16 @@ public class MonitorModel
         foreach (var path in DisplayConfig.Query())
         {
             var target = DisplayConfig.GetTargetName(path);
-            OutputTechnology = target.outputTechnology.GetEnumName(nameof(DISPLAYCONFIG_OUTPUT_TECHNOLOGY));
-            if (target.monitorDevicePath == monitor.DeviceId)
+            OutputTechnology = target.outputTechnology.GetEnumName(nameof(DISPLAYCONFIG_VIDEO_OUTPUT_TECHNOLOGY));
+            if (target.monitorDevicePath.ToString() == monitor.DeviceId)
             {
                 var aci = DisplayConfig.GetAdvancedColorInfo(path);
                 ColorEncoding = aci.colorEncoding.GetEnumName();
                 BitsPerColorChannel = aci.bitsPerColorChannel;
-                AdvancedColorSupported = aci.__union_1.__field_0.advancedColorSupported != 0;
-                AdvancedColorEnabled = aci.__union_1.__field_0.advancedColorEnabled != 0;
-                WideColorEnforced = aci.__union_1.__field_0.wideColorEnforced != 0;
-                AdvancedColorForceDisabled = aci.__union_1.__field_0.advancedColorForceDisabled != 0;
+                AdvancedColorSupported = (aci.Anonymous.value & 0x1) == 0x1;
+                AdvancedColorEnabled = (aci.Anonymous.value & 0x2) == 0x2;
+                WideColorEnforced = (aci.Anonymous.value & 0x4) == 0x4;
+                AdvancedColorForceDisabled = (aci.Anonymous.value & 0x8) == 0x8;
 
                 var swl = DisplayConfig.GetSdrWhiteLevel(path);
                 SdrWhiteLevel = swl.SDRWhiteLevel;
@@ -50,14 +51,14 @@ public class MonitorModel
     [DisplayName("Raw DPI")]
     public D2D_SIZE_F RawDpi => new(_monitor.RawDpiY, _monitor.RawDpiY);
 
-    public string Handle => _baseMonitor.Handle.ToHexa();
-    public tagRECT Bounds => _baseMonitor.Bounds;
+    public string Handle => _baseMonitor.Handle.Value.ToHex();
+    public RECT Bounds => _baseMonitor.Bounds;
 
     [DisplayName("Is Primary")]
     public bool IsPrimary => _baseMonitor.IsPrimary;
 
     [DisplayName("Working Area")]
-    public tagRECT WorkingArea => _baseMonitor.WorkingArea;
+    public RECT WorkingArea => _baseMonitor.WorkingArea;
 
     [DisplayName("Scale Factor")]
     public DEVICE_SCALE_FACTOR ScaleFactor => _baseMonitor.ScaleFactor;
@@ -111,7 +112,7 @@ public class MonitorModel
     public float MaxAverageFullFrameLuminanceInNits => _monitor.MaxAverageFullFrameLuminanceInNits;
 
     [DisplayName("Physical Size In Inches")]
-    public WicSize? PhysicalSizeInInches
+    public D2D_SIZE_F? PhysicalSizeInInches
     {
         get
         {
@@ -124,7 +125,7 @@ public class MonitorModel
     }
 
     [DisplayName("Physical Size In Centimeters")]
-    public WicSize? PhysicalSizeInCentimeters
+    public D2D_SIZE_F? PhysicalSizeInCentimeters
     {
         get
         {

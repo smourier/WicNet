@@ -3,9 +3,8 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
 using System.Linq;
-using DirectN;
+using DirectN.Extensions.Utilities;
 using WicNet;
-using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model;
@@ -15,21 +14,28 @@ public class SystemInfoModel
 {
     public SystemInfoModel()
     {
-        AllDisplayDevices = [.. DISPLAY_DEVICE.Active.Select(d => new DisplayDeviceModel(d))];
+        AllDisplayDevices = [.. DisplayDevice.Active.Select(d => new DisplayDeviceModel(d))];
 
         var colorProfiles = new List<ColorProfileModel>();
-        foreach (var file in Directory.GetFiles(WicColorContext.ColorDirectory))
+        var dir = WicColorContext.ColorDirectory;
+        if (dir != null)
         {
-            var name = Path.GetFileName(file);
-            var cc = new WicColorContext(file);
-            try
+            foreach (var file in Directory.GetFiles(dir))
             {
-                var profile = new ColorProfileModel(cc.Profile) { FilePath = file };
-                colorProfiles.Add(profile);
-            }
-            catch
-            {
-                // do nothing
+                var name = Path.GetFileName(file);
+                var cc = new WicColorContext(file, false);
+                if (cc.Profile != null)
+                {
+                    try
+                    {
+                        var profile = new ColorProfileModel(cc.Profile) { FilePath = file };
+                        colorProfiles.Add(profile);
+                    }
+                    catch
+                    {
+                        // do nothing
+                    }
+                }
             }
         }
 
@@ -43,7 +49,7 @@ public class SystemInfoModel
     public string WindowsVersion => Environment.OSVersion.VersionString;
 
     [DisplayName("Kernel Version")]
-    public string KernelVersion => WindowsUtilities.KernelVersion.ToString();
+    public string KernelVersion => WindowsVersionUtilities.KernelVersion.ToString();
 #pragma warning disable IDE0079 // Remove unnecessary suppression
 #pragma warning restore CA1822 // Mark members as static
 

@@ -22,16 +22,16 @@ public class ImagingComponentModel : ICollectionFormItem
     public string SigningStatus => _component.SigningStatus.GetEnumName("WICComponent");
 
     [DisplayName("Friendly Name")]
-    public string FriendlyName => _component.FriendlyName;
-    public string Author => _component.Author;
-    public string Version => _component.Version;
+    public string? FriendlyName => _component.FriendlyName;
+    public string? Author => _component.Author;
+    public string? Version => _component.Version;
     public Guid Vendor => _component.Vendor;
 
     [DisplayName("Arbitration Priority")]
     public int ArbitrationPriority => _component.ArbitrationPriority;
 
     [DisplayName("Spec Version")]
-    public string SpecVersion => _component.SpecVersion;
+    public string? SpecVersion => _component.SpecVersion;
 
     [DisplayName("Name")]
     public string ClsidName => _component.ClsidName;
@@ -52,7 +52,7 @@ public class ImagingComponentModel : ICollectionFormItem
     string ICollectionFormItem.Name => ToString();
     object ICollectionFormItem.Value => this;
 
-    public override string ToString() => FriendlyName;
+    public override string ToString() => FriendlyName ?? Clsid.ToString("B");
 
     public static ImagingComponentModel From(WicImagingComponent component)
     {

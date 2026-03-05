@@ -1,5 +1,6 @@
 ﻿using System;
 using DirectN;
+using DirectN.Extensions.Com;
 
 namespace WicNetExplorer;
 

@@ -6,7 +6,7 @@ using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Reflection;
-using DirectN;
+using DirectN.Extensions.Utilities;
 
 namespace WicNetExplorer.Utilities;
 

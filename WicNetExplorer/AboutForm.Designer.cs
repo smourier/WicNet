@@ -11,56 +11,56 @@ partial class AboutForm
     private void InitializeComponent()
     {
         System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(AboutForm));
-        this.tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
-        this.buttonOk = new System.Windows.Forms.Button();
-        this.pictureBoxIcon = new System.Windows.Forms.PictureBox();
-        this.labelText = new System.Windows.Forms.Label();
-        this.tableLayoutPanelMain.SuspendLayout();
-        ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIcon)).BeginInit();
-        this.SuspendLayout();
+        tableLayoutPanelMain = new System.Windows.Forms.TableLayoutPanel();
+        buttonOk = new System.Windows.Forms.Button();
+        pictureBoxIcon = new System.Windows.Forms.PictureBox();
+        labelText = new System.Windows.Forms.Label();
+        tableLayoutPanelMain.SuspendLayout();
+        ((System.ComponentModel.ISupportInitialize)pictureBoxIcon).BeginInit();
+        SuspendLayout();
         // 
         // tableLayoutPanelMain
         // 
-        resources.ApplyResources(this.tableLayoutPanelMain, "tableLayoutPanelMain");
-        this.tableLayoutPanelMain.Controls.Add(this.buttonOk, 1, 1);
-        this.tableLayoutPanelMain.Controls.Add(this.pictureBoxIcon, 0, 0);
-        this.tableLayoutPanelMain.Controls.Add(this.labelText, 1, 0);
-        this.tableLayoutPanelMain.Name = "tableLayoutPanelMain";
+        resources.ApplyResources(tableLayoutPanelMain, "tableLayoutPanelMain");
+        tableLayoutPanelMain.Controls.Add(buttonOk, 1, 1);
+        tableLayoutPanelMain.Controls.Add(pictureBoxIcon, 0, 0);
+        tableLayoutPanelMain.Controls.Add(labelText, 1, 0);
+        tableLayoutPanelMain.Name = "tableLayoutPanelMain";
         // 
         // buttonOk
         // 
-        resources.ApplyResources(this.buttonOk, "buttonOk");
-        this.buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
-        this.buttonOk.Name = "buttonOk";
-        this.buttonOk.UseVisualStyleBackColor = true;
+        resources.ApplyResources(buttonOk, "buttonOk");
+        buttonOk.DialogResult = System.Windows.Forms.DialogResult.OK;
+        buttonOk.Name = "buttonOk";
+        buttonOk.UseVisualStyleBackColor = true;
         // 
         // pictureBoxIcon
         // 
-        resources.ApplyResources(this.pictureBoxIcon, "pictureBoxIcon");
-        this.pictureBoxIcon.Name = "pictureBoxIcon";
-        this.pictureBoxIcon.TabStop = false;
+        resources.ApplyResources(pictureBoxIcon, "pictureBoxIcon");
+        pictureBoxIcon.Name = "pictureBoxIcon";
+        pictureBoxIcon.TabStop = false;
         // 
         // labelText
         // 
-        resources.ApplyResources(this.labelText, "labelText");
-        this.labelText.Name = "labelText";
+        resources.ApplyResources(labelText, "labelText");
+        labelText.Name = "labelText";
         // 
         // AboutForm
         // 
-        this.AcceptButton = this.buttonOk;
+        AcceptButton = buttonOk;
         resources.ApplyResources(this, "$this");
-        this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-        this.CancelButton = this.buttonOk;
-        this.Controls.Add(this.tableLayoutPanelMain);
-        this.FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
-        this.KeyPreview = true;
-        this.MaximizeBox = false;
-        this.MinimizeBox = false;
-        this.Name = "AboutForm";
-        this.tableLayoutPanelMain.ResumeLayout(false);
-        this.tableLayoutPanelMain.PerformLayout();
-        ((System.ComponentModel.ISupportInitialize)(this.pictureBoxIcon)).EndInit();
-        this.ResumeLayout(false);
+        AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+        CancelButton = buttonOk;
+        Controls.Add(tableLayoutPanelMain);
+        FormBorderStyle = System.Windows.Forms.FormBorderStyle.FixedDialog;
+        KeyPreview = true;
+        MaximizeBox = false;
+        MinimizeBox = false;
+        Name = "AboutForm";
+        tableLayoutPanelMain.ResumeLayout(false);
+        tableLayoutPanelMain.PerformLayout();
+        ((System.ComponentModel.ISupportInitialize)pictureBoxIcon).EndInit();
+        ResumeLayout(false);
 
     }
 

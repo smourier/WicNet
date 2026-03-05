@@ -134,6 +134,20 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
             comObject.Object.GetSpecVersion(capacity, s, out var size);
             return size;
         });
+
+        using var key = Registry.ClassesRoot.OpenSubKey(Path.Combine("CLSID", Clsid.ToString("B")));
+        if (key != null)
+        {
+            if (key.GetValue(nameof(ArbitrationPriority)) is int priority)
+            {
+                ArbitrationPriority = priority;
+            }
+
+            if (key.GetValue(nameof(Vendor)) is string vendorText && Guid.TryParse(vendorText, out var vendor))
+            {
+                Vendor = vendor;
+            }
+        }
     }
 
     public Guid Clsid { get; }
@@ -143,6 +157,8 @@ public class WicImagingComponent : IEquatable<WicImagingComponent>
     public string? Author { get; }
     public string? Version { get; }
     public string? SpecVersion { get; }
+    public int ArbitrationPriority { get; }
+    public Guid Vendor { get; }
     public virtual string ClsidName => Clsid.GetName();
 
     public override string ToString() => FriendlyName + " " + ClsidName;

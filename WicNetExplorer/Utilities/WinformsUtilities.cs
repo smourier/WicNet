@@ -1,8 +1,8 @@
 ﻿using System;
 using System.Reflection;
-using System.Runtime.InteropServices;
 using System.Windows.Forms;
 using DirectN;
+using DirectN.Extensions.Utilities;
 using DialogResult = System.Windows.Forms.DialogResult;
 using MessageBox = System.Windows.Forms.MessageBox;
 using MessageBoxButtons = System.Windows.Forms.MessageBoxButtons;
@@ -31,7 +31,7 @@ public static class WinformsUtilities
         if (form.Handle == IntPtr.Zero)
             return false;
 
-        var startup = Monitor.FromWindow(form.Handle, MFW.MONITOR_DEFAULTTONEAREST);
+        var startup = Monitor.FromWindow(form.Handle, MONITOR_FROM_FLAGS.MONITOR_DEFAULTTONEAREST);
         if (startup == null || startup.IsPrimary)
             return false;
 
@@ -42,7 +42,7 @@ public static class WinformsUtilities
         var oldDpi = (int)primary.EffectiveDpi.width;
         var newDpi = (int)startup.EffectiveDpi.width;
 
-        var rc = new tagRECT();
+        var rc = new RECT();
         var monitorRc = startup.Bounds;
 
         if (form.IsMdiChild)
@@ -61,17 +61,13 @@ public static class WinformsUtilities
         }
 
         var p = (newDpi << 16) | newDpi;
-        SendMessage(form.Handle, MessageDecoder.WM_DPICHANGED, (IntPtr)p, ref rc);
+        unsafe
+        {
+            Functions.SendMessageW(form.Handle, MessageDecoder.WM_DPICHANGED, p, (nint)(&rc));
+        }
         return true;
 
         int toDips(int x) => newDpi * x / oldDpi;
         int fromDips(int x) => (oldDpi * x) / newDpi;
     }
-
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-    [DllImport("user32")]
-    private static extern IntPtr SendMessage(IntPtr hWnd, int msg, IntPtr wParam, ref tagRECT lParam);
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-#pragma warning restore IDE0079 // Remove unnecessary suppression
 }

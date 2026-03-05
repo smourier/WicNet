@@ -18,7 +18,11 @@ public class BitmapSourceModel : IDisposable
         Size = source.Size;
         Stride = source.Stride;
         FrameCount = source.DecoderFrameCount;
-        PixelFormat = new PixelFormatModel(source.WicPixelFormat);
+        if (source.WicPixelFormat != null)
+        {
+            PixelFormat = new PixelFormatModel(source.WicPixelFormat);
+        }
+
         DpiX = source.DpiX;
         DpiY = source.DpiY;
         var palette = source.Palette;
@@ -42,8 +46,8 @@ public class BitmapSourceModel : IDisposable
 
     protected virtual bool EnableThumbnail => true;
 
-    public WicIntSize Size { get; }
-    public int Stride { get; }
+    public D2D_SIZE_U Size { get; }
+    public uint Stride { get; }
     public PaletteModel? Palette { get; }
     public BitmapSourceModel? Thumbnail { get; }
 
@@ -53,7 +57,7 @@ public class BitmapSourceModel : IDisposable
     public ColorContextModel[] ColorContexts { get; } = [];
 
     [DisplayName("Frame Count")]
-    public int FrameCount { get; }
+    public uint FrameCount { get; }
 
     [DisplayName("Dpi X")]
     public double DpiX { get; }

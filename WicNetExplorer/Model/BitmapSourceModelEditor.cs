@@ -19,7 +19,7 @@ public class BitmapSourceModelEditor : UITypeEditor
             {
                 using var form = new BitmapSourceForm(bitmap);
                 form.FormBorderStyle = FormBorderStyle.SizableToolWindow;
-                form.ClientSize = bitmap.Size.ToSize();
+                form.ClientSize = bitmap.Size.ToGdiSize();
                 svc.ShowDialog(form);
             }
         }

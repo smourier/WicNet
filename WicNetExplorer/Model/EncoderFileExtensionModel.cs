@@ -10,15 +10,19 @@ public class EncoderFileExtensionModel : ICollectionFormItem
     {
         ArgumentNullException.ThrowIfNull(extension);
         Extension = extension;
-        Encoder = new EncoderModel(WicEncoder.FromFileExtension(extension));
+        var codec = WicEncoder.FromFileExtension(extension);
+        if (codec != null)
+        {
+            Encoder = new EncoderModel(codec);
+        }
     }
 
     public string Extension { get; }
-    public EncoderModel Encoder { get; }
+    public EncoderModel? Encoder { get; }
 
     string? ICollectionFormItem.TypeName => Extension;
-    string ICollectionFormItem.Name => Encoder.ToString();
-    object ICollectionFormItem.Value => Encoder;
+    string ICollectionFormItem.Name => Encoder?.ToString() ?? Extension;
+    object? ICollectionFormItem.Value => Encoder;
 
-    public override string ToString() => Encoder.ToString();
+    public override string ToString() => Encoder?.ToString() ?? Extension;
 }

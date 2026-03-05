@@ -10,15 +10,19 @@ public class DecoderFileExtensionModel : ICollectionFormItem
     {
         ArgumentNullException.ThrowIfNull(extension);
         Extension = extension;
-        Decoder = new DecoderModel(WicDecoder.FromFileExtension(extension));
+        var codec = WicDecoder.FromFileExtension(extension);
+        if (codec != null)
+        {
+            Decoder = new DecoderModel(codec);
+        }
     }
 
     public string Extension { get; }
-    public DecoderModel Decoder { get; }
+    public DecoderModel? Decoder { get; }
 
     string? ICollectionFormItem.TypeName => Extension;
-    string ICollectionFormItem.Name => Decoder.ToString();
-    object ICollectionFormItem.Value => Decoder;
+    string ICollectionFormItem.Name => Decoder?.ToString() ?? Extension;
+    object? ICollectionFormItem.Value => Decoder;
 
-    public override string ToString() => Decoder.ToString();
+    public override string ToString() => Decoder?.ToString() ?? Extension;
 }

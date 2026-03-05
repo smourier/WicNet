@@ -5,7 +5,7 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
     private readonly Lazy<ColorProfile?> _profile;
     private readonly Lazy<byte[]?> _profileBytes;
 
-    public WicColorContext(IComObject<IWICColorContext> context)
+    public WicColorContext(IComObject<IWICColorContext> context, bool throwOnError = true)
         : base(context)
     {
         _profileBytes = new Lazy<byte[]?>(GetProfileBytes);
@@ -15,22 +15,22 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
             if (bytes == null || bytes.Length == 0)
                 return null;
 
-            return ColorProfile.FromMemory(bytes);
+            return ColorProfile.FromMemory(bytes, throwOnError);
         }, true);
     }
 
-    public WicColorContext(uint colorSpace)
-        : this(From(colorSpace))
+    public WicColorContext(uint colorSpace, bool throwOnError = true)
+        : this(From(colorSpace), throwOnError)
     {
     }
 
-    public WicColorContext(string fileName)
-        : this(From(fileName))
+    public WicColorContext(string fileName, bool throwOnError = true)
+        : this(From(fileName), throwOnError)
     {
     }
 
-    public WicColorContext(byte[] bytes)
-        : this(From(bytes))
+    public WicColorContext(byte[] bytes, bool throwOnError = true)
+        : this(From(bytes), throwOnError)
     {
     }
 

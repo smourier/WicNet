@@ -4,17 +4,20 @@ using System.ComponentModel;
 using System.Drawing;
 using System.IO;
 using System.Linq;
-using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Forms;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
+using DirectN.Extensions.Utilities;
 using WicNet;
 using WicNet.Utilities;
 using WicNetExplorer.Utilities;
 using Windows.Data.Pdf;
 using Windows.Storage;
+using WinRT;
 using Extensions = WicNetExplorer.Utilities.Extensions;
 
 namespace WicNetExplorer;
@@ -31,12 +34,12 @@ public partial class ImageForm : MdiForm
     private IComObject<ID2D1SvgDocument>? _svgDocument;
     private ID2DControl? _d2d;
     private PdfDocument? _pdfDocument;
-    private IPdfRendererNative? _pdfRendererNative;
+    private ComObject<IPdfRendererNative>? _pdfRendererNative;
     private Button? _nextPage;
     private Button? _previousPage;
     private Button? _play;
-    private int _currentPage;
-    private int _decoderFrameCount = 1; // for animated images
+    private uint _currentPage;
+    private uint _decoderFrameCount = 1; // for animated images
     private int _animationDelay;
     private bool _playingAnimation;
 
@@ -62,8 +65,14 @@ public partial class ImageForm : MdiForm
         _d2d.Draw += (s, e) => DoDraw(e.DeviceContext);
         ctl.Dock = DockStyle.Fill;
         var color = Settings.Current.BackgroundColor;
-        if (color != Color.Transparent)
+
+        if (color != Color.Transparent && color != Color.Empty)
         {
+            // remove alpha if control doesn't support it, otherwise it will be ignored and cause performance issues
+            if (!GetStyle(ControlStyles.SupportsTransparentBackColor) && color.A < 255)
+            {
+                color = Color.FromArgb(color.R, color.G, color.B);
+            }
             ctl.BackColor = color;
         }
         Controls.Add(ctl);
@@ -92,7 +101,7 @@ public partial class ImageForm : MdiForm
     protected virtual void DoDrawPdf(IComObject<ID2D1DeviceContext> deviceContext)
     {
         ArgumentNullException.ThrowIfNull(deviceContext);
-        deviceContext.Clear(_D3DCOLORVALUE.White);
+        deviceContext.Clear(D3DCOLORVALUE.White);
         if (!Extensions.IsPdfDocumentSupported())
             return;
 
@@ -101,33 +110,31 @@ public partial class ImageForm : MdiForm
 
         if (_pdfRendererNative == null)
         {
-            using var device = deviceContext.GetDevice<ID2D1Device2>();
+            using var device = deviceContext.GetDevice<ID2D1Device2>()!;
             device.Object.GetDxgiDevice(out var dxgi);
             if (dxgi == null) // HwndRenderTarget has no underlying dxgi device
                 return;
 
-            _pdfRendererNative = Extensions.PdfCreateRenderer(dxgi, false);
+            Functions.PdfCreateRenderer(dxgi, out var pdf).ThrowOnError();
+            _pdfRendererNative = new ComObject<IPdfRendererNative>(pdf)!;
         }
 
-        var page = _pdfDocument.GetPage((uint)_currentPage);
-        var unk = Marshal.GetIUnknownForObject(page);
-        try
+        var page = _pdfDocument.GetPage(_currentPage);
+        var pageUnk = ((IWinRTObject)page).NativeObject.ThisPtr; // no AddRef needed
+                                                                 // keep proportions
+        var size = new D2D_SIZE_F(page.Size.Width, page.Size.Height);
+        var factor = WicNet.Utilities.Extensions.GetScaleFactor(size, Width, Height);
+        var renderParams = new PDF_RENDER_PARAMS
         {
-            // keep proportions
-            var size = new D2D_SIZE_F(page.Size.Width, page.Size.Height);
-            var factor = size.GetScaleFactor(Width, Height);
-            using var mem = new ComMemory(new PDF_RENDER_PARAMS
-            {
-                BackgroundColor = _D3DCOLORVALUE.White,
-                DestinationWidth = (int)(size.width * factor.width),
-                DestinationHeight = (int)(size.height * factor.height),
-                IgnoreHighContrast = Settings.Current.PdfIgnoreHighContrast,
-            });
-            _pdfRendererNative?.RenderPageToDeviceContext(unk, deviceContext.Object, mem.Pointer);
-        }
-        finally
+            BackgroundColor = D3DCOLORVALUE.White,
+            DestinationWidth = (uint)(size.width * factor.width),
+            DestinationHeight = (uint)(size.height * factor.height),
+            IgnoreHighContrast = Settings.Current.PdfIgnoreHighContrast,
+        };
+
+        unsafe
         {
-            Marshal.Release(unk);
+            _pdfRendererNative.Object.RenderPageToDeviceContext(pageUnk, deviceContext.Object, (nint)(&renderParams));
         }
     }
 
@@ -146,15 +153,16 @@ public partial class ImageForm : MdiForm
         if (dc5 == null)
             return;
 
-        if (_svgDocument == null)
+        if (_svgDocument == null && FileName != null)
         {
-            using var stream = new WicNet.Utilities.UnmanagedMemoryStream(FileName);
+            using var file = File.OpenRead(FileName);
+            using var stream = new ManagedIStream(file);
             _svgDocument = dc5.CreateSvgDocument(stream, new D2D_SIZE_F(Width, Height));
         }
 
         if (_svgDocument != null)
         {
-            dc5.DrawSvgDocument(_svgDocument.Object);
+            dc5.DrawSvgDocument(_svgDocument);
         }
     }
 
@@ -168,26 +176,26 @@ public partial class ImageForm : MdiForm
         {
             var ctl = (Control)_d2d;
             IComObject<ID2D1ColorContext>? ctx = null;
-            if (_bitmapSource != null && !_bitmapSource.ComObject.IsDisposed)
+            if (_bitmapSource != null && !_bitmapSource.IsDisposed)
             {
                 if (_bitmap == null || _bitmap.IsDisposed)
                 {
                     var pf = deviceContext.GetPixelFormat().format;
                     if ((_colorContext != null && !_colorContext.IsDisposed) || pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
                     {
-                        _colorManagementEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1ColorManagement);
-                        _scaleEffect = deviceContext.CreateEffect(Direct2DEffects.CLSID_D2D1Scale);
+                        _colorManagementEffect = deviceContext.CreateEffect(Constants.CLSID_D2D1ColorManagement)!;
+                        _scaleEffect = deviceContext.CreateEffect(Constants.CLSID_D2D1Scale)!;
                         _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_INTERPOLATION_MODE, D2D1_SCALE_INTERPOLATION_MODE.D2D1_SCALE_INTERPOLATION_MODE_HIGH_QUALITY_CUBIC);
 
                         if (pf == DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT)
                         {
-                            using var scRGB = deviceContext.As<ID2D1DeviceContext5>().CreateColorContextFromDxgiColorSpace(DXGI_COLOR_SPACE_TYPE.DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709);
+                            using var scRGB = deviceContext.As<ID2D1DeviceContext5>()!.CreateColorContextFromDxgiColorSpace(DXGI_COLOR_SPACE_TYPE.DXGI_COLOR_SPACE_RGB_FULL_G10_NONE_P709);
                             _colorManagementEffect.SetValue((int)D2D1_COLORMANAGEMENT_PROP.D2D1_COLORMANAGEMENT_PROP_DESTINATION_COLOR_CONTEXT, scRGB);
                         }
 
                         if (_colorContext == null || _colorContext.IsDisposed)
                         {
-                            var isFloat = _bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat;
+                            var isFloat = _bitmapSource.WicPixelFormat!.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat;
                             ctx = deviceContext.CreateColorContext(isFloat ? D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SCRGB : D2D1_COLOR_SPACE.D2D1_COLOR_SPACE_SRGB);
                         }
                         else
@@ -224,10 +232,10 @@ public partial class ImageForm : MdiForm
 
                 // keep proportions
                 var size = _bitmap.GetSize();
-                var factor = size.GetScaleFactor(ctl.Width, ctl.Height);
+                var factor = WicNet.Utilities.Extensions.GetScaleFactor(size, ctl.Width, ctl.Height);
                 var rc = new D2D_RECT_F(0, 0, size.width * factor.width, size.height * factor.height);
 
-                if (_colorManagementEffect != null && !_colorManagementEffect.IsDisposed)
+                if (_colorManagementEffect != null && !_colorManagementEffect.IsDisposed && _scaleEffect != null)
                 {
                     _scaleEffect.SetValue((int)D2D1_SCALE_PROP.D2D1_SCALE_PROP_SCALE, factor.ToD2D_VECTOR_2F());
                     _scaleEffect.SetInput(_bitmap);
@@ -253,12 +261,12 @@ public partial class ImageForm : MdiForm
         if (color.A == 0 && color.R == 0 && color.G == 0 && color.B == 0 || color == Color.Transparent)
         {
             _backgroundBrush ??= deviceContext.CreateCheckerboardBrush(8);
-            deviceContext.Clear(_D3DCOLORVALUE.White);
+            deviceContext.Clear(D3DCOLORVALUE.White);
             deviceContext.FillRectangle(new D2D_RECT_F(0, 0, Width, Height), _backgroundBrush);
         }
         else
         {
-            deviceContext.Clear(color.ToD3DCOLORVALUE());
+            deviceContext.Clear(color.FromColor());
         }
     }
 
@@ -274,7 +282,7 @@ public partial class ImageForm : MdiForm
 
         var ctl = new D2DCompositionControl();
 
-        if (Settings.Current.ForceFP16 || _bitmapSource?.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
+        if (Settings.Current.ForceFP16 || _bitmapSource?.WicPixelFormat?.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
         {
             ctl.PixelFormat = DXGI_FORMAT.DXGI_FORMAT_R16G16B16A16_FLOAT;
         }
@@ -359,6 +367,7 @@ public partial class ImageForm : MdiForm
             _play?.Dispose();
             components?.Dispose();
             _d2d?.Dispose();
+            _pdfRendererNative?.Dispose();
         }
         base.Dispose(disposing);
     }
@@ -500,7 +509,7 @@ public partial class ImageForm : MdiForm
             tentative = 0;
         }
 
-        _currentPage = tentative;
+        _currentPage = (uint)tentative;
         _nextPage!.Enabled = _currentPage < _pdfDocument.PageCount - 1;
         _previousPage!.Enabled = _currentPage > 0;
         _d2d?.Redraw();
@@ -515,7 +524,7 @@ public partial class ImageForm : MdiForm
         public IList<WicColorContext> ColorContexts { get; } = [];
     }
 
-    protected virtual BitmapFrame LoadBitmapFrame(WicBitmapDecoder decoder, int frameIndex)
+    protected virtual BitmapFrame LoadBitmapFrame(WicBitmapDecoder decoder, uint frameIndex)
     {
         ArgumentNullException.ThrowIfNull(decoder);
 
@@ -540,7 +549,7 @@ public partial class ImageForm : MdiForm
             _animationDelay = Settings.Current.DefaultAnimationDelay;
         }
 
-        if (bitmapSource.WicPixelFormat.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
+        if (bitmapSource.WicPixelFormat?.NumericRepresentation == WICPixelFormatNumericRepresentation.WICPixelFormatNumericRepresentationFloat)
         {
             bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat128bppRGBAFloat);
             bitmapSource.ConvertTo(WicPixelFormat.GUID_WICPixelFormat64bppPRGBAHalf);
@@ -589,7 +598,7 @@ public partial class ImageForm : MdiForm
         return frame;
     }
 
-    protected virtual bool LoadBitmapFile(string fileName, int frameIndex)
+    protected virtual bool LoadBitmapFile(string fileName, uint frameIndex)
     {
         ArgumentNullException.ThrowIfNull(fileName);
 
@@ -680,7 +689,7 @@ public partial class ImageForm : MdiForm
             var honorColorContexts = Settings.Current.HonorColorContexts;
             var decoder = WicBitmapDecoder.Load(FileName);
             var frames = new (WicBitmapSource bmp, IComObject<IWICColorContext>? color)[decoder.FrameCount];
-            for (var i = 0; i < decoder.FrameCount; i++)
+            for (uint i = 0; i < decoder.FrameCount; i++)
             {
                 var frame = LoadBitmapFrame(decoder, i);
                 frames[i] = new() { bmp = frame.BitmapSource };
@@ -742,7 +751,7 @@ public partial class ImageForm : MdiForm
             tentative = 0;
         }
 
-        _currentPage = tentative;
+        _currentPage = (uint)tentative;
         _nextPage!.Enabled = _currentPage < _decoderFrameCount - 1;
         _previousPage!.Enabled = _currentPage > 0;
 
@@ -796,8 +805,8 @@ public partial class ImageForm : MdiForm
             IOUtilities.FileDelete(fileName, true, false);
             _d2d.WithDeviceContext(dc =>
             {
-                using var device = dc.GetDevice();
-                using var image = bitmap.AsComObject<ID2D1Image>(true);
+                using var device = dc.GetDevice()!;
+                using var image = bitmap.As<ID2D1Image>(throwOnError: true)!;
                 using var stream = File.OpenWrite(fileName);
                 image.Save(device, encoder.ContainerFormat, stream);
                 DoDraw(dc);

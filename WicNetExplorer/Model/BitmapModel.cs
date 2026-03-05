@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model;

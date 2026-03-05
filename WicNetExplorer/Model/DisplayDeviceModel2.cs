@@ -1,8 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Runtime.Versioning;
-using DirectN;
-using Windows.Devices.Display.Core;
+using DirectN.Extensions.Utilities;
 using Windows.Graphics.DirectX;
 
 namespace WicNetExplorer.Model;
@@ -10,7 +9,7 @@ namespace WicNetExplorer.Model;
 [SupportedOSPlatform("windows10.0.17763")]
 public class DisplayDeviceModel2 : DisplayDeviceModel
 {
-    public DisplayDeviceModel2(DISPLAY_DEVICE device, DisplayPath path)
+    public DisplayDeviceModel2(DisplayDevice device, Windows.Devices.Display.Core.DisplayPath path)
         : base(device)
     {
         ArgumentNullException.ThrowIfNull(path);
@@ -24,7 +23,7 @@ public class DisplayDeviceModel2 : DisplayDeviceModel
         var monitor = path.Target.TryGetMonitor();
         if (monitor != null)
         {
-            Monitor = new MonitorModel(monitor, base.Monitor);
+            Monitor = new MonitorModel(monitor, base.Monitor!);
         }
     }
 
@@ -42,8 +41,8 @@ public class DisplayDeviceModel2 : DisplayDeviceModel
     [DisplayName("Is Interlaced")]
     public bool IsInterlaced { get; }
 
-    public DisplayRotation Rotation { get; }
-    public DisplayPathScaling Scaling { get; }
+    public Windows.Devices.Display.Core.DisplayRotation Rotation { get; }
+    public Windows.Devices.Display.Core.DisplayPathScaling Scaling { get; }
 
     public override string ToString()
     {

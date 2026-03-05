@@ -1,6 +1,8 @@
 ﻿using System;
 using System.ComponentModel;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
 
 namespace WicNetExplorer.Model;
 
@@ -13,7 +15,11 @@ public class DirectXInfoModel
         ArgumentNullException.ThrowIfNull(context);
         DeviceContext = new DeviceContextModel(context);
         using var dev = context.GetDevice();
-        Device = new DeviceModel(dev);
+        if (dev != null)
+        {
+            Device = new DeviceModel(dev);
+        }
+
         Control = control.GetType().Name;
         Bitmap = bitmap != null ? new BitmapModel(bitmap) : null;
     }
@@ -25,5 +31,5 @@ public class DirectXInfoModel
     public string Control { get; }
 
     public BitmapModel? Bitmap { get; }
-    public DeviceModel Device { get; }
+    public DeviceModel? Device { get; }
 }

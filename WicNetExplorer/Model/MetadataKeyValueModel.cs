@@ -21,7 +21,7 @@ public class MetadataKeyValueModel : IValueProvider
     public string Name => _kv.Key.Key;
 
     [DisplayName("Property Type")]
-    public PropertyType Type => _kv.Type;
+    public VARENUM Type => _kv.Type;
 
     [DisplayName("Clr Type")]
     public string? ClrType => _kv.Value?.GetType().Name;

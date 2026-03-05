@@ -3,11 +3,16 @@
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
 		<TargetFramework>net10.0-windows10.0.17763.0</TargetFramework>
+		<!--<PublishAot>true</PublishAot>-->
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<Nullable>enable</Nullable>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationIcon>WicNet.ico</ApplicationIcon>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<!-- this is need to publish as AOT -->
+		<_SuppressWinFormsTrimError>true</_SuppressWinFormsTrimError>
+		<CustomResourceTypesSupport>true</CustomResourceTypesSupport>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -23,7 +28,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\WicNet\WicNet.csproj" />
+	  <ProjectReference Include="..\WicNetCore\WicNetCore.csproj" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <Reference Include="DirectN">
+	    <HintPath>..\WicNetCore\External\DirectN.dll</HintPath>
+	  </Reference>
+	  <Reference Include="DirectN.Extensions">
+	    <HintPath>..\WicNetCore\External\DirectN.Extensions.dll</HintPath>
+	  </Reference>
 	</ItemGroup>
 
 	<ItemGroup>

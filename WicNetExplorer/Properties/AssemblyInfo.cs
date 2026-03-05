@@ -1,4 +1,5 @@
 ﻿using System.Reflection;
+using System.Runtime.CompilerServices;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 
@@ -15,4 +16,5 @@ using System.Runtime.Versioning;
 [assembly: AssemblyCulture("")]
 [assembly: ComVisible(false)]
 [assembly: Guid("4f39b26c-c2c2-49fd-bc3e-cafa2f9cef57")]
-[assembly: SupportedOSPlatform("windows")]
+[assembly: SupportedOSPlatform("windows10.0.16299.0")]
+[assembly: DisableRuntimeMarshalling]

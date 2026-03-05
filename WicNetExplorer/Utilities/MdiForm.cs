@@ -3,7 +3,8 @@ using System.ComponentModel;
 using System.Drawing;
 using System.Windows.Forms;
 using DirectN;
-using WicNet.Utilities;
+using DirectN.Extensions.Utilities;
+using Font = System.Drawing.Font;
 
 namespace WicNetExplorer.Utilities;
 
@@ -125,7 +126,7 @@ public class MdiForm : Form
 
             case MdiLayout.Cascade:
                 // for some reason, the CascadeWindows api doesn't seem to work either
-                var captionSize = WindowsUtilities.GetWindowCaptionRect(mdiParent.Handle);
+                var captionSize = WindowUtilities.GetWindowCaptionRect(mdiParent.Handle);
                 var offset = Math.Abs(captionSize.top);
                 var current = _frameSize;
                 foreach (var child in children)
@@ -249,7 +250,7 @@ public class MdiForm : Form
                 }
 
                 var padding = GetCaptionPadding();
-                var captionRc = new tagRECT(padding.Left, padding.Bottom, Width - padding.Right, padding.Top);
+                var captionRc = new RECT(padding.Left, padding.Bottom, Width - padding.Right, padding.Top);
                 if (captionRc.Contains(clientX, clientY))
                 {
                     m.Result = (IntPtr)HT.HTCAPTION;
@@ -395,7 +396,7 @@ public class MdiForm : Form
         if (WindowState == FormWindowState.Maximized)
             return new Padding(0);
 
-        var captionSize = WindowsUtilities.GetWindowCaptionRect(Handle);
+        var captionSize = WindowUtilities.GetWindowCaptionRect(Handle);
         var border = DpiUtilities.AdjustForWindowDpi(_frameSize, Handle);
         return new Padding(border, Math.Abs(captionSize.top), border, border);
     }

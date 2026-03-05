@@ -2,6 +2,8 @@
 using System.ComponentModel;
 using System.Drawing.Design;
 using DirectN;
+using DirectN.Extensions.Com;
+using DirectN.Extensions.Utilities;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model;
@@ -20,15 +22,21 @@ public class BitmapColorContextModel
         if (size > 0)
         {
             _profileBytes = new byte[size];
-            colorContext.Object.GetProfile(_profileBytes, _profileBytes.Length).ThrowOnError();
+            unsafe
+            {
+                fixed (byte* ptr = _profileBytes)
+                {
+                    colorContext.Object.GetProfile((nint)ptr, _profileBytes.Length()).ThrowOnError();
+                }
+            }
         }
 
         var ctx = colorContext.As<ID2D1ColorContext1>();
         if (ctx != null)
         {
-            ColorContextType = ctx.GetColorContextType();
-            DxgiColorSpace = ctx.GetDXGIColorSpace();
-            ctx.GetSimpleColorProfile(out var profile);
+            ColorContextType = ctx.Object.GetColorContextType();
+            DxgiColorSpace = ctx.Object.GetDXGIColorSpace();
+            ctx.Object.GetSimpleColorProfile(out var profile);
             SimpleColorProfile = profile;
         }
     }

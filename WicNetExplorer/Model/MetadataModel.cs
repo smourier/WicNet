@@ -55,9 +55,10 @@ public class MetadataModel
         Children = [.. children];
     }
 
-    public string Location => _reader.Location;
+    public string? Location => _reader.Location;
+
     [DisplayName("Friendly Name")]
-    public string Name => _reader.HandlerFriendlyName;
+    public string? Name => _reader.HandlerFriendlyName;
 
     [DisplayName("Container Format")]
     public Guid ContainerFormat => _reader.ContainerFormat;
@@ -72,5 +73,5 @@ public class MetadataModel
     [StringFormatter("{Length}")]
     [ToStringVisitor(DontWriteIfEmpty = true)]
     public MetadataModel[] Children { get; }
-    public override string ToString() => Name;
+    public override string ToString() => Name ?? ContainerFormatName;
 }

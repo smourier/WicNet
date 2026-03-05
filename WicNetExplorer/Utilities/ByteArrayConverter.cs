@@ -1,7 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using System.Globalization;
-using DirectN;
+using DirectN.Extensions.Utilities;
 
 namespace WicNetExplorer.Utilities;
 

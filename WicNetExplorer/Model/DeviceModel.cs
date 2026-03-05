@@ -1,6 +1,7 @@
 ﻿using System;
 using System.ComponentModel;
 using DirectN;
+using DirectN.Extensions.Com;
 
 namespace WicNetExplorer.Model;
 
@@ -13,7 +14,7 @@ public class DeviceModel
     {
         ArgumentNullException.ThrowIfNull(device);
         _text = device.InterfaceType.Name;
-        RenderingPriority = (device.As<ID2D1Device1>()?.GetRenderingPriority()).GetValueOrDefault();
+        RenderingPriority = (device.As<ID2D1Device1>()?.Object.GetRenderingPriority()) ?? D2D1_RENDERING_PRIORITY.D2D1_RENDERING_PRIORITY_NORMAL;
         MaximumTextureMemory = device.Object.GetMaximumTextureMemory();
     }
 

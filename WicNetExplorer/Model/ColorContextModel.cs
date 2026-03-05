@@ -9,7 +9,7 @@ namespace WicNetExplorer.Model;
 [TypeConverter(typeof(ExpandableObjectConverter))]
 public class ColorContextModel
 {
-    private readonly byte[] _profileBytes;
+    private readonly byte[]? _profileBytes;
     private readonly string _name;
 
     public ColorContextModel(WicColorContext context)
@@ -33,7 +33,7 @@ public class ColorContextModel
     [DisplayName("Profile Bytes")]
     [Editor(typeof(ByteArrayEditor), typeof(UITypeEditor))]
     [TypeConverter(typeof(ByteArrayConverter))]
-    public byte[] ProfileBytes { get => _profileBytes; set => throw new NotSupportedException(); } // set for property grid support
+    public byte[]? ProfileBytes { get => _profileBytes; set => throw new NotSupportedException(); } // set for property grid support
 
     public override string ToString() => _name;
 }

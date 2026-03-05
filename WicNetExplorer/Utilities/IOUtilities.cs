@@ -1,6 +1,6 @@
 ﻿using System;
 using System.IO;
-using System.Runtime.InteropServices;
+using DirectN;
 
 namespace WicNetExplorer.Utilities;
 
@@ -131,15 +131,15 @@ public static class IOUtilities
         }
     }
 
-    public static FileAttributes? PathGetAttributes(string path)
+    public static unsafe FileAttributes? PathGetAttributes(string path)
     {
         ArgumentNullException.ThrowIfNull(path);
 
         var data = new WIN32_FILE_ATTRIBUTE_DATA();
-        if (!GetFileAttributesEx(path, GetFileExInfoStandard, ref data))
+        if (!Functions.GetFileAttributesExW(PWSTR.From(path), GET_FILEEX_INFO_LEVELS.GetFileExInfoStandard, (nint)(&data)))
             return null;
 
-        return data.fileAttributes;
+        return (FileAttributes)data.dwFileAttributes;
     }
 
     public static bool PathExists(string path) => PathGetAttributes(path).HasValue;
@@ -190,33 +190,4 @@ public static class IOUtilities
             return false;
         }
     }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct WIN32_FILE_ATTRIBUTE_DATA
-    {
-        public FileAttributes fileAttributes;
-        public FILE_TIME ftCreationTime;
-        public FILE_TIME ftLastAccessTime;
-        public FILE_TIME ftLastWriteTime;
-        public long fileSize;
-    }
-
-    [StructLayout(LayoutKind.Sequential)]
-    private struct FILE_TIME(long fileTime)
-    {
-        public uint ftTimeLow = (uint)fileTime;
-        public uint ftTimeHigh = (uint)(fileTime >> 32);
-
-        public readonly bool IsZero => ftTimeHigh == 0 && ftTimeLow == 0;
-        public readonly long ToTicks() => ((long)ftTimeHigh << 32) + ftTimeLow;
-    }
-
-    private const int GetFileExInfoStandard = 0;
-
-#pragma warning disable IDE0079 // Remove unnecessary suppression
-#pragma warning disable SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-    [DllImport("kernel32", CharSet = CharSet.Unicode, SetLastError = true)]
-    private extern static bool GetFileAttributesEx(string name, int fileInfoLevel, ref WIN32_FILE_ATTRIBUTE_DATA lpFileInformation);
-#pragma warning restore SYSLIB1054 // Use 'LibraryImportAttribute' instead of 'DllImportAttribute' to generate P/Invoke marshalling code at compile time
-#pragma warning restore IDE0079 // Remove unnecessary suppression
 }

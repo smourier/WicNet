@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.ComponentModel;
 using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
 using WicNetExplorer.Utilities;
 
 namespace WicNetExplorer.Model;
@@ -27,9 +29,9 @@ public class DeviceContextModel
         Dpi = new D2D_SIZE_F(x, y);
 
         var formats = new List<DXGI_FORMAT>();
-        foreach (DXGI_FORMAT format in Enum.GetValues<DXGI_FORMAT>())
+        foreach (var format in Enum.GetValues<DXGI_FORMAT>())
         {
-            if (format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN || format == DXGI_FORMAT.DXGI_FORMAT_FORCE_UINT)
+            if (format == DXGI_FORMAT.DXGI_FORMAT_UNKNOWN)
                 continue;
 
             if (context.Object.IsDxgiFormatSupported(format))
@@ -40,9 +42,9 @@ public class DeviceContextModel
         DxgiFormats = [.. formats];
 
         var precisions = new List<D2D1_BUFFER_PRECISION>();
-        foreach (D2D1_BUFFER_PRECISION precision in Enum.GetValues<D2D1_BUFFER_PRECISION>())
+        foreach (var precision in Enum.GetValues<D2D1_BUFFER_PRECISION>())
         {
-            if (precision == D2D1_BUFFER_PRECISION.D2D1_BUFFER_PRECISION_FORCE_DWORD || precision == D2D1_BUFFER_PRECISION.D2D1_BUFFER_PRECISION_UNKNOWN)
+            if (precision == D2D1_BUFFER_PRECISION.D2D1_BUFFER_PRECISION_UNKNOWN)
                 continue;
 
             if (context.Object.IsBufferPrecisionSupported(precision))

@@ -21,10 +21,10 @@ public class MetadataHandlerModel : ImagingComponentModel
     public Guid[] ContainerFormats { get; }
 
     [DisplayName("Device Manufacturer")]
-    public string DeviceManufacturer => _handler.DeviceManufacturer;
+    public string? DeviceManufacturer => _handler.DeviceManufacturer;
 
     [DisplayName("Device Models")]
-    public string DeviceModels => _handler.DeviceModels;
+    public string? DeviceModels => _handler.DeviceModels;
 
     [DisplayName("Supports Padding")]
     public bool SupportsPadding => _handler.SupportsPadding;

@@ -6,8 +6,9 @@ using System.Runtime.CompilerServices;
 using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using System.Text.Json.Serialization.Metadata;
 using System.Threading.Tasks;
-using DirectN;
+using DirectN.Extensions.Utilities;
 
 namespace WicNetExplorer.Utilities;
 
@@ -17,16 +18,17 @@ public abstract class Serializable<T> : INotifyPropertyChanged where T : new()
 
     public event PropertyChangedEventHandler? PropertyChanged;
 
-    public static async Task<T?> DeserializeAsync(string filePath, bool returnDefaultIfError = false)
+    public static async Task<T?> DeserializeAsync(string filePath, JsonSerializerContext context, bool returnDefaultIfError = false)
     {
         ArgumentNullException.ThrowIfNull(filePath);
+        ArgumentNullException.ThrowIfNull(context);
         if (!File.Exists(filePath))
             return new T();
 
         try
         {
             using var stream = File.OpenRead(filePath);
-            return await DeserializeAsync(stream, returnDefaultIfError).ConfigureAwait(false);
+            return await DeserializeAsync(stream, context, returnDefaultIfError).ConfigureAwait(false);
         }
         catch
         {
@@ -37,12 +39,13 @@ public abstract class Serializable<T> : INotifyPropertyChanged where T : new()
         }
     }
 
-    public static async Task<T?> DeserializeAsync(Stream stream, bool returnDefaultIfError = false)
+    public static async Task<T?> DeserializeAsync(Stream stream, JsonSerializerContext context, bool returnDefaultIfError = false)
     {
         ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(context);
         try
         {
-            return await JsonSerializer.DeserializeAsync<T>(stream).ConfigureAwait(false);
+            return await JsonSerializer.DeserializeAsync(stream, (JsonTypeInfo<T>)context.GetTypeInfo(typeof(T))!).ConfigureAwait(false);
         }
         catch
         {
@@ -53,16 +56,17 @@ public abstract class Serializable<T> : INotifyPropertyChanged where T : new()
         }
     }
 
-    public static T? Deserialize(string filePath, bool returnDefaultIfError = false)
+    public static T? Deserialize(string filePath, JsonSerializerContext context, bool returnDefaultIfError = false)
     {
         ArgumentNullException.ThrowIfNull(filePath);
+        ArgumentNullException.ThrowIfNull(context);
         if (!IOUtilities.PathIsFile(filePath))
             return new T();
 
         try
         {
             using var stream = File.OpenRead(filePath);
-            return Deserialize(stream, returnDefaultIfError);
+            return Deserialize(stream, context, returnDefaultIfError);
         }
         catch
         {
@@ -73,29 +77,14 @@ public abstract class Serializable<T> : INotifyPropertyChanged where T : new()
         }
     }
 
-    public static T? DeserializeFromString(string json, bool returnDefaultIfError = false)
-    {
-        ArgumentNullException.ThrowIfNull(json);
-        try
-        {
-            return JsonSerializer.Deserialize<T>(json);
-        }
-        catch
-        {
-            if (returnDefaultIfError)
-                return default;
-
-            return new T();
-        }
-    }
-
-    public static T? Deserialize(Stream stream, bool returnDefaultIfError = false)
+    public static T? Deserialize(Stream stream, JsonSerializerContext context, bool returnDefaultIfError = false)
     {
         ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(context);
         try
         {
             var json = new StreamReader(stream, Encoding.UTF8).ReadToEnd();
-            return JsonSerializer.Deserialize<T>(json);
+            return JsonSerializer.Deserialize(json, (JsonTypeInfo<T>)context.GetTypeInfo(typeof(T))!);
         }
         catch
         {
@@ -106,37 +95,39 @@ public abstract class Serializable<T> : INotifyPropertyChanged where T : new()
         }
     }
 
-    private static readonly JsonSerializerOptions _options = new() { WriteIndented = true, DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull, };
-    public virtual string Serialize() => JsonSerializer.Serialize((object)this, _options); // note: you *must* cast as object
-    public virtual void Serialize(Stream stream)
+    public virtual void Serialize(Stream stream, JsonSerializerContext context)
     {
         ArgumentNullException.ThrowIfNull(stream);
+        ArgumentNullException.ThrowIfNull(context);
         using var writer = new Utf8JsonWriter(stream);
-        JsonSerializer.Serialize(writer, (object)this);
+        JsonSerializer.Serialize(writer, this, (JsonTypeInfo<T>)context.GetTypeInfo(typeof(T))!);
     }
 
-    public virtual void Serialize(string filePath)
+    public virtual void Serialize(string filePath, JsonSerializerContext context)
     {
         ArgumentNullException.ThrowIfNull(filePath);
+        ArgumentNullException.ThrowIfNull(context);
         IOUtilities.FileEnsureDirectory(filePath);
         IOUtilities.FileDelete(filePath);
         using var writer = File.OpenWrite(filePath);
-        Serialize(writer);
+        Serialize(writer, context);
     }
 
-    public virtual async Task SerializeAsync(Stream stream)
+    public virtual async Task SerializeAsync(Stream stream, JsonSerializerContext context)
     {
         ArgumentNullException.ThrowIfNull(stream);
-        await JsonSerializer.SerializeAsync(stream, (object)this).ConfigureAwait(false); // note: you *must* cast as object
+        ArgumentNullException.ThrowIfNull(context);
+        await JsonSerializer.SerializeAsync(stream, this, (JsonTypeInfo<T>)context.GetTypeInfo(typeof(T))!).ConfigureAwait(false); // note: you *must* cast as object
     }
 
-    public virtual async Task SerializeAsync(string filePath)
+    public virtual async Task SerializeAsync(string filePath, JsonSerializerContext context)
     {
         ArgumentNullException.ThrowIfNull(filePath);
+        ArgumentNullException.ThrowIfNull(context);
         IOUtilities.FileEnsureDirectory(filePath);
         IOUtilities.FileDelete(filePath);
         using var writer = File.OpenWrite(filePath);
-        await SerializeAsync(writer).ConfigureAwait(false);
+        await SerializeAsync(writer, context).ConfigureAwait(false);
     }
 
     protected void OnPropertyChanged(string name) => OnPropertyChanged(this, new PropertyChangedEventArgs(name));
