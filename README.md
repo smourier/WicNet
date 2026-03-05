@@ -8,7 +8,7 @@ WicNetCore .NET 10+ AOT-compatible package is available here: https://www.nuget.
 Main projects are:
 * **WicNet** is the main library that you can use to program WIC in .NET. It's .NET standard based so compatible with .NET Framework and .NET Core 6+ projects.
 * **WicNetCore** is a .NET 10+ and AOT-friendly version of **WicNet**.
-* **WicNetExplorer** is a Winforms-based GUI sample program that demonstrates how to use **WicNet**, see below for more information.
+* **WicNetExplorer** is a Winforms-based GUI sample program that demonstrates how to use **WicNetCore**, see below for more information.
 * **WicNet.WinUI3Tests** is a simple project that demonstrates WIC and WinRT/WinUI3's imaging classes (notably `SoftwareBitmap`).
 
 Simple use case is load & save:
@@ -65,7 +65,7 @@ WicNetExplorer is a GUI sample program that demonstrates how to use WicNet, it's
 
 ![image](https://github.com/smourier/WicNet/assets/5328574/af1795f4-3627-4193-a849-3e2c50f87aac)
 
-WicNetExplorer demonstrates two Windows technologies for the WIC display surface:
+WicNetExplorer demonstrates various Windows technologies for the WIC display surface:
 
 * Direct2D's `ID2D1HwndRenderTarget` interface: https://learn.microsoft.com/en-us/windows/win32/api/d2d1/nn-d2d1-id2d1hwndrendertarget
 * Windows Direct Composition (aka the [Visual Layer](https://learn.microsoft.com/en-us/windows/uwp/composition/visual-layer) ), through the use of `CompositionDrawingSurface` Class: https://learn.microsoft.com/en-us/uwp/api/windows.ui.composition.compositiondrawingsurface
@@ -111,6 +111,7 @@ The WinUI3Tests program demonstrates WicNet (and therefore WIC) interop with Win
         using var clone = bmp.Clone();
         return clone.WithSoftwareBitmap(true, ptr => SoftwareBitmap.FromAbi(ptr));
     }
+
 
 
 
