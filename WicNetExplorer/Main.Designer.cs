@@ -47,6 +47,8 @@ partial class Main
         cascadeToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         tileHorizontallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         tileVerticallyToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+        toolStripSeparator8 = new System.Windows.Forms.ToolStripSeparator();
+        toggleFullScreenToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         helpToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         aboutWicNetExplorerToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
         menuStripMain.SuspendLayout();
@@ -248,7 +250,7 @@ partial class Main
         // 
         // windowToolStripMenuItem
         // 
-        windowToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { cascadeToolStripMenuItem, tileHorizontallyToolStripMenuItem, tileVerticallyToolStripMenuItem });
+        windowToolStripMenuItem.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] { cascadeToolStripMenuItem, tileHorizontallyToolStripMenuItem, tileVerticallyToolStripMenuItem, toolStripSeparator8, toggleFullScreenToolStripMenuItem });
         windowToolStripMenuItem.Name = "windowToolStripMenuItem";
         resources.ApplyResources(windowToolStripMenuItem, "windowToolStripMenuItem");
         // 
@@ -269,6 +271,17 @@ partial class Main
         tileVerticallyToolStripMenuItem.Name = "tileVerticallyToolStripMenuItem";
         resources.ApplyResources(tileVerticallyToolStripMenuItem, "tileVerticallyToolStripMenuItem");
         tileVerticallyToolStripMenuItem.Click += TileVerticallyToolStripMenuItem_Click;
+        // 
+        // toolStripSeparator8
+        // 
+        toolStripSeparator8.Name = "toolStripSeparator8";
+        resources.ApplyResources(toolStripSeparator8, "toolStripSeparator8");
+        // 
+        // toggleFullScreenToolStripMenuItem
+        // 
+        toggleFullScreenToolStripMenuItem.Name = "toggleFullScreenToolStripMenuItem";
+        resources.ApplyResources(toggleFullScreenToolStripMenuItem, "toggleFullScreenToolStripMenuItem");
+        toggleFullScreenToolStripMenuItem.Click += ToggleFullScreenToolStripMenuItem_Click;
         // 
         // helpToolStripMenuItem
         // 
@@ -338,4 +351,6 @@ partial class Main
     private System.Windows.Forms.ToolStripMenuItem directXInfoToolStripMenuItem;
     private System.Windows.Forms.ToolStripSeparator toolStripSeparator7;
     private System.Windows.Forms.ToolStripMenuItem openFileLocationToolStripMenuItem;
+    private System.Windows.Forms.ToolStripSeparator toolStripSeparator8;
+    private System.Windows.Forms.ToolStripMenuItem toggleFullScreenToolStripMenuItem;
 }

@@ -300,22 +300,34 @@
     <value>&amp;Tools</value>
   </data>
   <data name="cascadeToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="cascadeToolStripMenuItem.Text" xml:space="preserve">
     <value>Cascade Windows</value>
   </data>
   <data name="tileHorizontallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="tileHorizontallyToolStripMenuItem.Text" xml:space="preserve">
     <value>Tile Horizontally</value>
   </data>
   <data name="tileVerticallyToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
-    <value>170, 22</value>
+    <value>192, 22</value>
   </data>
   <data name="tileVerticallyToolStripMenuItem.Text" xml:space="preserve">
     <value>Tile Vertically</value>
+  </data>
+  <data name="toolStripSeparator8.Size" type="System.Drawing.Size, System.Drawing">
+    <value>189, 6</value>
+  </data>
+  <data name="toggleFullScreenToolStripMenuItem.ShortcutKeys" type="System.Windows.Forms.Keys, System.Windows.Forms">
+    <value>F11</value>
+  </data>
+  <data name="toggleFullScreenToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
+    <value>192, 22</value>
+  </data>
+  <data name="toggleFullScreenToolStripMenuItem.Text" xml:space="preserve">
+    <value>Toggle FullScreen</value>
   </data>
   <data name="windowToolStripMenuItem.Size" type="System.Drawing.Size, System.Drawing">
     <value>63, 20</value>
@@ -583,6 +595,18 @@
     <value>tileVerticallyToolStripMenuItem</value>
   </data>
   <data name="&gt;&gt;tileVerticallyToolStripMenuItem.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator8.Name" xml:space="preserve">
+    <value>toolStripSeparator8</value>
+  </data>
+  <data name="&gt;&gt;toolStripSeparator8.Type" xml:space="preserve">
+    <value>System.Windows.Forms.ToolStripSeparator, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
+  </data>
+  <data name="&gt;&gt;toggleFullScreenToolStripMenuItem.Name" xml:space="preserve">
+    <value>toggleFullScreenToolStripMenuItem</value>
+  </data>
+  <data name="&gt;&gt;toggleFullScreenToolStripMenuItem.Type" xml:space="preserve">
     <value>System.Windows.Forms.ToolStripMenuItem, System.Windows.Forms, Culture=neutral, PublicKeyToken=b77a5c561934e089</value>
   </data>
   <data name="&gt;&gt;helpToolStripMenuItem.Name" xml:space="preserve">

@@ -2,6 +2,7 @@ using System;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows.Forms;
+using DirectN.Extensions.Utilities;
 using WicNet;
 using WicNetExplorer.Model;
 using WicNetExplorer.Utilities;
@@ -24,6 +25,12 @@ public partial class Main : Form
 #endif
 
         Task.Run(Settings.Current.CleanRecentFiles);
+
+        var filePath = CommandLine.Current.GetNullifiedArgument(0);
+        if (filePath != null && IOUtilities.PathIsFile(filePath))
+        {
+            OpenFile(filePath);
+        }
     }
 
     public ImageForm? ActiveImageForm => ActiveMdiChild as ImageForm;
@@ -85,6 +92,28 @@ public partial class Main : Form
             {
                 OpenFile(lastRecent.FilePath);
             }
+            return;
+        }
+
+        if (e.KeyCode == Keys.F11)
+        {
+            ToggleFullScreen();
+        }
+    }
+
+    private void ToggleFullScreen()
+    {
+        if (FormBorderStyle == FormBorderStyle.None)
+        {
+            FormBorderStyle = FormBorderStyle.Sizable;
+            WindowState = FormWindowState.Normal;
+            MainMenuStrip?.Show();
+        }
+        else
+        {
+            FormBorderStyle = FormBorderStyle.None;
+            WindowState = FormWindowState.Maximized;
+            MainMenuStrip?.Hide();
         }
     }
 
@@ -141,6 +170,7 @@ public partial class Main : Form
         }
     }
 
+    private void ToggleFullScreenToolStripMenuItem_Click(object sender, EventArgs e) => ToggleFullScreen();
     private void OpenFileLocationToolStripMenuItem_Click(object sender, EventArgs e) => OpenLocation();
     private void DirectXInfoToolStripMenuItem_Click(object sender, EventArgs e) => DxInfo();
     private void ShowSystemInformationToolStripMenuItem_Click(object sender, EventArgs e) => SysInfo();
