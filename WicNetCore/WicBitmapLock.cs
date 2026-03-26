@@ -56,4 +56,28 @@ public sealed class WicBitmapLock : InterlockedComObject<IWICBitmapLock>
             offset += inputStride;
         }
     }
+
+    public unsafe void WriteRectangle(int left, int top, ReadOnlySpan<byte> input, uint inputStride, uint inputIndex = 0, uint? height = null)
+    {
+        ArgumentOutOfRangeException.ThrowIfNegative(left);
+        ArgumentOutOfRangeException.ThrowIfNegative(top);
+        if (PixelFormat == null)
+            throw new InvalidOperationException();
+
+        ArgumentOutOfRangeException.ThrowIfNegative(left);
+        ArgumentOutOfRangeException.ThrowIfNegative(top);
+        if (PixelFormat == null)
+            throw new InvalidOperationException();
+
+        height ??= (uint)input.Length / inputStride;
+        var bpp = PixelFormat.BitsPerPixel;
+        var offset = inputIndex;
+        for (var y = 0; y < height; y++)
+        {
+            var destPtr = (byte*)DataPointer + (top + y) * Stride + left * bpp / 8;
+            var rowSlice = input.Slice((int)offset, (int)inputStride);
+            rowSlice.CopyTo(new Span<byte>(destPtr, (int)inputStride));
+            offset += inputStride;
+        }
+    }
 }

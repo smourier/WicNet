@@ -304,9 +304,29 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         var bytes = new byte[size];
         if (size > 0)
         {
-            CopyPixels(left, top, width, height, size, bytes.AsPointer(), stride);
+            CopyPixels(left, top, width, height, bytes, stride);
         }
         return bytes;
+    }
+
+    public unsafe void CopyPixels(int left, int top, uint width, uint height, Span<byte> buffer, uint? stride = null)
+    {
+        if (buffer.IsEmpty)
+            throw new ArgumentOutOfRangeException(nameof(buffer));
+
+        stride ??= DefaultStride;
+        var rect = new WICRect
+        {
+            X = left,
+            Y = top,
+            Width = (int)width,
+            Height = (int)height
+        };
+
+        fixed (byte* ptr = buffer)
+        {
+            NativeObject.CopyPixels((nint)(&rect), stride.Value, (uint)buffer.Length, (nint)ptr).ThrowOnError();
+        }
     }
 
     public void WithSoftwareBitmap(bool forceReadOnly, Action<object?> action, bool throwOnError = true)
@@ -372,6 +392,8 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
     public static WicBitmapSource FromHIcon(HICON iconHandle) => new(WicImagingFactory.CreateBitmapFromHICON(iconHandle));
     public static WicBitmapSource FromMemory(uint width, uint height, Guid pixelFormat, uint stride, byte[] buffer) => new(WicImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
+    public static WicBitmapSource FromMemory(uint width, uint height, Guid pixelFormat, uint stride, ReadOnlySpan<byte> buffer) => new(WicImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
+    public static WicBitmapSource FromMemory(uint width, uint height, Guid pixelFormat, uint stride, uint bufferSize, nint buffer) => new(WicImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, bufferSize, buffer));
     public static WicBitmapSource FromHBitmap(HBITMAP bitmapHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WicImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, options));
     public static WicBitmapSource FromHBitmap(HBITMAP bitmapHandle, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WicImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, paletteHandle, options));
     public static WicBitmapSource FromSource(WicBitmapSource source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => new(WicImagingFactory.CreateBitmapFromSource(source?.ComObject!, option));
