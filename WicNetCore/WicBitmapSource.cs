@@ -390,6 +390,51 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         return new WicBitmapSource(bmp);
     }
 
+    // BITMAPINFO pointer with DIB_RGB_COLORS, up to V5
+    public static WicBitmapSource? FromDIB(Stream? header, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+        => FromDIB(header, HPALETTE.Null, options);
+
+    public static WicBitmapSource? FromDIB(Stream? header, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+    {
+        if (header == null)
+            return null;
+
+        using var mem = IntPtrBuffer.FromStream(header);
+        return FromDIB(mem.DangerousGetHandle(), paletteHandle, options);
+    }
+
+    // BITMAPINFO pointer with DIB_RGB_COLORS, up to V5
+    public static WicBitmapSource? FromDIB(nint header, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+        => FromDIB(header, HPALETTE.Null, options);
+
+    public static unsafe WicBitmapSource? FromDIB(nint header, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+    {
+        if (header == 0)
+            return null;
+
+        var hdc = Functions.CreateCompatibleDC(0);
+        try
+        {
+            var pInfo = (BITMAPINFO*)header;
+            var hbmp = Functions.CreateDIBSection(hdc, *pInfo, DIB_USAGE.DIB_RGB_COLORS, out _, 0, 0);
+            if (hbmp == 0)
+                return null;
+
+            try
+            {
+                return FromHBitmap(new(hbmp), paletteHandle, options);
+            }
+            finally
+            {
+                Functions.DeleteObject(new(hbmp));
+            }
+        }
+        finally
+        {
+            Functions.DeleteDC(hdc);
+        }
+    }
+
     public static WicBitmapSource FromHIcon(HICON iconHandle) => new(WicImagingFactory.CreateBitmapFromHICON(iconHandle));
     public static WicBitmapSource FromMemory(uint width, uint height, Guid pixelFormat, uint stride, byte[] buffer) => new(WicImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
     public static WicBitmapSource FromMemory(uint width, uint height, Guid pixelFormat, uint stride, ReadOnlySpan<byte> buffer) => new(WicImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
