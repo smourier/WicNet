@@ -8,6 +8,7 @@ public enum WicBitmapScaleOptions
     UpOnly = 0x2,
     Uniform = 0x4,
     UniformToFill = 0x8,
+    UseWidthAndHeight = 0x10,
 
     Default = Uniform,
 }

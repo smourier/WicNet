@@ -463,6 +463,17 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         if (height.HasValue && height.Value < 0)
             throw new ArgumentException(null, nameof(height));
 
+        if (options.HasFlag(WicBitmapScaleOptions.UseWidthAndHeight))
+        {
+            if (!width.HasValue || !height.HasValue)
+                throw new ArgumentException(null, nameof(height));
+
+            var scaler = WicImagingFactory.CreateBitmapScaler();
+            scaler.Object.Initialize(NativeObject, (uint)width.Value, (uint)height.Value, mode).ThrowOnError();
+            ExchangeDisposable(scaler);
+            return;
+        }
+
         var size = Size;
         var factor = size.GetScaleFactor(width, height, options);
         if (factor.width == 1 && factor.height == 1)
