@@ -15,7 +15,7 @@ public static class ID2D1ImageExtensions
         WicPalette? encoderPalette = null,
         WicPalette? framePalette = null,
         IEnumerable<WicColorContext>? colorContexts = null
-        ) => (image?.Object!).Save(device?.Object!, encoderContainerFormat, stream, parameters, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, colorContexts);
+        ) => image?.Object!.Save(device?.Object!, encoderContainerFormat, stream, parameters, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, colorContexts);
 
     [SupportedOSPlatform("windows8.0")]
     public static void Save(this ID2D1Image image,

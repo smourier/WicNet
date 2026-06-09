@@ -153,7 +153,7 @@ public static partial class Extensions
     {
         ArgumentOutOfRangeException.ThrowIfNegative(width);
         ArgumentOutOfRangeException.ThrowIfNegativeOrZero(bitsPerPixel);
-        return ((width * bitsPerPixel + 31) / 32 * 4);
+        return (width * bitsPerPixel + 31) / 32 * 4;
     }
 
     public static IEnumerable<string> SplitToList(this string str, params char[] separators)

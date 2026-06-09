@@ -636,7 +636,7 @@ public static class IconUtilities
     private static WicBitmapSource? ExtractIcon(nint module, PWSTR name, PWSTR type, Dictionary<ushort, GRPICONDIRENTRY> entries, out int colorCount)
     {
         colorCount = 0;
-        var id = (ushort)(name.Value.ToInt64());
+        var id = (ushort)name.Value.ToInt64();
         if (!entries.TryGetValue(id, out _))
             return null;
 

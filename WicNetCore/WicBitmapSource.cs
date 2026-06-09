@@ -1,4 +1,6 @@
-﻿namespace WicNet;
+﻿using System.Buffers.Binary;
+
+namespace WicNet;
 
 public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IComparable, IComparable<WicBitmapSource>
 {
@@ -418,9 +420,234 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         return hBitmap;
     }
 
+    public static unsafe WicBitmapSource? FromEMF(byte[] buffer, SIZE? targetSize = null)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromEMF((nint)ptr, (uint)buffer.Length, targetSize);
+        }
+    }
+
+    public static WicBitmapSource? FromEMF(Stream? header, SIZE? targetSize = null)
+    {
+        if (header == null)
+            return null;
+
+        using var mem = IntPtrBuffer.FromStream(header);
+        return FromEMF(mem.DangerousGetHandle(), (uint)mem.ByteLength, targetSize);
+    }
+
+    public static unsafe WicBitmapSource? FromEMF(nint bits, uint bitsSize, SIZE? targetSize = null)
+    {
+        if (bits == 0 || bitsSize == 0)
+            return null;
+
+        var hemf = Functions.SetEnhMetaFileBits(bitsSize, bits);
+        if (hemf == 0)
+            return null;
+
+        try
+        {
+            var header = new ENHMETAHEADER
+            {
+                nSize = (uint)sizeof(ENHMETAHEADER)
+            };
+            if (Functions.GetEnhMetaFileHeader(hemf, header.nSize, (nint)(&header)) == 0)
+                return null;
+
+            int w;
+            int h;
+            if (targetSize != null)
+            {
+                w = targetSize.Value.cx;
+                h = targetSize.Value.cy;
+            }
+            else
+            {
+                w = header.rclBounds.right - header.rclBounds.left;
+                h = header.rclBounds.bottom - header.rclBounds.top;
+            }
+
+            return Play(hemf, w, h);
+        }
+        finally
+        {
+            Functions.DeleteEnhMetaFile(hemf);
+        }
+    }
+
+    private static WicBitmapSource? Play(nint hemf, int w, int h)
+    {
+        if (h <= 0 || w <= 0)
+            return null;
+
+        var bmi = new BITMAPINFO
+        {
+            bmiHeader = new BITMAPINFOHEADER
+            {
+                biSize = (uint)Unsafe.SizeOf<BITMAPINFOHEADER>(),
+                biWidth = w,
+                biHeight = -h, // top-down, matches WIC row order
+                biPlanes = 1,
+                biBitCount = 32,
+                biCompression = Constants.BI_RGB,
+            }
+        };
+
+        var memDc = Functions.CreateCompatibleDC(0);
+        var hbmp = Functions.CreateDIBSection(memDc, bmi, DIB_USAGE.DIB_RGB_COLORS, out var pBits, 0, 0);
+        if (hbmp == 0)
+        {
+            Functions.DeleteDC(memDc);
+            return null;
+        }
+
+        var stride = w * 4;
+        var byteCount = stride * h;
+        try
+        {
+            var old = Functions.SelectObject(memDc, new(hbmp));
+
+            // GDI metafile playback writes RGB but leaves alpha = 0; start opaque white.
+            unsafe { new Span<byte>((void*)pBits, byteCount).Fill(0xFF); }
+
+            var rect = new RECT { left = 0, top = 0, right = w, bottom = h };
+            Functions.PlayEnhMetaFile(memDc, hemf, rect);
+            Functions.GdiFlush();
+
+            Functions.SelectObject(memDc, old);
+
+            // CreateBitmapFromMemory copies, so the DIB can die right after.
+            var buffer = new byte[byteCount];
+            Marshal.Copy(pBits, buffer, 0, byteCount);
+            return FromMemory((uint)w, (uint)h, WicPixelFormat.GUID_WICPixelFormat32bppBGR, (uint)stride, buffer);
+        }
+        finally
+        {
+            Functions.DeleteObject(new(hbmp));
+            Functions.DeleteDC(memDc);
+        }
+    }
+
+    public static unsafe WicBitmapSource? FromWMF(byte[] buffer, SIZE? targetSize = null, int dpi = 96)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromWMF((nint)ptr, (uint)buffer.Length, targetSize, dpi);
+        }
+    }
+
+    public static WicBitmapSource? FromWMF(Stream? header, SIZE? targetSize = null, int dpi = 96)
+    {
+        if (header == null)
+            return null;
+
+        using var mem = IntPtrBuffer.FromStream(header);
+        return FromWMF(mem.DangerousGetHandle(), (uint)mem.ByteLength, targetSize, dpi);
+    }
+
+    public static unsafe WicBitmapSource? FromWMF(nint bits, uint bitsSize, SIZE? targetSize = null, int dpi = 96)
+    {
+        if (bits == 0 || bitsSize < 4)
+            return null;
+
+        var span = new ReadOnlySpan<byte>((void*)bits, (int)bitsSize);
+        var placeable = bitsSize >= 22 && BinaryPrimitives.ReadUInt32LittleEndian(span) == 0x9AC6CDD7;
+
+        nint wmfPtr;
+        uint wmfSize;
+        int himetricW, himetricH, pxW, pxH;
+
+        if (placeable)
+        {
+            var left = BinaryPrimitives.ReadInt16LittleEndian(span[6..]);
+            var top = BinaryPrimitives.ReadInt16LittleEndian(span[8..]);
+            var right = BinaryPrimitives.ReadInt16LittleEndian(span[10..]);
+            var bottom = BinaryPrimitives.ReadInt16LittleEndian(span[12..]);
+            var inch = BinaryPrimitives.ReadUInt16LittleEndian(span[18..]);
+            if (inch == 0)
+            {
+                inch = 96;
+            }
+
+            var logW = right - left;
+            var logH = bottom - top;
+            himetricW = logW * 2540 / inch; // .01 mm
+            himetricH = logH * 2540 / inch;
+            pxW = targetSize?.cx ?? logW * dpi / inch;
+            pxH = targetSize?.cy ?? logH * dpi / inch;
+
+            wmfPtr = bits + 22; // skip the 22-byte Aldus header
+            wmfSize = bitsSize - 22;
+        }
+        else
+        {
+            if (targetSize is null)
+                return null; // standard WMF carries no bounds
+
+            pxW = targetSize.Value.cx;
+            pxH = targetSize.Value.cy;
+            himetricW = pxW * 2540 / dpi;
+            himetricH = pxH * 2540 / dpi;
+            wmfPtr = bits;
+            wmfSize = bitsSize;
+        }
+
+        var mfp = new METAFILEPICT { mm = (int)HDC_MAP_MODE.MM_ANISOTROPIC, xExt = himetricW, yExt = himetricH };
+        var refDc = Functions.GetDC(0);
+        nint hemf;
+        try
+        {
+            hemf = Functions.SetWinMetaFileBits(wmfSize, wmfPtr, refDc, (nint)(&mfp));
+        }
+        finally
+        {
+            _ = Functions.ReleaseDC(0, refDc);
+        }
+        if (hemf == 0)
+            return null;
+
+        try
+        {
+            return Play(hemf, pxW, pxH);
+        }
+        finally
+        {
+            Functions.DeleteEnhMetaFile(hemf);
+        }
+    }
+
     // BITMAPINFO pointer with DIB_RGB_COLORS, up to V5
     public static WicBitmapSource? FromDIB(Stream? header, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
         => FromDIB(header, HPALETTE.Null, options);
+
+    public static unsafe WicBitmapSource? FromDIB(byte[] buffer, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromDIB((nint)ptr, options);
+        }
+    }
+
+    public static unsafe WicBitmapSource? FromDIB(byte[] buffer, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromDIB((nint)ptr, paletteHandle, options);
+        }
+    }
 
     public static WicBitmapSource? FromDIB(Stream? header, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
     {
@@ -451,6 +678,71 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             try
             {
                 return FromHBITMAP(new(hbmp), paletteHandle, options);
+            }
+            finally
+            {
+                Functions.DeleteObject(new(hbmp));
+            }
+        }
+        finally
+        {
+            Functions.DeleteDC(hdc);
+        }
+    }
+
+    public static unsafe WicBitmapSource? FromPackedDib(byte[] buffer, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapIgnoreAlpha)
+    {
+        if (buffer == null || buffer.Length == 0)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromPackedDib((nint)ptr, (uint)buffer.Length, options);
+        }
+    }
+
+    public static WicBitmapSource? FromPackedDib(Stream? header, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapIgnoreAlpha)
+    {
+        if (header == null)
+            return null;
+
+        using var mem = IntPtrBuffer.FromStream(header);
+        return FromPackedDib(mem.DangerousGetHandle(), (uint)mem.ByteLength, options);
+    }
+
+    public static unsafe WicBitmapSource? FromPackedDib(nint dib, uint dibSize, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapIgnoreAlpha)
+    {
+        if (dib == 0 || dibSize < 40)
+            return null;
+
+        var pInfo = (BITMAPINFO*)dib;
+        ref var bih = ref pInfo->bmiHeader;
+
+        var biSize = bih.biSize;
+        var bpp = bih.biBitCount;
+        var clrUsed = bih.biClrUsed;
+        var width = bih.biWidth;
+        var height = bih.biHeight;// may be negative (top-down)
+
+        var paletteEntries = clrUsed != 0 ? clrUsed : (bpp <= 8 ? 1u << bpp : 0);
+        var pixelOffset = biSize + paletteEntries * 4;
+        var stride = (uint)((width * bpp + 31) / 32 * 4);
+        var imageSize = bih.biSizeImage != 0 ? bih.biSizeImage : stride * (uint)Math.Abs(height);
+        if (pixelOffset + imageSize > dibSize)
+            return null;
+
+        var hdc = Functions.CreateCompatibleDC(0);
+        try
+        {
+            var hbmp = Functions.CreateDIBSection(hdc, *pInfo, DIB_USAGE.DIB_RGB_COLORS, out var ppvBits, 0, 0);
+            if (hbmp == 0)
+                return null;
+
+            try
+            {
+                Buffer.MemoryCopy((void*)(dib + (nint)pixelOffset), (void*)ppvBits, imageSize, imageSize);
+                Functions.GdiFlush();
+                return FromHBITMAP(new(hbmp), default, options);
             }
             finally
             {

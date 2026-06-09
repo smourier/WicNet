@@ -23,8 +23,9 @@ internal class Program
 {
     static void Main()
     {
-        HBITMAPTests();
+        MetaFileTests();
         return;
+        HBITMAPTests();
         IconWrite();
         BuildTransparentBitmap(96, 96);
         DumpMetadata("england -london-bridge.jpg");
@@ -54,6 +55,21 @@ internal class Program
         CopyWithColorContext();
         GC.Collect();
         GC.WaitForPendingFinalizers();
+    }
+
+    static void MetaFileTests()
+    {
+        var bytes = File.ReadAllBytes("Woman.emf");
+        using var bmp = WicBitmapSource.FromEMF(bytes);
+        bmp!.Save("Woman.png");
+
+        bytes = File.ReadAllBytes("example.emf");
+        using var bmp2 = WicBitmapSource.FromEMF(bytes);
+        bmp2!.Save("example.png");
+
+        bytes = File.ReadAllBytes("crown.wmf");
+        using var bmp3 = WicBitmapSource.FromWMF(bytes);
+        bmp3!.Save("crown.png");
     }
 
     static void HBITMAPTests()

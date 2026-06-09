@@ -53,8 +53,8 @@ public abstract class WicCodec : WicImagingComponent
         comObject.Object.DoesSupportMultiframe(out b);
         SupportsMultiframe = b;
 
-        FileExtensionsList = [.. (FileExtensions?.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList() ?? [])];
-        MimeTypesList = [.. (MimeTypes?.SplitToList(',').OrderBy(s => s).ToList() ?? [])];
+        FileExtensionsList = [.. FileExtensions?.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList() ?? []];
+        MimeTypesList = [.. MimeTypes?.SplitToList(',').OrderBy(s => s).ToList() ?? []];
 
         comObject.Object.GetPixelFormats(0, null!, out var len);
         if (len > 0)
