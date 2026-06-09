@@ -973,7 +973,7 @@ public static class IconUtilities
         if (icon.Value == 0)
             return null;
 
-        return WicBitmapSource.FromHIcon(icon);
+        return WicBitmapSource.FromHICON(icon);
     }
 
     public static WicBitmapSource? ToBitmap(this Icon? icon)

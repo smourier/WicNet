@@ -23,8 +23,9 @@ internal class Program
 {
     static void Main()
     {
-        IconWrite();
+        HBITMAPTests();
         return;
+        IconWrite();
         BuildTransparentBitmap(96, 96);
         DumpMetadata("england -london-bridge.jpg");
         DumpAllComponents();
@@ -53,6 +54,14 @@ internal class Program
         CopyWithColorContext();
         GC.Collect();
         GC.WaitForPendingFinalizers();
+    }
+
+    static void HBITMAPTests()
+    {
+        using var bmp = WicBitmapSource.Load("cat.heic");
+        var hbitmap = bmp.ToHBITMAP();
+        using var bmp2 = WicBitmapSource.FromHBITMAP(hbitmap);
+        bmp2.Save("cath.png");
     }
 
     static void IconWrite()

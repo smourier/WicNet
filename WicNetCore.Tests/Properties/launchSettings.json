@@ -1,8 +1,7 @@
 {
   "profiles": {
     "WicNetCore.Tests": {
-      "commandName": "Project",
-      "nativeDebugging": true
+      "commandName": "Project"
     }
   }
 }

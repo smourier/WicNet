@@ -374,10 +374,10 @@ public sealed class WicBitmapSource : IDisposable, IComparable, IComparable<WicB
         }
     }
 
-    public static WicBitmapSource FromHIcon(IntPtr iconHandle) => new(WICImagingFactory.CreateBitmapFromHICON(iconHandle));
+    public static WicBitmapSource FromHICON(IntPtr iconHandle) => new(WICImagingFactory.CreateBitmapFromHICON(iconHandle));
     public static WicBitmapSource FromMemory(int width, int height, Guid pixelFormat, int stride, byte[] buffer) => new(WICImagingFactory.CreateBitmapFromMemory(width, height, pixelFormat, stride, buffer));
-    public static WicBitmapSource FromHBitmap(IntPtr bitmapHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, options));
-    public static WicBitmapSource FromHBitmap(IntPtr bitmapHandle, IntPtr paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, paletteHandle, options));
+    public static WicBitmapSource FromHBITMAP(IntPtr bitmapHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, options));
+    public static WicBitmapSource FromHBITMAP(IntPtr bitmapHandle, IntPtr paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha) => new(WICImagingFactory.CreateBitmapFromHBITMAP(bitmapHandle, paletteHandle, options));
     public static WicBitmapSource FromSource(WicBitmapSource source, WICBitmapCreateCacheOption option = WICBitmapCreateCacheOption.WICBitmapNoCache) => new(WICImagingFactory.CreateBitmapFromSource(source?.ComObject, option));
     public static WicBitmapSource FromSourceRect(WicBitmapSource source, int x, int y, int width, int height) => new(WICImagingFactory.CreateBitmapFromSourceRect(source?.ComObject, x, y, width, height));
 
