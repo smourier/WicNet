@@ -359,7 +359,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
     }
 
-    public object ToSoftwareBitmap(bool forceReadOnly, bool throwOnError = true)
+    public nint ToSoftwareBitmap(bool forceReadOnly, bool throwOnError = true)
     {
         if (NativeObject is not IWICBitmap bmp)
             throw new WicNetException("WIC0004: Converting to WinRT SoftwareBitmap is only supported on in-memory bitmaps. You must Clone this bitmap first.");

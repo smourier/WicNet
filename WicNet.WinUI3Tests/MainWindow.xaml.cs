@@ -81,6 +81,6 @@ public sealed partial class MainWindow : Window
 
         // software bitmap doesn't support "raw" IWicBitmapSource, it wants an IWicBitmap
         using var clone = bmp.Clone();
-        return clone.WithSoftwareBitmap(true, ptr => SoftwareBitmap.FromAbi(ptr));
+        return clone.WithSoftwareBitmap(true, SoftwareBitmap.FromAbi);
     }
 }
