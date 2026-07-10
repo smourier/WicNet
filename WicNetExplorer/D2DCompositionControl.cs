@@ -21,13 +21,26 @@ namespace WicNetExplorer;
 public class D2DCompositionControl : Control, ID2DControl
 {
     // device independent resources
-    private static readonly Lazy<IComObject<ID3D11Device>> _d3d11Device = new(() => D3D11Functions.D3D11CreateDevice(null, D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE,
+    private static readonly Lazy<IComObject<ID3D11Device>> _d3d11Device = new(CreateD3D11Device);
+
+    private static IComObject<ID3D11Device> CreateD3D11Device()
+    {
+        var flags = D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT;
 #if DEBUG
-         D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_DEBUG | D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT
-#else
-        D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_BGRA_SUPPORT
+        // the D3D11 debug layer requires the "Graphics Tools" optional Windows feature; on machines without it
+        // D3D11CreateDevice fails with DXGI_ERROR_SDK_COMPONENT_MISSING (0x887A002D) — fall back to no debug layer
+        const int DXGI_ERROR_SDK_COMPONENT_MISSING = unchecked((int)0x887A002D);
+        try
+        {
+            return D3D11Functions.D3D11CreateDevice(null, D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE, flags | D3D11_CREATE_DEVICE_FLAG.D3D11_CREATE_DEVICE_DEBUG);
+        }
+        catch (Win32Exception ex) when (ex.NativeErrorCode == DXGI_ERROR_SDK_COMPONENT_MISSING || ex.HResult == DXGI_ERROR_SDK_COMPONENT_MISSING)
+        {
+            // debug layer not installed — create the device without it
+        }
 #endif
-    ));
+        return D3D11Functions.D3D11CreateDevice(null, D3D_DRIVER_TYPE.D3D_DRIVER_TYPE_HARDWARE, flags);
+    }
     private static readonly Lazy<IComObject<ID2D1Factory1>> _d2dFactory = new(() => D2D1Functions.D2D1CreateFactory<ID2D1Factory1>());
     private static readonly Lazy<CompositionGraphicsDevice> _graphicsDevice = new(CreateCompositionGraphicsDevice);
 
