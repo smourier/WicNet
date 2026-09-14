@@ -68,15 +68,42 @@ public sealed class WicBitmapLock : InterlockedComObject<IWICBitmapLock>
         if (PixelFormat == null)
             throw new InvalidOperationException();
 
-        height ??= (uint)input.Length / inputStride;
-        var bpp = PixelFormat.BitsPerPixel;
-        var offset = inputIndex;
-        for (var y = 0; y < height; y++)
+        if (height == 0)
+            return;
+
+        ArgumentOutOfRangeException.ThrowIfZero(inputStride);
+        if (inputIndex > (uint)input.Length)
+            throw new ArgumentOutOfRangeException(nameof(inputIndex));
+
+        var rows = height ?? ((uint)input.Length - inputIndex) / inputStride;
+        if (rows == 0)
+            return;
+
+        var bitOffset = (ulong)(uint)left * PixelFormat.BitsPerPixel;
+        if ((uint)left >= Width || (bitOffset & 7) != 0)
+            throw new ArgumentOutOfRangeException(nameof(left));
+
+        if ((uint)top >= Height || rows > Height - (uint)top)
+            throw new ArgumentOutOfRangeException(nameof(height));
+
+        var byteOffset = bitOffset / 8;
+        if (byteOffset > Stride || inputStride > Stride - byteOffset)
+            throw new ArgumentOutOfRangeException(nameof(inputStride));
+
+        if (inputIndex + (ulong)rows * inputStride > (ulong)input.Length)
+            throw new ArgumentException("The source buffer does not contain all requested rows.", nameof(input));
+
+        var destinationOffset = (ulong)(uint)top * Stride + byteOffset;
+        var destinationEnd = destinationOffset + (ulong)(rows - 1) * Stride + inputStride;
+        if (destinationEnd > DataSize)
+            throw new ArgumentException("The requested rows exceed the locked buffer.", nameof(height));
+
+        for (uint y = 0; y < rows; y++)
         {
-            var destPtr = (byte*)DataPointer + (top + y) * Stride + left * bpp / 8;
-            var rowSlice = input.Slice((int)offset, (int)inputStride);
-            rowSlice.CopyTo(new Span<byte>(destPtr, (int)inputStride));
-            offset += inputStride;
+            var sourceOffset = checked((int)(inputIndex + (ulong)y * inputStride));
+            var destPtr = (byte*)DataPointer + destinationOffset + (ulong)y * Stride;
+            input.Slice(sourceOffset, checked((int)inputStride))
+                .CopyTo(new Span<byte>(destPtr, checked((int)inputStride)));
         }
     }
 }

@@ -35,16 +35,32 @@ public sealed class WicPalette : InterlockedComObject<IWICPalette>
     private static IComObject<IWICPalette> From(WICBitmapPaletteType type, bool addTransparentColor = false)
     {
         var comObject = WicImagingFactory.CreatePalette();
-        comObject.Object.InitializePredefined(type, addTransparentColor);
-        return comObject;
+        try
+        {
+            comObject.Object.InitializePredefined(type, addTransparentColor);
+            return comObject;
+        }
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     private static IComObject<IWICPalette> From(WicBitmapSource bitmap, int count, bool addTransparentColor = false)
     {
         ArgumentNullException.ThrowIfNull(bitmap);
         var comObject = WicImagingFactory.CreatePalette();
-        comObject.Object.InitializeFromBitmap(bitmap.ComObject.Object, (uint)count, addTransparentColor);
-        return comObject;
+        try
+        {
+            comObject.Object.InitializeFromBitmap(bitmap.ComObject.Object, (uint)count, addTransparentColor);
+            return comObject;
+        }
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     private static IComObject<IWICPalette> From(IEnumerable<WicColor> colors)
@@ -52,16 +68,32 @@ public sealed class WicPalette : InterlockedComObject<IWICPalette>
         ArgumentNullException.ThrowIfNull(colors);
         var cols = colors.Select(c => (uint)c.ToArgb()).ToArray();
         var comObject = WicImagingFactory.CreatePalette();
-        comObject.Object.InitializeCustom(cols, (uint)cols.Length);
-        return comObject;
+        try
+        {
+            comObject.Object.InitializeCustom(cols, (uint)cols.Length);
+            return comObject;
+        }
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     private static IComObject<IWICPalette> From(WicPalette palette)
     {
         ArgumentNullException.ThrowIfNull(palette);
         var comObject = WicImagingFactory.CreatePalette();
-        comObject.Object.InitializeFromPalette(palette.ComObject.Object);
-        return comObject;
+        try
+        {
+            comObject.Object.InitializeFromPalette(palette.ComObject.Object);
+            return comObject;
+        }
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     public bool HasAlpha

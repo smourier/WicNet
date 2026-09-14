@@ -48,9 +48,17 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
     {
         ArgumentNullException.ThrowIfNull(fileName);
         var comObject = WicImagingFactory.CreateColorContext();
-        using var fn = new Pwstr(fileName);
-        comObject.Object.InitializeFromFilename(fn);
-        return comObject;
+        try
+        {
+            using var fn = new Pwstr(fileName);
+            comObject.Object.InitializeFromFilename(fn);
+            return comObject;
+        }
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     private static IComObject<IWICColorContext> From(byte[] bytes)
@@ -62,18 +70,34 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
     private static unsafe IComObject<IWICColorContext> From(ReadOnlySpan<byte> bytes)
     {
         var comObject = WicImagingFactory.CreateColorContext();
-        fixed (byte* ptr = bytes)
+        try
         {
-            comObject.Object.InitializeFromMemory((nint)ptr, (uint)bytes.Length);
+            fixed (byte* ptr = bytes)
+            {
+                comObject.Object.InitializeFromMemory((nint)ptr, (uint)bytes.Length);
+            }
+            return comObject;
         }
-        return comObject;
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     private static IComObject<IWICColorContext> From(uint colorSpace)
     {
         var comObject = WicImagingFactory.CreateColorContext();
-        comObject.Object.InitializeFromExifColorSpace(colorSpace);
-        return comObject;
+        try
+        {
+            comObject.Object.InitializeFromExifColorSpace(colorSpace);
+            return comObject;
+        }
+        catch
+        {
+            comObject.Dispose();
+            throw;
+        }
     }
 
     public ColorProfile? Profile => _profile.Value;

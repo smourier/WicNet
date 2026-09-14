@@ -21,6 +21,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     public D2D_SIZE_U Size => new(Width, Height);
     public D2D_RECT_U Bounds => new() { right = Width, bottom = Height };
     public uint DefaultStride => Utilities.Extensions.GetStride(Width, WicPixelFormat?.BitsPerPixel ?? 0);
+    public uint MinimumStride => checked((uint)(((ulong)Width * (WicPixelFormat?.BitsPerPixel ?? 0) + 7) / 8));
     public bool IsSupportedRenderTarget => IsSupportedRenderTargetFormat(PixelFormat);
 
     public WicPalette? Palette
@@ -30,16 +31,27 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             if (_palette == null)
             {
                 var palette = new WicPalette();
-                NativeObject.CopyPalette(palette.ComObject.Object).ThrowOnError(false);
-                if (palette.ColorCount != 0)
+                try
                 {
-                    _palette = palette;
+                    NativeObject.CopyPalette(palette.ComObject.Object).ThrowOnError(false);
+                    if (palette.ColorCount != 0)
+                    {
+                        _palette = palette;
+                    }
+                }
+                finally
+                {
+                    if (!ReferenceEquals(_palette, palette))
+                        palette.Dispose();
                 }
             }
             return _palette;
         }
         set
         {
+            if (ReferenceEquals(_palette, value))
+                return;
+
             _palette?.Dispose();
             _palette = value;
         }
@@ -155,16 +167,18 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     public WicColorContext? GetBestColorContext() => GetBestColorContext(GetColorContexts());
     public static WicColorContext? GetBestColorContext(IEnumerable<WicColorContext> contexts)
     {
-        if (!contexts.Any())
+        ArgumentNullException.ThrowIfNull(contexts);
+        var items = contexts.ToArray();
+        if (items.Length == 0)
             return null;
 
-        if (contexts.Count() == 1)
-            return contexts.First();
+        if (items.Length == 1)
+            return items[0];
 
         // https://stackoverflow.com/a/70215280/403671
         // get last not uncalibrated color context
         WicColorContext? best = null;
-        foreach (var ctx in contexts.Reverse())
+        foreach (var ctx in items.Reverse())
         {
             if (ctx.ExifColorSpace.HasValue && ctx.ExifColorSpace.Value == 0xFFFF)
                 continue;
@@ -173,8 +187,8 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
 
         // last resort
-        best ??= contexts.Last();
-        foreach (var context in contexts)
+        best ??= items[^1];
+        foreach (var context in items)
         {
             if (best?.Equals(context) == true)
                 continue;
@@ -304,7 +318,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     public byte[] CopyPixels(int left, int top, uint width, uint height, uint? stride = null)
     {
         stride ??= DefaultStride;
-        var size = height * stride.Value;
+        var size = checked(height * stride.Value);
         var bytes = new byte[size];
         if (size > 0)
         {
@@ -802,17 +816,35 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         var pInfo = (BITMAPINFO*)dib;
         ref var bih = ref pInfo->bmiHeader;
 
-        var biSize = bih.biSize;
+        var headerSize = bih.biSize;
         var bpp = bih.biBitCount;
-        var clrUsed = bih.biClrUsed;
         var width = bih.biWidth;
-        var height = bih.biHeight;// may be negative (top-down)
+        var height = bih.biHeight;
+        var compression = bih.biCompression;
+        if (headerSize < 40 || headerSize > dibSize || width <= 0 || height == 0 || bih.biPlanes != 1)
+            return null;
 
-        var paletteEntries = clrUsed != 0 ? clrUsed : (bpp <= 8 ? 1u << bpp : 0);
-        var pixelOffset = biSize + paletteEntries * 4;
-        var stride = (uint)((width * bpp + 31) / 32 * 4);
-        var imageSize = bih.biSizeImage != 0 ? bih.biSizeImage : stride * (uint)Math.Abs(height);
-        if (pixelOffset + imageSize > dibSize)
+        if (bpp is not (1 or 4 or 8 or 16 or 24 or 32))
+            return null;
+
+        if (compression is not (0 or 3 or 6) || (compression != 0 && bpp is not (16 or 32)))
+            return null;
+
+        ulong maskBytes = headerSize == 40 ? (compression == 3 ? 12UL : compression == 6 ? 16UL : 0UL) : 0;
+        if ((compression == 3 && headerSize != 40 && headerSize < 52) || (compression == 6 && headerSize != 40 && headerSize < 56))
+            return null;
+
+        var paletteEntries = bih.biClrUsed != 0 ? bih.biClrUsed : (bpp <= 8 ? 1u << bpp : 0);
+        if (bpp <= 8 && paletteEntries > (1u << bpp))
+            return null;
+
+        var pixelOffset = headerSize + maskBytes + (ulong)paletteEntries * 4;
+        var stride = ((ulong)(uint)width * bpp + 31) / 32 * 4;
+        var imageSize = stride * (ulong)Math.Abs((long)height);
+        if (pixelOffset > dibSize || imageSize > dibSize - pixelOffset)
+            return null;
+
+        if (bih.biSizeImage != 0 && (bih.biSizeImage < imageSize || bih.biSizeImage > dibSize - pixelOffset))
             return null;
 
         var hdc = Functions.CreateCompatibleDC(0);
@@ -824,7 +856,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
             try
             {
-                Buffer.MemoryCopy((void*)(dib + (nint)pixelOffset), (void*)ppvBits, imageSize, imageSize);
+                Buffer.MemoryCopy((byte*)dib + pixelOffset, (void*)ppvBits, imageSize, imageSize);
                 Functions.GdiFlush();
                 return FromHBITMAP(new(hbmp), default, options);
             }
@@ -1090,17 +1122,19 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
                 return 1;
         }
 
-        var size = Width * Height;
-        var otherSize = other.Width * other.Height;
+        var size = (ulong)Width * Height;
+        var otherSize = (ulong)other.Width * other.Height;
         if (size != otherSize)
             return size.CompareTo(otherSize);
 
-        if (WicPixelFormat == null)
-            return 1;
+        var format = WicPixelFormat;
+        var otherFormat = other.WicPixelFormat;
+        if (format == null)
+            return otherFormat == null ? 0 : 1;
 
-        if (other.WicPixelFormat == null)
+        if (otherFormat == null)
             return -1;
 
-        return WicPixelFormat.CompareTo(other.WicPixelFormat);
+        return format.CompareTo(otherFormat);
     }
 }

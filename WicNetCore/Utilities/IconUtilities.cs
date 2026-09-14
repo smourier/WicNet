@@ -720,7 +720,7 @@ public static class IconUtilities
                 Span<byte> padding = stackalloc byte[3];
                 for (var i = 0; i < height; i++)
                 {
-                    var offset = checked((int)((long)(height - 1 - i) * data.Stride));
+                    var offset = checked((int)((height - 1 - i) * data.Stride));
                     stream.ReadExactly(pixels.Slice(offset, rowBytes));
                     stream.ReadExactly(padding[..checked((int)stride - rowBytes)]);
                 }
@@ -1728,7 +1728,7 @@ public static class IconUtilities
             get => _stream.Position - InitialPosition;
             set
             {
-                if (value < 0 || value >= Length)
+                if (value < 0 || value > Length)
                     throw new ArgumentException(null, nameof(value));
 
                 _stream.Position = InitialPosition + value;
@@ -1739,7 +1739,7 @@ public static class IconUtilities
 
         public override int Read(byte[] buffer, int offset, int count)
         {
-            var left = Math.Min(count, (int)Left);
+            var left = (int)Math.Min(count, Math.Max(0L, Left));
             var read = _stream.Read(buffer, offset, left);
             return read;
         }
