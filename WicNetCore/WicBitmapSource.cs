@@ -473,16 +473,16 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         if (bits == 0 || bitsSize == 0)
             return null;
 
+        if (targetSize.HasValue && !TryGetMetafileBufferSize(targetSize.Value.cx, targetSize.Value.cy, out _, out _))
+            return null;
+
         var hemf = Functions.SetEnhMetaFileBits(bitsSize, bits);
         if (hemf == 0)
             return null;
 
         try
         {
-            var header = new ENHMETAHEADER
-            {
-                nSize = (uint)sizeof(ENHMETAHEADER)
-            };
+            var header = new ENHMETAHEADER { nSize = (uint)sizeof(ENHMETAHEADER) };
             if (Functions.GetEnhMetaFileHeader(hemf, header.nSize, (nint)(&header)) == 0)
                 return null;
 
@@ -495,8 +495,13 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             }
             else
             {
-                w = header.rclBounds.right - header.rclBounds.left;
-                h = header.rclBounds.bottom - header.rclBounds.top;
+                var width = (long)header.rclBounds.right - header.rclBounds.left;
+                var height = (long)header.rclBounds.bottom - header.rclBounds.top;
+                if (!TryGetMetafileBufferSize(width, height, out _, out _))
+                    return null;
+
+                w = (int)width;
+                h = (int)height;
             }
 
             return Play(hemf, w, h);
@@ -507,9 +512,25 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
     }
 
+    private static bool TryGetMetafileBufferSize(long width, long height, out int stride, out int byteCount)
+    {
+        stride = 0;
+        byteCount = 0;
+        if (width <= 0 || height <= 0 || width > int.MaxValue || height > int.MaxValue)
+            return false;
+
+        var rowSize = width * 4;
+        if (rowSize > Array.MaxLength / height)
+            return false;
+
+        stride = (int)rowSize;
+        byteCount = (int)(rowSize * height);
+        return true;
+    }
+
     private static WicBitmapSource? Play(nint hemf, int w, int h)
     {
-        if (h <= 0 || w <= 0)
+        if (!TryGetMetafileBufferSize(w, h, out var stride, out var byteCount))
             return null;
 
         var bmi = new BITMAPINFO
@@ -526,6 +547,9 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         };
 
         var memDc = Functions.CreateCompatibleDC(0);
+        if (memDc == 0)
+            return null;
+
         var hbmp = Functions.CreateDIBSection(memDc, bmi, DIB_USAGE.DIB_RGB_COLORS, out var pBits, 0, 0);
         if (hbmp == 0)
         {
@@ -533,20 +557,23 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             return null;
         }
 
-        var stride = w * 4;
-        var byteCount = stride * h;
         try
         {
             var old = Functions.SelectObject(memDc, new(hbmp));
 
-            // GDI metafile playback writes RGB but leaves alpha = 0; start opaque white.
-            unsafe { new Span<byte>((void*)pBits, byteCount).Fill(0xFF); }
+            try
+            {
+                // GDI metafile playback writes RGB but leaves alpha = 0; start opaque white.
+                unsafe { new Span<byte>((void*)pBits, byteCount).Fill(0xFF); }
 
-            var rect = new RECT { left = 0, top = 0, right = w, bottom = h };
-            Functions.PlayEnhMetaFile(memDc, hemf, rect);
-            Functions.GdiFlush();
-
-            Functions.SelectObject(memDc, old);
+                var rect = new RECT { left = 0, top = 0, right = w, bottom = h };
+                Functions.PlayEnhMetaFile(memDc, hemf, rect);
+                Functions.GdiFlush();
+            }
+            finally
+            {
+                Functions.SelectObject(memDc, old);
+            }
 
             // CreateBitmapFromMemory copies, so the DIB can die right after.
             var buffer = new byte[byteCount];
@@ -596,12 +623,16 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         if (bits == 0 || bitsSize < 4)
             return null;
 
-        var span = new ReadOnlySpan<byte>((void*)bits, (int)bitsSize);
+        ArgumentOutOfRangeException.ThrowIfNegativeOrZero(dpi);
+        if (targetSize.HasValue && !TryGetMetafileBufferSize(targetSize.Value.cx, targetSize.Value.cy, out _, out _))
+            return null;
+
+        var span = new ReadOnlySpan<byte>((void*)bits, (int)Math.Min(bitsSize, 22u));
         var placeable = bitsSize >= 22 && BinaryPrimitives.ReadUInt32LittleEndian(span) == 0x9AC6CDD7;
 
         nint wmfPtr;
         uint wmfSize;
-        int himetricW, himetricH, pxW, pxH;
+        long himetricW, himetricH, pxW, pxH;
 
         if (placeable)
         {
@@ -609,7 +640,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             var top = BinaryPrimitives.ReadInt16LittleEndian(span[8..]);
             var right = BinaryPrimitives.ReadInt16LittleEndian(span[10..]);
             var bottom = BinaryPrimitives.ReadInt16LittleEndian(span[12..]);
-            var inch = BinaryPrimitives.ReadUInt16LittleEndian(span[18..]);
+            var inch = BinaryPrimitives.ReadUInt16LittleEndian(span[14..]);
             if (inch == 0)
             {
                 inch = 96;
@@ -617,10 +648,10 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
             var logW = right - left;
             var logH = bottom - top;
-            himetricW = logW * 2540 / inch; // .01 mm
-            himetricH = logH * 2540 / inch;
-            pxW = targetSize?.cx ?? logW * dpi / inch;
-            pxH = targetSize?.cy ?? logH * dpi / inch;
+            himetricW = (long)logW * 2540 / inch; // .01 mm
+            himetricH = (long)logH * 2540 / inch;
+            pxW = targetSize?.cx ?? (long)logW * dpi / inch;
+            pxH = targetSize?.cy ?? (long)logH * dpi / inch;
 
             wmfPtr = bits + 22; // skip the 22-byte Aldus header
             wmfSize = bitsSize - 22;
@@ -638,7 +669,11 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             wmfSize = bitsSize;
         }
 
-        var mfp = new METAFILEPICT { mm = (int)HDC_MAP_MODE.MM_ANISOTROPIC, xExt = himetricW, yExt = himetricH };
+        if (!TryGetMetafileBufferSize(pxW, pxH, out _, out _) ||
+            himetricW <= 0 || himetricH <= 0 || himetricW > int.MaxValue || himetricH > int.MaxValue)
+            return null;
+
+        var mfp = new METAFILEPICT { mm = (int)HDC_MAP_MODE.MM_ANISOTROPIC, xExt = (int)himetricW, yExt = (int)himetricH };
         var refDc = Functions.GetDC(0);
         nint hemf;
         try
@@ -654,7 +689,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
         try
         {
-            return Play(hemf, pxW, pxH);
+            return Play(hemf, (int)pxW, (int)pxH);
         }
         finally
         {

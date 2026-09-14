@@ -611,7 +611,7 @@ public static class IconUtilities
         var count = reader.ReadInt16();
         for (var i = 0; i < count; i++)
         {
-            if (stream.Read(span) != span.Length)
+            if (stream.ReadAtLeast(span, span.Length, throwOnEndOfStream: false) != span.Length)
                 return;
 
             var entry = MemoryMarshal.Read<GRPICONDIRENTRY>(span);
@@ -666,7 +666,7 @@ public static class IconUtilities
     {
         colorCount = 0;
         Span<byte> span = stackalloc byte[sizeof(BITMAPINFOHEADER)];
-        if (stream.Read(span) != span.Length)
+        if (stream.ReadAtLeast(span, span.Length, throwOnEndOfStream: false) != span.Length)
             return null;
 
         var bih = MemoryMarshal.Read<BITMAPINFOHEADER>(span);
@@ -929,7 +929,7 @@ public static class IconUtilities
             Span<byte> span = stackalloc byte[sizeof(ICONDIRENTRY)];
             for (var i = 0; i < count; i++)
             {
-                if (stream.Read(span) != span.Length)
+                if (stream.ReadAtLeast(span, span.Length, throwOnEndOfStream: false) != span.Length)
                     break;
 
                 var entry = MemoryMarshal.Read<ICONDIRENTRY>(span);

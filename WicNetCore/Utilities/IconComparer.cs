@@ -20,11 +20,13 @@ public class IconComparer : IComparer<WicBitmapSource>
     {
         ArgumentNullException.ThrowIfNull(bmp);
 
-        if (bmp.Palette != null)
-            return bmp.Palette.ColorCount;
+        var palette = bmp.Palette;
+        if (palette != null)
+            return palette.ColorCount;
 
-        if (bmp.WicPixelFormat != null)
-            return (uint)Math.Pow(2, bmp.WicPixelFormat.BitsPerPixel);
+        var format = bmp.WicPixelFormat;
+        if (format != null)
+            return format.BitsPerPixel >= 32 ? uint.MaxValue : 1u << (int)format.BitsPerPixel;
 
         return 0;
     }
@@ -47,8 +49,8 @@ public class IconComparer : IComparer<WicBitmapSource>
         if (xc != yc)
             return xc.CompareTo(yc);
 
-        var size = x.Width * x.Height;
-        var otherSize = y.Width * y.Height;
+        var size = (ulong)x.Width * x.Height;
+        var otherSize = (ulong)y.Width * y.Height;
         if (size != otherSize)
             return size.CompareTo(otherSize);
 

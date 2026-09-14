@@ -67,16 +67,18 @@ public sealed class WicPixelFormat : WicImagingComponent, IComparable, IComparab
     private ReadOnlyCollection<WicPixelFormat> GetPossibleTargetFormats()
     {
         var list = new List<WicPixelFormat>();
+        var seen = new HashSet<Guid>();
         var formats = AllComponents.OfType<WicPixelFormat>().ToArray();
         foreach (var converter in AllComponents.OfType<WicPixelFormatConverter>())
         {
             foreach (var to in formats)
             {
-                if (to.Guid == Guid)
+                if (to.Guid == Guid || seen.Contains(to.Guid))
                     continue;
 
                 if (converter.CanConvert(Guid, to.Guid))
                 {
+                    seen.Add(to.Guid);
                     list.Add(to);
                 }
             }
