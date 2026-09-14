@@ -10,14 +10,27 @@ public class Dms(double degrees, double minutes, double seconds)
     public override string ToString() => $"{degrees}° {minutes}' {seconds}\"";
 
     // https://learn.microsoft.com/en-us/windows/win32/properties/props-system-gps-latitude
-    public static Dms From(IReadOnlyList<ulong> array)
+    public static Dms? From(IReadOnlyList<ulong>? array) => TryFrom(array, out var value) ? value : null;
+
+    public static bool TryFrom(IReadOnlyList<ulong>? array, [NotNullWhen(true)] out Dms? value)
     {
-        var degreesArray = WicMetadataQueryReader.ChangeType<IReadOnlyList<uint>>(array[0])!;
-        var minutesArray = WicMetadataQueryReader.ChangeType<IReadOnlyList<uint>>(array[1])!;
-        var secondsArray = WicMetadataQueryReader.ChangeType<IReadOnlyList<uint>>(array[2])!;
-        var degrees = degreesArray[0] / (double)degreesArray[1];
-        var minutes = minutesArray[0] / (double)minutesArray[1];
-        var seconds = secondsArray[0] / (double)secondsArray[1];
-        return new Dms(degrees, minutes, seconds);
+        value = null;
+        if (array == null || array.Count != 3)
+            return false;
+
+        var degreesDenominator = (uint)(array[0] >> 32);
+        var minutesDenominator = (uint)(array[1] >> 32);
+        var secondsDenominator = (uint)(array[2] >> 32);
+        if (degreesDenominator == 0 || minutesDenominator == 0 || secondsDenominator == 0)
+            return false;
+
+        var degrees = (uint)array[0] / (double)degreesDenominator;
+        var minutes = (uint)array[1] / (double)minutesDenominator;
+        var seconds = (uint)array[2] / (double)secondsDenominator;
+        if (minutes >= 60 || seconds >= 60)
+            return false;
+
+        value = new Dms(degrees, minutes, seconds);
+        return true;
     }
 }

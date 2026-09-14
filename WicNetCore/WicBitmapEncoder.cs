@@ -14,7 +14,8 @@ public sealed class WicBitmapEncoder(IComObject<IWICBitmapEncoder> comObject) : 
     public void Commit() => NativeObject.Commit();
     public void SetPreview(WicBitmapSource source) => NativeObject.SetPreview(source.NativeObject);
     public void SetThumbnail(WicBitmapSource source) => NativeObject.SetThumbnail(source.NativeObject);
-    public void SetThumbnail(WicPalette palette) => NativeObject.SetPalette(palette.NativeObject);
+    public void SetThumbnail(WicPalette palette) => SetPalette(palette);
+    public void SetPalette(WicPalette palette) => NativeObject.SetPalette(palette.NativeObject);
     public void SetColorContexts(IEnumerable<WicColorContext> contexts)
     {
         ArgumentNullException.ThrowIfNull(contexts);

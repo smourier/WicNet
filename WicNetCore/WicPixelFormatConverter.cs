@@ -73,9 +73,18 @@ public sealed class WicPixelFormatConverter : WicImagingComponent
             pal = p.CopyColors();
         }
 
+        using var ownedPalette = pal;
         using var co = CreateComObject();
         var cvt = co.CreateInstance();
-        cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object!, alphaThresholdPercent, paletteTranslate).ThrowOnError();
-        return cvt;
+        try
+        {
+            cvt.Object.Initialize(source.ComObject.Object, targetFormat, ditherType, pal?.ComObject.Object!, alphaThresholdPercent, paletteTranslate).ThrowOnError();
+            return cvt;
+        }
+        catch
+        {
+            cvt.Dispose();
+            throw;
+        }
     }
 }

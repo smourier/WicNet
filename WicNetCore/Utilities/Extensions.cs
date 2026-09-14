@@ -29,8 +29,8 @@ public static partial class Extensions
             }
         }
 
+        using var ownedBitmap = bmp;
         renderTarget.CreateBitmapBrush(bmp.Object, 0, 0, out var brush).ThrowOnError();
-        bmp.Dispose();
         brush.SetExtendModeX(D2D1_EXTEND_MODE.D2D1_EXTEND_MODE_WRAP);
         brush.SetExtendModeY(D2D1_EXTEND_MODE.D2D1_EXTEND_MODE_WRAP);
         return new ComObject<ID2D1BitmapBrush>(brush);
@@ -58,12 +58,18 @@ public static partial class Extensions
                     continue;
 
                 factory.Object.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var obj).ThrowOnError();
+                using var childWriter = new ComObject<IWICMetadataQueryWriter>(obj);
                 if (!ComWrappers.TryGetComInstance(obj, out var unk))
                     throw new InvalidOperationException();
 
-                writer.SetMetadataByName(kv.Key.Key, unk);
-                Marshal.Release(unk);
-                using var childWriter = new ComObject<IWICMetadataQueryWriter>(obj);
+                try
+                {
+                    writer.SetMetadataByName(kv.Key.Key, unk);
+                }
+                finally
+                {
+                    Marshal.Release(unk);
+                }
                 EncodeMetadata(factory, childWriter, childMetadata);
             }
             else

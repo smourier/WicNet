@@ -168,8 +168,8 @@ internal class Program
         var longitudeRef = r.GetMetadataByName<string>("/{ushort=3}");
         var longitudeArray = r.GetMetadataByName<IReadOnlyList<ulong>>("/{ushort=4}")!;
 
-        var latitude = Dms.From(latitudeArray);
-        var longitude = Dms.From(longitudeArray);
+        var latitude = Dms.From(latitudeArray) ?? throw new InvalidDataException("Invalid GPS latitude.");
+        var longitude = Dms.From(longitudeArray) ?? throw new InvalidDataException("Invalid GPS longitude.");
         Console.WriteLine($"GPS (DD): {latitudeRef}/{longitudeRef} {latitude.DecimalDegrees},{longitude.DecimalDegrees}");
         Console.WriteLine($"GPS (DMS): {latitude} {latitudeRef} {longitude} {longitudeRef}");
     }

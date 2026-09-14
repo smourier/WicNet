@@ -128,6 +128,7 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     }
 
     public Coordinates? GetCoordinates() => Coordinates.Get(this);
+    public bool TryGetCoordinates(out Coordinates coordinates) => Coordinates.TryGet(this, out coordinates);
     public PHOTO_ORIENTATION? GetOrientation()
     {
         using var reader = GetMetadataReader();
