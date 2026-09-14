@@ -1,9 +1,10 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<TargetFramework>net10.0</TargetFramework>
 		<Nullable>enable</Nullable>
 		<PublishAot>true</PublishAot>
+		<IsAotCompatible>true</IsAotCompatible>
 		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
 		<GenerateAssemblyInfo>false</GenerateAssemblyInfo>
 		<RootNamespace>WicNet</RootNamespace>
@@ -53,12 +54,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <PackageReference Include="DirectNAot.Extensions" Version="1.6.7" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<Using Include="DirectN" />
 		<Using Include="DirectN.Extensions" />
 		<Using Include="DirectN.Extensions.Com" />
 		<Using Include="DirectN.Extensions.Utilities" />
 		<Using Include="Microsoft.Win32" />
 		<Using Include="System" />
+		<Using Include="System.Buffers.Binary" />
 		<Using Include="System.ComponentModel" />
 		<Using Include="System.Collections" />
 		<Using Include="System.Collections.Concurrent" />
@@ -77,19 +83,6 @@
 		<Using Include="System.Threading" />
 		<Using Include="System.Threading.Tasks" />
 		<Using Include="WicNet.Utilities" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Folder Include="External\" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <Reference Include="DirectN">
-	    <HintPath>External\DirectN.dll</HintPath>
-	  </Reference>
-	  <Reference Include="DirectN.Extensions">
-	    <HintPath>External\DirectN.Extensions.dll</HintPath>
-	  </Reference>
 	</ItemGroup>
 
 </Project>

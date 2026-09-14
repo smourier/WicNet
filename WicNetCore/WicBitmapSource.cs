@@ -205,8 +205,16 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         ArgumentNullException.ThrowIfNull(sourceColorContext);
         ArgumentNullException.ThrowIfNull(destinationColorContext);
         var transformer = WicImagingFactory.CreateColorTransformer();
-        transformer.Initialize(ComObject, sourceColorContext.ComObject, destinationColorContext.ComObject, destinationPixelFormat);
-        return new WicBitmapSource(transformer);
+        try
+        {
+            transformer.Initialize(ComObject, sourceColorContext.ComObject, destinationColorContext.ComObject, destinationPixelFormat);
+            return new WicBitmapSource(transformer);
+        }
+        catch
+        {
+            transformer.Dispose();
+            throw;
+        }
     }
 
     public void CenterClip(uint? width, uint? height)
@@ -240,7 +248,15 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
 
         var clip = WicImagingFactory.CreateBitmapClipper();
-        clip.Object.Initialize(NativeObject, rect).ThrowOnError();
+        try
+        {
+            clip.Object.Initialize(NativeObject, rect).ThrowOnError();
+        }
+        catch
+        {
+            clip.Dispose();
+            throw;
+        }
         ExchangeDisposable(clip);
     }
 
@@ -255,14 +271,30 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         };
 
         var clip = WicImagingFactory.CreateBitmapClipper();
-        clip.Object.Initialize(NativeObject, rect).ThrowOnError();
+        try
+        {
+            clip.Object.Initialize(NativeObject, rect).ThrowOnError();
+        }
+        catch
+        {
+            clip.Dispose();
+            throw;
+        }
         ExchangeDisposable(clip);
     }
 
     public void FlipRotate(WICBitmapTransformOptions options)
     {
         var clip = WicImagingFactory.CreateBitmapFlipRotator();
-        clip.Object.Initialize(NativeObject, options).ThrowOnError();
+        try
+        {
+            clip.Object.Initialize(NativeObject, options).ThrowOnError();
+        }
+        catch
+        {
+            clip.Dispose();
+            throw;
+        }
         ExchangeDisposable(clip);
     }
 
@@ -942,7 +974,15 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
                 throw new ArgumentException(null, nameof(height));
 
             var scaler = WicImagingFactory.CreateBitmapScaler();
-            scaler.Object.Initialize(NativeObject, (uint)width.Value, (uint)height.Value, mode).ThrowOnError();
+            try
+            {
+                scaler.Object.Initialize(NativeObject, (uint)width.Value, (uint)height.Value, mode).ThrowOnError();
+            }
+            catch
+            {
+                scaler.Dispose();
+                throw;
+            }
             ExchangeDisposable(scaler);
             return;
         }
@@ -955,7 +995,15 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         var neww = (uint)(size.width * factor.width);
         var newh = (uint)(size.height * factor.height);
         var clip = WicImagingFactory.CreateBitmapScaler();
-        clip.Object.Initialize(NativeObject, neww, newh, mode).ThrowOnError();
+        try
+        {
+            clip.Object.Initialize(NativeObject, neww, newh, mode).ThrowOnError();
+        }
+        catch
+        {
+            clip.Dispose();
+            throw;
+        }
         ExchangeDisposable(clip);
     }
 
@@ -1045,6 +1093,49 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         format == WicPixelFormat.GUID_WICPixelFormat128bppPRGBAFloat ||
         format == WicPixelFormat.GUID_WICPixelFormat128bppRGBFloat;
 
+    public void SaveAtomic(string filePath,
+        Guid? encoderContainerFormat = null,
+        Guid? pixelFormat = null,
+        WICBitmapEncoderCacheOption cacheOptions = WICBitmapEncoderCacheOption.WICBitmapEncoderNoCache,
+        IEnumerable<KeyValuePair<string, object>>? encoderOptions = null,
+        IEnumerable<WicMetadataKeyValue>? metadata = null,
+        WicPalette? encoderPalette = null,
+        WicPalette? framePalette = null,
+        WICRect? sourceRectangle = null,
+        IEnumerable<WicColorContext>? colorContexts = null)
+    {
+        ArgumentNullException.ThrowIfNull(filePath);
+        var destination = Path.GetFullPath(filePath);
+        var format = encoderContainerFormat ?? (WicEncoder.FromFileExtension(Path.GetExtension(destination)) ?? throw new WicNetException("WIC0006: Cannot determine encoder from file path.")).ContainerFormat;
+        var temporary = Path.Combine(Path.GetDirectoryName(destination)!, ".wicnet-" + Guid.NewGuid().ToString("N") + ".tmp");
+        var created = false;
+        try
+        {
+            using (var stream = new FileStream(temporary, FileMode.CreateNew, FileAccess.Write, FileShare.None))
+            {
+                created = true;
+                Save(stream, format, pixelFormat, cacheOptions, encoderOptions, metadata, encoderPalette, framePalette, sourceRectangle, colorContexts);
+                stream.Flush(true);
+            }
+
+            if (File.Exists(destination))
+            {
+                File.Replace(temporary, destination, null);
+            }
+            else
+            {
+                File.Move(temporary, destination);
+            }
+        }
+        finally
+        {
+            if (created)
+            {
+                File.Delete(temporary);
+            }
+        }
+    }
+
     public void Save(string filePath,
         Guid? encoderContainerFormat = null,
         Guid? pixelFormat = null,
@@ -1103,10 +1194,11 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
 
         frame.Initialize();
 
-        if (metadata?.Any() == true)
+        var metadataItems = metadata?.ToArray();
+        if (metadataItems is { Length: > 0 })
         {
             using var writer = frame.GetMetadataQueryWriter();
-            writer.EncodeMetadata(metadata);
+            writer.EncodeMetadata(metadataItems);
         }
 
         if (pixelFormat.HasValue)
@@ -1119,9 +1211,10 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
             frame.Encode.SetPalette(framePalette.ComObject);
         }
 
-        if (colorContexts?.Any() == true)
+        var contextItems = colorContexts?.Select(c => c.ComObject).ToArray();
+        if (contextItems is { Length: > 0 })
         {
-            frame.SetColorContexts(colorContexts.Select(c => c.ComObject));
+            frame.SetColorContexts(contextItems);
         }
 
         // "WIC error 0x88982F0C. The component is not initialized" here can mean the palette is not set

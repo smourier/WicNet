@@ -42,19 +42,22 @@ public static partial class Extensions
         if (metadata == null)
             return;
 
-        if (!metadata.Any())
+        using var items = metadata.GetEnumerator();
+        if (!items.MoveNext())
             return;
 
-        WicImagingFactory.WithFactory(factory => EncodeMetadata(factory, writer, metadata));
+        WicImagingFactory.WithFactory(factory => EncodeMetadata(factory, writer, items));
     }
 
-    private static void EncodeMetadata(IComObject<IWICImagingFactory> factory, IComObject<IWICMetadataQueryWriter> writer, IEnumerable<WicMetadataKeyValue> metadata)
+    private static void EncodeMetadata(IComObject<IWICImagingFactory> factory, IComObject<IWICMetadataQueryWriter> writer, IEnumerator<WicMetadataKeyValue> metadata)
     {
-        foreach (var kv in metadata)
+        do
         {
+            var kv = metadata.Current;
             if (kv.Value is IEnumerable<WicMetadataKeyValue> childMetadata)
             {
-                if (!childMetadata.Any())
+                using var children = childMetadata.GetEnumerator();
+                if (!children.MoveNext())
                     continue;
 
                 factory.Object.CreateQueryWriter(kv.Key.Format, Unsafe.NullRef<Guid>(), out var obj).ThrowOnError();
@@ -64,19 +67,19 @@ public static partial class Extensions
 
                 try
                 {
-                    writer.SetMetadataByName(kv.Key.Key, unk);
+                    writer.SetMetadataByName(kv.Key.Key, unk, VARENUM.VT_UNKNOWN);
                 }
                 finally
                 {
                     Marshal.Release(unk);
                 }
-                EncodeMetadata(factory, childWriter, childMetadata);
+                EncodeMetadata(factory, childWriter, children);
             }
             else
             {
                 writer.SetMetadataByName(kv.Key.Key, kv.Value, kv.Type);
             }
-        }
+        } while (metadata.MoveNext());
     }
 
     public static D2D_SIZE_F GetScaleFactor(this D2D_SIZE_U size, uint? width = null, uint? height = null, WicBitmapScaleOptions options = WicBitmapScaleOptions.Default) => new D2D_SIZE_F(size.width, size.height).GetScaleFactor(width, height, options);

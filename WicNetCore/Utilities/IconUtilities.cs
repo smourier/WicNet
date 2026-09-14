@@ -661,7 +661,11 @@ public static class IconUtilities
         return IsPngHeader(sig) ? LoadPngIcon(stream) : LoadBmpIcon(stream, out colorCount);
     }
 
-    private static WicBitmapSource LoadPngIcon(Stream stream) => WicBitmapSource.Load(stream);
+    private static WicBitmapSource LoadPngIcon(Stream stream)
+    {
+        using var bitmap = WicBitmapSource.Load(stream);
+        return bitmap.Clone(WICBitmapCreateCacheOption.WICBitmapCacheOnLoad);
+    }
     private static unsafe WicBitmapSource? LoadBmpIcon(Stream stream, out int colorCount)
     {
         colorCount = 0;
@@ -678,11 +682,11 @@ public static class IconUtilities
         // for non PNG, header.biHeight is combined height of XOR and AND mask, so we need to divide height by 2
         var height = bih.biHeight == 0 ? MaxIconSize : bih.biHeight / 2;
         var width = bih.biWidth == 0 ? MaxIconSize : bih.biWidth;
-        if (height < 0 || width < 0)
+        if (height <= 0 || width <= 0 || bih.biPlanes != 1 || bih.biBitCount is not (1 or 4 or 8 or 16 or 24 or 32))
             return null;
 
         // stride is rounded up to a four-byte boundary
-        var stride = GetStride((uint)(bih.biBitCount * width / 8));
+        var stride = Extensions.GetStride((uint)width, bih.biBitCount);
 
         if (bih.biBitCount < 16)
         {
@@ -713,6 +717,7 @@ public static class IconUtilities
         var bmp = new WicBitmapSource((uint)width, (uint)height, format);
         try
         {
+            var hasAlpha = false;
             bmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, data =>
             {
                 var pixels = data.AsSpan();
@@ -720,9 +725,62 @@ public static class IconUtilities
                 Span<byte> padding = stackalloc byte[3];
                 for (var i = 0; i < height; i++)
                 {
-                    var offset = checked((int)((height - 1 - i) * data.Stride));
+                    var offset = checked((int)((long)(height - 1 - i) * data.Stride));
                     stream.ReadExactly(pixels.Slice(offset, rowBytes));
                     stream.ReadExactly(padding[..checked((int)stride - rowBytes)]);
+                    if (bih.biBitCount == 32 && !hasAlpha)
+                    {
+                        for (var x = 0; x < width; x++)
+                        {
+                            if (pixels[offset + x * 4 + 3] != 0)
+                            {
+                                hasAlpha = true;
+                                break;
+                            }
+                        }
+                    }
+                }
+            });
+
+            var maskStride = checked((int)Extensions.GetStride((uint)width, 1));
+            var mask = new byte[checked(maskStride * height)];
+            stream.ReadExactly(mask);
+            if (hasAlpha)
+                return bmp;
+
+            if (bih.biBitCount != 32)
+            {
+                var hasTransparency = false;
+                for (var y = 0; y < height && !hasTransparency; y++)
+                {
+                    for (var x = 0; x < width; x++)
+                    {
+                        if ((mask[y * maskStride + x / 8] & (1 << (7 - x % 8))) != 0)
+                        {
+                            hasTransparency = true;
+                            break;
+                        }
+                    }
+                }
+                if (!hasTransparency)
+                    return bmp;
+
+                bmp.ConvertTo(WicPixelFormat.GUID_WICPixelFormat32bppBGRA);
+                var writable = bmp.Clone(WICBitmapCreateCacheOption.WICBitmapCacheOnLoad);
+                bmp.Dispose();
+                bmp = writable;
+            }
+
+            bmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, data =>
+            {
+                var pixels = data.AsSpan();
+                for (var y = 0; y < height; y++)
+                {
+                    var offset = checked((int)((long)(height - 1 - y) * data.Stride));
+                    for (var x = 0; x < width; x++)
+                    {
+                        pixels[offset + x * 4 + 3] = (mask[y * maskStride + x / 8] & (1 << (7 - x % 8))) != 0 ? (byte)0 : (byte)255;
+                    }
                 }
             });
         }
@@ -753,123 +811,59 @@ public static class IconUtilities
 
         // we want an alpha channel
         var bmp = new WicBitmapSource(width, height, WicPixelFormat.GUID_WICPixelFormat32bppBGRA);
-        bmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, data =>
+        try
         {
-            LoadIndexedBmpIcon(stream, colorCount, width, height, stride, data.DataPointer, palette);
-        });
+            bmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, data =>
+            {
+                LoadIndexedBmpIcon(stream, colorCount, width, height, stride, data, palette);
+            });
+        }
+        catch
+        {
+            bmp.Dispose();
+            throw;
+        }
         return bmp;
     }
 
-    private static void LoadIndexedBmpIcon(Stream stream, int colorCount, uint width, uint height, uint stride, nint ptr, int[] palette)
+    private static void LoadIndexedBmpIcon(Stream stream, int colorCount, uint width, uint height, uint stride, WicBitmapLock data, int[] palette)
     {
-        var ptrStride = width * 4;
-        // use XOR (color) bitmap
-        var bmpPtr = ptr + (nint)((height - 1) * ptrStride);
-        var br = new BitReader(stream, false);
-        switch (colorCount)
+        var row = new byte[checked((int)stride)];
+        var pixels = data.AsSpan();
+        var rowBytes = checked((int)((ulong)width * 4));
+        for (uint y = 0; y < height; y++)
         {
-            case 2:
-                for (var i = 0; i < height; i++)
+            stream.ReadExactly(row);
+
+            var offset = checked((int)((ulong)(height - 1 - y) * data.Stride));
+            var destination = pixels.Slice(offset, rowBytes);
+            for (var x = 0; x < (int)width; x++)
+            {
+                var index = colorCount switch
                 {
-                    var linePtr = bmpPtr;
-                    for (var j = 0; j < width; j++)
-                    {
-                        var color = br.ReadBit();
-                        if (color < 0)
-                            return;
-
-                        Marshal.WriteInt32(linePtr, palette[color]);
-                        linePtr += 4;
-                    }
-
-                    // read padding
-                    for (var j = 0; j < stride - width / 8; j++)
-                    {
-                        if (stream.ReadByte() < 0)
-                            return;
-                    }
-                    bmpPtr -= (nint)ptrStride;
-                }
-                break;
-
-            case 16:
-                for (var i = 0; i < height; i++)
-                {
-                    var linePtr = bmpPtr;
-                    for (var j = 0; j < width / 2; j++)
-                    {
-                        var color = stream.ReadByte();
-                        if (color < 0)
-                            return;
-
-                        Marshal.WriteInt32(linePtr, palette[color >> 4]);
-                        linePtr += 4;
-                        Marshal.WriteInt32(linePtr, palette[color & 0xF]);
-                        linePtr += 4;
-                    }
-
-                    // read padding
-                    for (var j = 0; j < stride - width / 2; j++)
-                    {
-                        if (stream.ReadByte() < 0)
-                            return;
-                    }
-                    bmpPtr -= (nint)ptrStride;
-                }
-                break;
-
-            case 256:
-                for (var i = 0; i < height; i++)
-                {
-                    var linePtr = bmpPtr;
-                    for (var j = 0; j < width; j++)
-                    {
-                        var color = stream.ReadByte();
-                        if (color < 0)
-                            return;
-
-                        Marshal.WriteInt32(linePtr, palette[color]);
-                        linePtr += 4;
-                    }
-
-                    // read padding
-                    for (var j = 0; j < stride - width; j++)
-                    {
-                        if (stream.ReadByte() < 0)
-                            return;
-                    }
-                    bmpPtr -= (nint)ptrStride;
-                }
-                break;
+                    2 => (row[x / 8] >> (7 - x % 8)) & 1,
+                    16 => (row[x / 2] >> (x % 2 == 0 ? 4 : 0)) & 15,
+                    _ => row[x],
+                };
+                BinaryPrimitives.WriteInt32LittleEndian(destination.Slice(x * 4, 4), palette[index]);
+            }
         }
 
-        // use AND (mask) WicBitmapSource as transparency (assuming 1bpp)
-        bmpPtr = ptr + (nint)((height - 1) * ptrStride);
-        var andStride = GetStride(width / 8); // and mask also has a stride
-        for (var i = 0; i < height; i++)
+        var maskStride = checked((int)Extensions.GetStride(width, 1));
+        var mask = row.AsSpan(0, maskStride);
+        for (uint y = 0; y < height; y++)
         {
-            var linePtr = bmpPtr;
-            for (var j = 0; j < width; j++)
-            {
-                var color = br.ReadBit();
-                if (color < 0)
-                    return;
+            stream.ReadExactly(mask);
 
-                var opacity = Marshal.ReadByte(linePtr + 3);
-                if (opacity == 255) // not set
+            var offset = checked((int)((ulong)(height - 1 - y) * data.Stride));
+            var destination = pixels.Slice(offset, rowBytes);
+            for (var x = 0; x < (int)width; x++)
+            {
+                if (destination[x * 4 + 3] == 255)
                 {
-                    Marshal.WriteByte(linePtr + 3, (byte)(color > 0 ? 0 : 0xFF));
+                    destination[x * 4 + 3] = (mask[x / 8] & (1 << (7 - x % 8))) != 0 ? (byte)0 : (byte)255;
                 }
-                linePtr += 4;
             }
-
-            // read padding
-            for (var j = 0; j < andStride * 8 - width; j++)
-            {
-                if (br.ReadBit() < 0)
-                    return;
-            }
-            bmpPtr -= (nint)ptrStride;
         }
     }
 
@@ -948,12 +942,13 @@ public static class IconUtilities
                 var colorCount = 0;
                 if (IsPngHeader(sig))
                 {
-                    var ws = new WindowedStream(stream, entry.dwBytesInRes);
+                    using var ws = new WindowedStream(stream, entry.dwBytesInRes);
                     bmp = LoadPngIcon(ws);
                 }
                 else
                 {
-                    bmp = LoadBmpIcon(stream, out colorCount);
+                    using var window = new WindowedStream(stream, entry.dwBytesInRes);
+                    bmp = LoadBmpIcon(window, out colorCount);
                 }
 
                 if (bmp != null)

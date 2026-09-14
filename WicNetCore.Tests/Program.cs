@@ -1,4 +1,8 @@
-﻿using System;
+﻿using DirectN;
+using DirectN.Extensions;
+using DirectN.Extensions.Com;
+using DirectN.Extensions.Utilities;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.Globalization;
@@ -7,10 +11,6 @@ using System.Linq;
 using System.Runtime.InteropServices;
 using System.Runtime.Versioning;
 using System.Threading;
-using DirectN;
-using DirectN.Extensions;
-using DirectN.Extensions.Com;
-using DirectN.Extensions.Utilities;
 using WicNet;
 using WicNet.Utilities;
 
@@ -23,12 +23,14 @@ internal class Program
 {
     static void Main()
     {
-        MetaFileTests();
+        //CopyGif();
+        CopySkiMetadata();
         return;
+        MetaFileTests();
         HBITMAPTests();
         IconWrite();
         BuildTransparentBitmap(96, 96);
-        DumpMetadata("england -london-bridge.jpg");
+        DumpMetadata("england-london-bridge.jpg");
         DumpAllComponents();
         DumpApp1Gps("ski.jpg");
         BuildTransparentBitmap(300, 100);
@@ -82,11 +84,12 @@ internal class Program
 
     static void IconWrite()
     {
-        using (var bmp = WicBitmapSource.Load("england-london-bridge.jpg"))
+        var file = "england-london-bridge.jpg";
+        var name = Path.GetFileNameWithoutExtension(file);
+        using (var bmp = WicBitmapSource.Load(file))
         {
-
             // note these icons are not square
-            bmp.SaveAsIcon("test.ico");
+            bmp.SaveAsIcon($"{name}.ico");
             bmp.SaveAsIcon("testall.ico", [16, 32, 48, 64, 128, 256]);
             bmp.SaveAsResourceDll("testres.dll", [16, 32, 48, 64, 128, 256], 10, 1033, true);
         }
@@ -105,7 +108,7 @@ internal class Program
         }
         icons.Dispose();
 
-        using (var bmp = WicBitmapSource.Load("england-london-bridge.jpg"))
+        using (var bmp = WicBitmapSource.Load(file))
         {
             bmp.CenterClip(256, 256);
             bmp.SaveAsIcon("testsquare.ico", [16, 32, 48, 64, 128, 256]);
@@ -683,46 +686,67 @@ internal class Program
 
     static void CopyGif()
     {
-        using var dec = WicBitmapDecoder.Load(@"source.gif");
-        var reader = dec.GetMetadataQueryReader();
+        using var dec = WicBitmapDecoder.Load("source.gif");
+        using var reader = dec.GetMetadataQueryReader();
         DumpMetadata(reader);
-        Console.WriteLine();
-
-        foreach (var frame in dec)
-        {
-            Console.WriteLine(frame.Size);
-
-            reader = frame.GetMetadataReader();
-            DumpMetadata(reader);
-            Console.WriteLine();
-        }
 
         using var encoder = WicImagingFactory.CreateEncoder(dec.ContainerFormat);
-        using var file = File.OpenWrite("test.gif");
-        var mis = new ManagedIStream(file);
-        encoder.Initialize(mis);
+        using var file = File.Create("test.gif");
+        encoder.Initialize(new ManagedIStream(file));
+
+        using var containerWriter = encoder.GetMetadataQueryWriter();
+        if (reader != null)
+        {
+            containerWriter.EncodeMetadata(reader);
+            if (reader.GetMetadataByName<bool>("/logscrdesc/GlobalColorTableFlag"))
+            {
+                using var palette = new WicPalette();
+                dec.NativeObject.CopyPalette(palette.NativeObject).ThrowOnError();
+                encoder.SetPalette(palette.ComObject);
+            }
+        }
 
         foreach (var frame in dec)
         {
-            using var newFrame = encoder.CreateNewFrame();
-            newFrame.Initialize();
-
-            var md = frame.GetMetadataReader()!.Enumerate();
-            using var writer = newFrame.GetMetadataQueryWriter();
-            writer.EncodeMetadata(md);
-
-            // change delay here
-            writer.SetMetadataByName("/grctlext/Delay", (ushort)5);
-
-            if (frame.Palette != null)
+            using (frame)
+            using (var frameReader = frame.GetMetadataReader())
+            using (var newFrame = encoder.CreateNewFrame())
             {
-                newFrame.SetPalette(frame.Palette.ComObject);
-            }
+                Console.WriteLine(frame.Size);
+                DumpMetadata(frameReader);
+                newFrame.Initialize();
 
-            newFrame.WriteSource(frame.ComObject);
-            newFrame.Commit();
+                using var writer = newFrame.GetMetadataQueryWriter();
+                if (frameReader != null)
+                {
+                    writer.EncodeMetadata(frameReader);
+                }
+                writer.SetMetadataByName("/grctlext/Delay", (ushort)5);
+
+                if (frame.Palette != null)
+                {
+                    newFrame.SetPalette(frame.Palette.ComObject);
+                }
+
+                newFrame.WriteSource(frame.ComObject);
+                newFrame.Commit();
+            }
         }
         encoder.Commit();
+    }
+
+    static void CopySkiMetadata()
+    {
+        using var bitmap = WicBitmapSource.Load("ski.jpg");
+        using var reader = bitmap.GetMetadataReader()!;
+        Console.WriteLine("ski.jpg metadata before copying:");
+        DumpMetadata(reader);
+        bitmap.Save("ski-copy.jpg", metadata: reader);
+
+        using var copy = WicBitmapSource.Load("ski-copy.jpg");
+        using var copiedReader = copy.GetMetadataReader();
+        Console.WriteLine("ski-copy.jpg metadata after copying:");
+        DumpMetadata(copiedReader);
     }
 
     static void DumpEncoderComponents()
