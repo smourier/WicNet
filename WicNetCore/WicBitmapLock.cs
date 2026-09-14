@@ -38,6 +38,18 @@ public sealed class WicBitmapLock : InterlockedComObject<IWICBitmapLock>
         Stride = 0;
     }
 
+    public unsafe Span<byte> AsSpan()
+    {
+        ObjectDisposedException.ThrowIf(DataPointer == 0, this);
+        return new Span<byte>((void*)DataPointer, checked((int)DataSize));
+    }
+
+    public unsafe ReadOnlySpan<byte> AsReadOnlySpan()
+    {
+        ObjectDisposedException.ThrowIf(DataPointer == 0, this);
+        return new ReadOnlySpan<byte>((void*)DataPointer, checked((int)DataSize));
+    }
+
     public void WriteRectangle(int left, int top, byte[] input, uint inputStride, uint inputIndex = 0, uint? height = null)
     {
         ArgumentOutOfRangeException.ThrowIfNegative(left);
@@ -46,24 +58,11 @@ public sealed class WicBitmapLock : InterlockedComObject<IWICBitmapLock>
         if (PixelFormat == null)
             throw new InvalidOperationException();
 
-        height ??= (uint)input.Length / inputStride;
-        var bpp = PixelFormat.BitsPerPixel;
-        var offset = inputIndex;
-        for (var y = 0; y < height; y++)
-        {
-            var ptr = nint.Add(DataPointer, (int)((top + y) * Stride + left * bpp / 8));
-            Marshal.Copy(input, (int)offset, ptr, (int)inputStride);
-            offset += inputStride;
-        }
+        WriteRectangle(left, top, input.AsSpan(), inputStride, inputIndex, height);
     }
 
     public unsafe void WriteRectangle(int left, int top, ReadOnlySpan<byte> input, uint inputStride, uint inputIndex = 0, uint? height = null)
     {
-        ArgumentOutOfRangeException.ThrowIfNegative(left);
-        ArgumentOutOfRangeException.ThrowIfNegative(top);
-        if (PixelFormat == null)
-            throw new InvalidOperationException();
-
         ArgumentOutOfRangeException.ThrowIfNegative(left);
         ArgumentOutOfRangeException.ThrowIfNegative(top);
         if (PixelFormat == null)

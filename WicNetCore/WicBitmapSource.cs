@@ -298,6 +298,8 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         NativeObject.CopyPixels((nint)(&rect), stride.Value, bufferSize, buffer).ThrowOnError();
     }
 
+    public void CopyPixels(Span<byte> buffer, uint? stride = null) => CopyPixels(0, 0, Width, Height, buffer, stride);
+
     public byte[] CopyPixels(uint? stride = null) => CopyPixels(0, 0, Width, Height, stride);
     public byte[] CopyPixels(int left, int top, uint width, uint height, uint? stride = null)
     {
@@ -431,6 +433,17 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
     }
 
+    public static unsafe WicBitmapSource? FromEMF(ReadOnlySpan<byte> buffer, SIZE? targetSize = null)
+    {
+        if (buffer.IsEmpty)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromEMF((nint)ptr, (uint)buffer.Length, targetSize);
+        }
+    }
+
     public static WicBitmapSource? FromEMF(Stream? header, SIZE? targetSize = null)
     {
         if (header == null)
@@ -543,6 +556,17 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
     }
 
+    public static unsafe WicBitmapSource? FromWMF(ReadOnlySpan<byte> buffer, SIZE? targetSize = null, int dpi = 96)
+    {
+        if (buffer.IsEmpty)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromWMF((nint)ptr, (uint)buffer.Length, targetSize, dpi);
+        }
+    }
+
     public static WicBitmapSource? FromWMF(Stream? header, SIZE? targetSize = null, int dpi = 96)
     {
         if (header == null)
@@ -623,6 +647,29 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
     }
 
+    private static void ValidateDibHeader(ReadOnlySpan<byte> buffer)
+    {
+        if (buffer.Length < 40)
+            throw new ArgumentException("The DIB header is truncated.", nameof(buffer));
+
+        var headerSize = BinaryPrimitives.ReadUInt32LittleEndian(buffer);
+        if (headerSize < 40 || headerSize > (uint)buffer.Length)
+            throw new ArgumentException("The DIB header size is invalid.", nameof(buffer));
+
+        var bitsPerPixel = BinaryPrimitives.ReadUInt16LittleEndian(buffer[14..]);
+        var compression = BinaryPrimitives.ReadUInt32LittleEndian(buffer[16..]);
+        var colors = BinaryPrimitives.ReadUInt32LittleEndian(buffer[32..]);
+        if (colors == 0 && bitsPerPixel <= 8)
+            colors = 1u << bitsPerPixel;
+
+        ulong required = headerSize + (ulong)colors * 4;
+        if (headerSize == 40)
+            required += compression == 3 ? 12UL : compression == 6 ? 16UL : 0UL;
+
+        if (required > (ulong)buffer.Length)
+            throw new ArgumentException("The DIB masks or palette are truncated.", nameof(buffer));
+    }
+
     // BITMAPINFO pointer with DIB_RGB_COLORS, up to V5
     public static WicBitmapSource? FromDIB(Stream? header, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
         => FromDIB(header, HPALETTE.Null, options);
@@ -638,10 +685,36 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
         }
     }
 
+    public static unsafe WicBitmapSource? FromDIB(ReadOnlySpan<byte> buffer, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+    {
+        if (buffer.IsEmpty)
+            return null;
+
+        ValidateDibHeader(buffer);
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromDIB((nint)ptr, options);
+        }
+    }
+
     public static unsafe WicBitmapSource? FromDIB(byte[] buffer, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
     {
         if (buffer == null || buffer.Length == 0)
             return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromDIB((nint)ptr, paletteHandle, options);
+        }
+    }
+
+    public static unsafe WicBitmapSource? FromDIB(ReadOnlySpan<byte> buffer, HPALETTE paletteHandle, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapUseAlpha)
+    {
+        if (buffer.IsEmpty)
+            return null;
+
+        ValidateDibHeader(buffer);
 
         fixed (byte* ptr = buffer)
         {
@@ -693,6 +766,17 @@ public sealed class WicBitmapSource : InterlockedComObject<IWICBitmapSource>, IC
     public static unsafe WicBitmapSource? FromPackedDib(byte[] buffer, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapIgnoreAlpha)
     {
         if (buffer == null || buffer.Length == 0)
+            return null;
+
+        fixed (byte* ptr = buffer)
+        {
+            return FromPackedDib((nint)ptr, (uint)buffer.Length, options);
+        }
+    }
+
+    public static unsafe WicBitmapSource? FromPackedDib(ReadOnlySpan<byte> buffer, WICBitmapAlphaChannelOption options = WICBitmapAlphaChannelOption.WICBitmapIgnoreAlpha)
+    {
+        if (buffer.IsEmpty)
             return null;
 
         fixed (byte* ptr = buffer)

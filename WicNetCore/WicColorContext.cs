@@ -34,6 +34,11 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
     {
     }
 
+    public WicColorContext(ReadOnlySpan<byte> bytes, bool throwOnError = true)
+        : this(From(bytes), throwOnError)
+    {
+    }
+
     public WicColorContext()
         : this(WicImagingFactory.CreateColorContext())
     {
@@ -51,8 +56,16 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
     private static IComObject<IWICColorContext> From(byte[] bytes)
     {
         ArgumentNullException.ThrowIfNull(bytes);
+        return From(bytes.AsSpan());
+    }
+
+    private static unsafe IComObject<IWICColorContext> From(ReadOnlySpan<byte> bytes)
+    {
         var comObject = WicImagingFactory.CreateColorContext();
-        comObject.Object.InitializeFromMemory(bytes.AsPointer(), bytes.Length());
+        fixed (byte* ptr = bytes)
+        {
+            comObject.Object.InitializeFromMemory((nint)ptr, (uint)bytes.Length);
+        }
         return comObject;
     }
 

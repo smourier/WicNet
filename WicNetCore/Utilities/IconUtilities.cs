@@ -711,23 +711,26 @@ public static class IconUtilities
         }
 
         var bmp = new WicBitmapSource((uint)width, (uint)height, format);
-        bmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, data =>
+        try
         {
-            var bmpPtr = data.DataPointer;
-
-            // for some reason, the WicBitmapSource is bottom-up
-            bmpPtr += (nint)((height - 1) * stride);
-            var bytes = new byte[stride];
-            for (var i = 0; i < height; i++)
+            bmp.WithLock(WICBitmapLockFlags.WICBitmapLockWrite, data =>
             {
-                var read = stream.Read(bytes, 0, bytes.Length);
-                if (read == 0)
-                    break;
-
-                Marshal.Copy(bytes, 0, bmpPtr, read);
-                bmpPtr -= (nint)stride;
-            }
-        });
+                var pixels = data.AsSpan();
+                var rowBytes = checked((int)((long)width * bih.biBitCount / 8));
+                Span<byte> padding = stackalloc byte[3];
+                for (var i = 0; i < height; i++)
+                {
+                    var offset = checked((int)((long)(height - 1 - i) * data.Stride));
+                    stream.ReadExactly(pixels.Slice(offset, rowBytes));
+                    stream.ReadExactly(padding[..checked((int)stride - rowBytes)]);
+                }
+            });
+        }
+        catch
+        {
+            bmp.Dispose();
+            throw;
+        }
         return bmp;
     }
 
@@ -1739,6 +1742,12 @@ public static class IconUtilities
             var left = Math.Min(count, (int)Left);
             var read = _stream.Read(buffer, offset, left);
             return read;
+        }
+
+        public override int Read(Span<byte> buffer)
+        {
+            var count = (int)Math.Min(buffer.Length, Math.Max(0L, Left));
+            return _stream.Read(buffer[..count]);
         }
 
         public override long Seek(long offset, SeekOrigin origin)
