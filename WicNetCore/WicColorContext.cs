@@ -152,7 +152,8 @@ public sealed class WicColorContext : InterlockedComObject<IWICColorContext>
             return null;
 
         var bytes = new byte[count];
-        NativeObject.GetProfileBytes(count, bytes.AsPointer(), out _).ThrowOnError();
+        using var pinnedBytes = bytes.Pin();
+        NativeObject.GetProfileBytes(count, pinnedBytes.Pointer, out _).ThrowOnError();
         return bytes;
     }
 
