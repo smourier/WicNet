@@ -19,7 +19,7 @@
 		<PackageLicenseFile>LICENSE</PackageLicenseFile>
 		<PackageReadmeFile>README.md</PackageReadmeFile>
 		<PackageId>WicNetCore</PackageId>
-		<Version>1.9.7</Version>
+		<Version>1.9.8</Version>
 	</PropertyGroup>
 
 	<ItemGroup>
@@ -54,7 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="DirectNAot.Extensions" Version="1.6.9" />
+	  <PackageReference Include="DirectNAot.Extensions" Version="1.7.0" />
 	</ItemGroup>
 
 	<ItemGroup>
