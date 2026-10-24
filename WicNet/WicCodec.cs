@@ -1,8 +1,8 @@
-﻿using System;
+﻿using DirectN;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
-using DirectN;
 using WicNet.Utilities;
 
 namespace WicNet;
@@ -61,8 +61,8 @@ public abstract class WicCodec : WicImagingComponent
         info.Object.DoesSupportMultiframe(out b);
         SupportsMultiframe = b;
 
-        FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).OrderBy(s => s).ToList().AsReadOnly();
-        MimeTypesList = MimeTypes.SplitToList(',').OrderBy(s => s).ToList().AsReadOnly();
+        FileExtensionsList = FileExtensions.SplitToList(',').Select(s => s.ToLowerInvariant()).ToList().AsReadOnly();
+        MimeTypesList = MimeTypes.SplitToList(',').ToList().AsReadOnly();
 
         info.Object.GetPixelFormats(0, null, out var len);
         if (len > 0)
