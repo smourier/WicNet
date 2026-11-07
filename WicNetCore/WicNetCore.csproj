@@ -54,7 +54,7 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <PackageReference Include="DirectNAot.Extensions" Version="1.7.1" />
+	  <PackageReference Include="DirectNAot.Extensions" Version="1.8.0" />
 	</ItemGroup>
 
 	<ItemGroup>
